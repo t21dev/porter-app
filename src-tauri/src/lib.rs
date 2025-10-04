@@ -17,6 +17,8 @@ pub fn run() {
             commands::kill_process,
             commands::kill_process_by_port,
             commands::get_system_info,
+            commands::is_elevated,
+            commands::request_elevation,
         ])
         .run(tauri::generate_context!())
         .expect("error while running tauri application");

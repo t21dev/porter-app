@@ -34,8 +34,13 @@ function AppContent() {
     try {
       await killProcess(pid);
       refreshPorts();
+      // Success - could add a toast notification here
+      alert('Process terminated successfully');
     } catch (error) {
       console.error('Failed to kill process:', error);
+      // Show error to user
+      const errorMessage = error instanceof Error ? error.message : String(error);
+      alert(`Failed to kill process:\n\n${errorMessage}\n\nTip: You may need to run Porter as Administrator to kill this process.`);
     }
   };
 

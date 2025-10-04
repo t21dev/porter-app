@@ -1,5 +1,5 @@
 use crate::models::{Port, SystemInfo};
-use crate::services::{PortMonitor, ProcessManager};
+use crate::services::{PortMonitor, ProcessManager, admin};
 use std::sync::Mutex;
 use tauri::State;
 
@@ -54,7 +54,7 @@ pub async fn kill_process_by_port(port: u16, state: State<'_, AppState>) -> Resu
 
 #[tauri::command]
 pub async fn get_system_info() -> Result<SystemInfo, String> {
-    use sysinfo::{System, SystemExt};
+    use sysinfo::System;
 
     let sys = System::new_all();
 
@@ -65,4 +65,14 @@ pub async fn get_system_info() -> Result<SystemInfo, String> {
         cpu_count: sys.cpus().len(),
         total_memory: sys.total_memory(),
     })
+}
+
+#[tauri::command]
+pub async fn is_elevated() -> Result<bool, String> {
+    Ok(admin::is_elevated())
+}
+
+#[tauri::command]
+pub async fn request_elevation() -> Result<(), String> {
+    admin::request_elevation().map_err(|e| e.to_string())
 }

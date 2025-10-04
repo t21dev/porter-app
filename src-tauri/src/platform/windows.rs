@@ -41,7 +41,7 @@ pub fn get_network_connections() -> Result<Vec<NetworkConnection>> {
             0,
         );
 
-        if result.is_ok() {
+        if result == 0 {
             let table = &*(buffer.as_ptr() as *const MIB_TCPTABLE_OWNER_PID);
             let entries = std::slice::from_raw_parts(
                 &table.table[0],

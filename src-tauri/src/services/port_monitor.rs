@@ -1,7 +1,7 @@
 use crate::models::{Port, PortStatus, Process, Protocol};
 use crate::platform;
 use anyhow::Result;
-use sysinfo::{ProcessExt, System, SystemExt, PidExt};
+use sysinfo::{Pid, System};
 use std::collections::HashMap;
 
 pub struct PortMonitor {
@@ -91,13 +91,13 @@ impl PortMonitor {
 
     /// Get process information by PID
     fn get_process_info(&self, pid: u32) -> Option<Process> {
-        let process = self.system.process(sysinfo::Pid::from(pid as usize))?;
+        let process = self.system.process(Pid::from_u32(pid))?;
 
         Some(Process {
             pid,
-            name: process.name().to_string(),
+            name: process.name().to_str().unwrap_or("").to_string(),
             path: process.exe().map(|p| p.to_string_lossy().to_string()).unwrap_or_default(),
-            command: process.cmd().join(" "),
+            command: process.cmd().iter().map(|s| s.to_string_lossy().to_string()).collect::<Vec<_>>().join(" "),
             working_dir: process.cwd().map(|p| p.to_string_lossy().to_string()),
             cpu_usage: process.cpu_usage(),
             memory_usage: process.memory(),
@@ -105,7 +105,7 @@ impl PortMonitor {
                 process.start_time() as i64,
                 0
             ).unwrap_or_else(|| chrono::Utc::now()),
-            user: process.user_id().map(|uid| uid.to_string()),
+            user: process.user_id().map(|uid| format!("{:?}", uid)),
         })
     }
 }
