@@ -2107,42 +2107,47 @@ VITE_LOG_LEVEL=error
 
 ## Future Enhancements
 
-### Phase 1 (MVP)
-- ✅ Basic port monitoring
-- ✅ Process management
-- ✅ Search and filter
-- ✅ Kill process functionality
+### Phase 1: Core Essentials (MVP)
+- ✅ Basic port monitoring (scan common dev ports at startup)
+- ✅ Process management (view process info, kill processes)
+- ✅ Search and filter (search specific ports)
+- ✅ Dark/Light mode support
+- ✅ Simple, clean dashboard UI
 
-### Phase 2
-- Historical port usage tracking
-- Port favorites and profiles
-- Export/import configurations
+### Phase 2: Enhanced UX
+- Real-time monitoring (auto-refresh)
+- Port favorites (save frequently checked ports)
+- Port detail modal (full process information)
+- Quick stats (free/occupied/system port counts)
+- Keyboard shortcuts
 - System tray integration
+- Toast notifications
 
-### Phase 3
-- Real-time network traffic visualization
-- Team collaboration features (shared profiles)
-- CLI interface
-- Browser extension integration
-
-### Phase 4
-- Docker container port monitoring
-- Kubernetes integration
-- Cloud deployment monitoring
-- API for third-party integrations
+### Phase 3: Polish & Distribution
+- Performance optimization (caching, debouncing, virtual scrolling)
+- Port profiles (save groups of ports to monitor)
+- Export current state (JSON/CSV)
+- Cross-platform builds (Windows .msi, macOS .dmg, Linux .deb/.AppImage)
+- Enhanced error handling & security
+- Settings panel (refresh interval, port range, theme preferences)
 
 ---
 
 ## Conclusion
 
-This technical implementation guide provides a complete blueprint for building Porter using Tauri, React, and Rust. The architecture leverages the best of both worlds: React's excellent developer experience for the UI, and Rust's performance and safety for system-level operations.
+This technical implementation guide provides a blueprint for building Porter as a simple, sleek, and fast port monitoring tool using Tauri, React, and Rust. The architecture leverages React for an excellent UI developer experience and Rust for performance and safety in system-level operations.
 
 **Key Technical Advantages:**
 1. **58% less memory** than Electron alternatives
 2. **96% smaller bundle** (3-5MB vs 85MB+)
 3. **Native performance** through Rust
-4. **Cross-platform** with single codebase
+4. **Cross-platform** with single codebase (Windows, macOS, Linux)
 5. **Type-safe** end-to-end with TypeScript + Rust
 6. **Secure** by default with Tauri's security model
 
-The platform-specific implementations ensure optimal performance on Windows, macOS, and Linux, while the unified frontend provides a consistent user experience across all platforms.
+**Scope Focus:**
+- Simple, essential features only
+- Fast startup and responsive UI
+- Clean, modern interface with dark/light mode
+- Secure process management
+- No bloat: no CLI, no team features, no auto-start, no network traffic visualization
