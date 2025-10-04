@@ -5,6 +5,8 @@ import { SearchBar } from './components/dashboard/SearchBar';
 import { AdminWarning } from './components/dashboard/AdminWarning';
 import { StatsCard } from './components/dashboard/StatsCard';
 import { PortListItem } from './components/dashboard/PortListItem';
+import { StatusFilter } from './components/dashboard/StatusFilter';
+import { Footer } from './components/dashboard/Footer';
 import { useCommonPorts, useRefreshPorts } from './hooks/usePorts';
 import { killProcess, isElevated } from './lib/tauri';
 
@@ -13,9 +15,24 @@ const queryClient = new QueryClient();
 function AppContent() {
   const [searchQuery, setSearchQuery] = useState('');
   const [isAdmin, setIsAdmin] = useState(false);
+  const [selectedStatuses, setSelectedStatuses] = useState<Set<string>>(
+    new Set(['free', 'occupied', 'system'])
+  );
 
   const { data: ports = [], isLoading, isRefetching } = useCommonPorts();
   const { refreshPorts } = useRefreshPorts();
+
+  const handleStatusToggle = (status: string) => {
+    setSelectedStatuses((prev) => {
+      const newSet = new Set(prev);
+      if (newSet.has(status)) {
+        newSet.delete(status);
+      } else {
+        newSet.add(status);
+      }
+      return newSet;
+    });
+  };
 
   // Check for admin privileges on startup
   useEffect(() => {
@@ -32,17 +49,25 @@ function AppContent() {
   }, []);
 
   const filteredPorts = useMemo(() => {
-    if (!searchQuery) return ports;
+    let filtered = ports;
 
-    const query = searchQuery.toLowerCase();
-    return ports.filter((port) => {
-      return (
-        port.port.toString().includes(query) ||
-        port.status.toLowerCase().includes(query) ||
-        port.process?.name.toLowerCase().includes(query)
-      );
-    });
-  }, [ports, searchQuery]);
+    // Filter by status
+    filtered = filtered.filter((port) => selectedStatuses.has(port.status));
+
+    // Filter by search query
+    if (searchQuery) {
+      const query = searchQuery.toLowerCase();
+      filtered = filtered.filter((port) => {
+        return (
+          port.port.toString().includes(query) ||
+          port.status.toLowerCase().includes(query) ||
+          port.process?.name.toLowerCase().includes(query)
+        );
+      });
+    }
+
+    return filtered;
+  }, [ports, searchQuery, selectedStatuses]);
 
   const handleKillProcess = async (pid: number) => {
     if (!isAdmin) {
@@ -89,9 +114,15 @@ function AppContent() {
           <StatsCard count={stats.system} label="System Ports" variant="system" />
         </div>
 
-        {/* Search */}
-        <div className="mb-6">
-          <SearchBar value={searchQuery} onChange={setSearchQuery} />
+        {/* Search and Filter */}
+        <div className="mb-6 flex gap-3">
+          <div className="flex-1">
+            <SearchBar value={searchQuery} onChange={setSearchQuery} />
+          </div>
+          <StatusFilter
+            selectedStatuses={selectedStatuses}
+            onStatusToggle={handleStatusToggle}
+          />
         </div>
 
         {/* Port List */}
@@ -118,6 +149,8 @@ function AppContent() {
           </div>
         )}
       </main>
+
+      <Footer />
     </div>
   );
 }
