@@ -139,24 +139,6 @@ Time Saved:
 - Porter method: < 20 seconds
 ```
 
-### Journey 4: Team Collaboration
-
-```
-┌──────────────┐    ┌──────────────┐    ┌──────────────┐    ┌──────────────┐
-│  Document    │ → │   Export     │ → │ Share with   │ → │  Team Uses   │
-│ Port Setup   │    │   Config     │    │    Team      │    │  Standard    │
-└──────────────┘    └──────────────┘    └──────────────┘    └──────────────┘
-
-User Actions:
-- Creates custom port profile
-- Adds notes for each port
-- Exports to JSON/Markdown
-- Shares via Git/Slack
-- Team imports configuration
-
-Emotions:
-- Organized → Helpful → Collaborative → Efficient
-```
 
 ---
 
@@ -173,9 +155,7 @@ Porter Application
 │   └── Quick Stats
 │
 ├── Monitoring
-│   ├── Real-time Monitor
-│   ├── Historical Logs
-│   └── Network Traffic
+│   └── Real-time Monitor
 │
 ├── Favorites
 │   ├── Saved Ports
@@ -1067,39 +1047,39 @@ System Tray:
 
 ### Iteration Plan
 
-**Phase 1: MVP (Weeks 1-4)**
-- Core port monitoring
-- Process killing
-- Basic search/filter
-- Simple dashboard
+**Phase 1: Core Essentials (MVP)**
+- Core port monitoring (scan common dev ports at startup)
+- Process killing with confirmation
+- Search for specific ports
+- Simple dashboard with grid/list view
+- Dark/Light mode support
 
-**Phase 2: Enhancement (Weeks 5-8)**
-- Favorites/profiles
-- Real-time monitoring
-- Export functionality
+**Phase 2: Enhanced UX**
+- Real-time monitoring (auto-refresh)
+- Port favorites (save frequently checked ports)
+- Port detail modal with full process info
+- Quick stats display
+- Keyboard shortcuts
 - System tray integration
+- Toast notifications
 
-**Phase 3: Advanced (Weeks 9-12)**
-- Historical data
-- Network traffic monitoring
-- Team collaboration features
-- Advanced customization
-
-**Continuous Improvement:**
-- Bi-weekly usability testing
-- Monthly feature releases
-- Quarterly major updates
-- User feedback review (weekly)
+**Phase 3: Polish & Distribution**
+- Performance optimization (caching, debouncing)
+- Port profiles (save groups of ports)
+- Export current state (JSON/CSV)
+- Cross-platform builds (.msi, .dmg, .deb, .AppImage)
+- Enhanced error handling & security
+- Settings panel (refresh interval, port range, theme)
 
 ---
 
 ## Conclusion
 
-This UI/UX documentation provides a comprehensive blueprint for building Porter as a developer-centric, efficient, and delightful port monitoring tool. The focus on keyboard shortcuts, quick actions, and minimal friction aligns with developer workflows, while the clean visual design and thoughtful interactions ensure a premium user experience.
+This UI/UX documentation provides a blueprint for building Porter as a simple, sleek, and fast port monitoring tool for developers. The focus is on essential features with minimal friction, clean visual design, and intuitive interactions.
 
 Key UX Principles:
-1. **Speed First** - Every interaction optimized for minimum time
+1. **Simple & Fast** - Clean interface, quick actions, no bloat
 2. **Developer-Centric** - Built for technical users who value efficiency
-3. **Visual Clarity** - Status always clear at a glance
-4. **Progressive Disclosure** - Advanced features available but not overwhelming
-5. **Consistent & Predictable** - Familiar patterns, no surprises
+3. **Visual Clarity** - Port status always clear at a glance
+4. **Secure** - Safe process management with confirmations
+5. **Cross-Platform** - Consistent experience on Windows, macOS, and Linux
