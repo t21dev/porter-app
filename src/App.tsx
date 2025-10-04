@@ -5,7 +5,7 @@ import { SearchBar } from './components/dashboard/SearchBar';
 import { PortGrid } from './components/dashboard/PortGrid';
 import { PortDetailModal } from './components/dashboard/PortDetailModal';
 import { useCommonPorts, useRefreshPorts } from './hooks/usePorts';
-import { killProcess } from './lib/tauri';
+import { killProcess, isElevated, requestElevation } from './lib/tauri';
 import { Port } from './types/api';
 
 const queryClient = new QueryClient();
@@ -32,15 +32,50 @@ function AppContent() {
 
   const handleKillProcess = async (pid: number) => {
     try {
+      // First, check if we have admin privileges
+      const elevated = await isElevated();
+
+      if (!elevated) {
+        // Ask user if they want to restart with admin privileges
+        const shouldElevate = window.confirm(
+          'Killing processes may require administrator privileges.\n\n' +
+          'Would you like to restart Porter as Administrator?\n\n' +
+          '(Click "OK" to restart with admin rights, or "Cancel" to try anyway)'
+        );
+
+        if (shouldElevate) {
+          try {
+            await requestElevation();
+            // App will restart as admin, this code won't execute
+            return;
+          } catch (elevError) {
+            console.error('Failed to elevate:', elevError);
+            alert('Failed to request administrator privileges. Trying to kill process anyway...');
+          }
+        }
+      }
+
+      // Try to kill the process
       await killProcess(pid);
       refreshPorts();
-      // Success - could add a toast notification here
       alert('Process terminated successfully');
     } catch (error) {
       console.error('Failed to kill process:', error);
-      // Show error to user
       const errorMessage = error instanceof Error ? error.message : String(error);
-      alert(`Failed to kill process:\n\n${errorMessage}\n\nTip: You may need to run Porter as Administrator to kill this process.`);
+
+      // Show detailed error with option to restart as admin
+      const shouldRetry = window.confirm(
+        `Failed to kill process:\n\n${errorMessage}\n\n` +
+        'Would you like to restart Porter as Administrator and try again?'
+      );
+
+      if (shouldRetry) {
+        try {
+          await requestElevation();
+        } catch (elevError) {
+          alert('Failed to request administrator privileges.');
+        }
+      }
     }
   };
 
