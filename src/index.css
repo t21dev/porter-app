@@ -36,12 +36,12 @@
   }
 
   .dark {
-    --background: 210 11% 13%;
+    --background: 0 0% 4%;
     --foreground: 210 40% 98%;
-    --card: 210 11% 13%;
+    --card: 0 0% 4%;
     --card-foreground: 210 40% 98%;
     --primary: 217 91% 60%;
-    --primary-foreground: 210 11% 13%;
+    --primary-foreground: 0 0% 4%;
     --secondary: 217 33% 17%;
     --secondary-foreground: 210 40% 98%;
     --muted: 217 33% 17%;
@@ -53,11 +53,11 @@
     --success: 142 71% 45%;
     --success-foreground: 144 61% 20%;
     --warning: 38 92% 50%;
-    --warning-foreground: 210 11% 13%;
+    --warning-foreground: 0 0% 4%;
     --border: 217 33% 17%;
     --input: 217 33% 17%;
     --ring: 217 91% 60%;
-    --popover: 210 11% 13%;
+    --popover: 0 0% 4%;
     --popover-foreground: 210 40% 98%;
     --chart-1: 220 70% 50%;
     --chart-2: 160 60% 45%;
