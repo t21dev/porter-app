@@ -10,7 +10,8 @@
       "Bash(npm run tauri:dev:*)",
       "Read(//u/Random Projects/**)",
       "Bash(npx shadcn@latest init:*)",
-      "Bash(npx shadcn@latest add:*)"
+      "Bash(npx shadcn@latest add:*)",
+      "Bash(npm run tauri:build:*)"
     ],
     "deny": [],
     "ask": []

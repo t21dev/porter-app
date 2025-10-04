@@ -10,7 +10,6 @@ interface PortListItemProps {
 
 export function PortListItem({ port, onKill }: PortListItemProps) {
   const isOccupied = port.status === 'occupied';
-  const isFree = port.status === 'free';
 
   const statusColors = {
     free: 'border-green-500/50 bg-green-500/10',
