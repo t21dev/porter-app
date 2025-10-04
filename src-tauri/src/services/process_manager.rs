@@ -1,6 +1,9 @@
 use crate::platform;
 use anyhow::{Result, anyhow};
-use sysinfo::{Pid, Signal, System};
+use sysinfo::{Pid, System};
+
+#[cfg(not(target_os = "windows"))]
+use sysinfo::Signal;
 
 pub struct ProcessManager {
     system: System,

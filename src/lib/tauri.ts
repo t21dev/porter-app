@@ -31,7 +31,3 @@ export async function getSystemInfo(): Promise<SystemInfo> {
 export async function isElevated(): Promise<boolean> {
   return await invoke<boolean>('is_elevated');
 }
-
-export async function requestElevation(): Promise<void> {
-  await invoke('request_elevation');
-}

@@ -1,4 +1,4 @@
-import { Moon, Sun, RefreshCw } from 'lucide-react';
+import { Moon, Sun, RefreshCw, Activity } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { useThemeStore } from '@/store/themeStore';
 
@@ -11,28 +11,33 @@ export function Header({ onRefresh, isRefreshing }: HeaderProps) {
   const { theme, toggleTheme } = useThemeStore();
 
   return (
-    <header className="border-b bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60">
-      <div className="container flex h-16 items-center justify-between px-4">
-        <div className="flex items-center space-x-2">
-          <div className="text-2xl font-bold bg-gradient-to-r from-primary to-blue-600 bg-clip-text text-transparent">
-            Porter
-          </div>
-          <div className="text-sm text-muted-foreground hidden sm:block">
-            Port Monitor
+    <header className="border-b border-border/40 bg-background">
+      <div className="container flex h-14 items-center justify-between px-6">
+        <div className="flex items-center space-x-3">
+          <Activity className="h-5 w-5 text-blue-500" />
+          <div>
+            <div className="text-lg font-bold text-foreground">Porter</div>
+            <div className="text-xs text-muted-foreground">Port Monitor</div>
           </div>
         </div>
 
         <div className="flex items-center space-x-2">
           <Button
-            variant="outline"
-            size="sm"
+            variant="ghost"
+            size="icon"
             onClick={onRefresh}
             disabled={isRefreshing}
+            className="h-8 w-8"
           >
             <RefreshCw className={`h-4 w-4 ${isRefreshing ? 'animate-spin' : ''}`} />
           </Button>
 
-          <Button variant="outline" size="sm" onClick={toggleTheme}>
+          <Button
+            variant="ghost"
+            size="icon"
+            onClick={toggleTheme}
+            className="h-8 w-8"
+          >
             {theme === 'dark' ? (
               <Sun className="h-4 w-4" />
             ) : (
