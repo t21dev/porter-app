@@ -111,9 +111,9 @@ function AppContent() {
     <div className="min-h-screen bg-background">
       <Header onRefresh={refreshPorts} isRefreshing={isRefetching} />
 
-      <main className="container mx-auto px-4 py-4 max-w-7xl">
+      <main className="container px-4 py-4 mx-auto max-w-7xl">
         {/* Admin Warning */}
-        {!isAdmin && <AdminWarning />}
+        {/* {!isAdmin && <AdminWarning />} */}
 
         {/* Stats */}
         <div className="grid grid-cols-3 gap-3 mb-4">
@@ -123,7 +123,7 @@ function AppContent() {
         </div>
 
         {/* Search Bar and Filter */}
-        <div className="mb-3 flex items-center gap-2">
+        <div className="flex gap-2 items-center mb-3">
           <div className="flex-[3]">
             <SearchBar value={searchQuery} onChange={setSearchQuery} />
           </div>
@@ -136,7 +136,7 @@ function AppContent() {
         </div>
 
         {/* Port List Header */}
-        <div className="mb-3 flex items-center gap-2">
+        <div className="flex gap-2 items-center mb-3">
           <h2 className="text-sm font-semibold text-foreground">
             {showAllPorts ? 'All Running Ports' : 'Common Developer Ports'}
             {searchQuery && ` (${filteredPorts.length} results)`}

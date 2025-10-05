@@ -2,16 +2,16 @@ import { Github } from 'lucide-react';
 
 export function Footer() {
   return (
-    <footer className="border-t border-border/40 bg-background py-4 mt-8">
-      <div className="container mx-auto px-6">
-        <div className="flex items-center justify-center gap-4">
+    <footer className="py-4 mt-8 border-t border-border/40 bg-background">
+      <div className="container px-6 mx-auto">
+        <div className="flex gap-4 justify-center items-center">
           <p className="text-sm text-muted-foreground">
             An Opensource Project of{' '}
             <a
               href="https://t21.dev"
               target="_blank"
               rel="noopener noreferrer"
-              className="text-primary hover:underline font-medium"
+              className="font-medium text-green-500 hover:underline"
             >
               t21.dev
             </a>
@@ -20,10 +20,10 @@ export function Footer() {
             href="https://github.com/t21dev/porter-app"
             target="_blank"
             rel="noopener noreferrer"
-            className="text-muted-foreground hover:text-primary transition-colors"
+            className="transition-colors text-muted-foreground hover:text-green-500"
             aria-label="View on GitHub"
           >
-            <Github className="h-5 w-5" />
+            <Github className="w-5 h-5" />
           </a>
         </div>
       </div>
