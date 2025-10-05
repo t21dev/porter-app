@@ -8,10 +8,11 @@
 ![Tauri](https://img.shields.io/badge/Tauri-2.0-24c8db)
 ![React](https://img.shields.io/badge/React-19-61dafb)
 ![TypeScript](https://img.shields.io/badge/TypeScript-5-3178c6)
+[![Release](https://img.shields.io/github/v/release/t21dev/porter-app)](https://github.com/t21dev/porter-app/releases)
 
 A sleek, fast, and secure desktop port monitoring application built with Tauri, React, and TypeScript.
 
-An Opensource Project of [t21.dev](https://t21.dev)
+**[Download Latest Release](https://github.com/t21dev/porter-app/releases)** | An Opensource Project of [t21.dev](https://t21.dev)
 
 </div>
 
