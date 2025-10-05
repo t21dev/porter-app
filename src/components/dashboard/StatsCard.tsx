@@ -18,9 +18,9 @@ export function StatsCard({ count, label, variant }: StatsCardProps) {
   };
 
   return (
-    <div className={`rounded-lg border ${colors[variant]} p-4`}>
-      <div className={`text-3xl font-bold ${textColors[variant]}`}>{count}</div>
-      <div className="text-sm text-muted-foreground uppercase tracking-wide mt-1">
+    <div className={`rounded-lg border ${colors[variant]} p-3`}>
+      <div className={`text-2xl font-bold ${textColors[variant]}`}>{count}</div>
+      <div className="text-xs text-muted-foreground uppercase tracking-wide mt-0.5">
         {label}
       </div>
     </div>

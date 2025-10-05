@@ -11,7 +11,11 @@
       "Read(//u/Random Projects/**)",
       "Bash(npx shadcn@latest init:*)",
       "Bash(npx shadcn@latest add:*)",
-      "Bash(npm run tauri:build:*)"
+      "Bash(npm run tauri:build:*)",
+      "Bash(npm install:*)",
+      "WebSearch",
+      "Bash(npx:*)",
+      "Bash(npm uninstall:*)"
     ],
     "deny": [],
     "ask": []

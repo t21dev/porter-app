@@ -7,6 +7,7 @@ import { StatsCard } from './components/dashboard/StatsCard';
 import { PortListItem } from './components/dashboard/PortListItem';
 import { StatusFilter } from './components/dashboard/StatusFilter';
 import { Footer } from './components/dashboard/Footer';
+import { PortScanLoader } from './components/dashboard/PortScanLoader';
 import { useCommonPorts, useRefreshPorts } from './hooks/usePorts';
 import { killProcess, isElevated } from './lib/tauri';
 
@@ -103,42 +104,38 @@ function AppContent() {
     <div className="min-h-screen bg-background">
       <Header onRefresh={refreshPorts} isRefreshing={isRefetching} />
 
-      <main className="container mx-auto px-6 py-6 max-w-7xl">
+      <main className="container mx-auto px-4 py-4 max-w-7xl">
         {/* Admin Warning */}
         {!isAdmin && <AdminWarning />}
 
         {/* Stats */}
-        <div className="grid grid-cols-3 gap-4 mb-6">
+        <div className="grid grid-cols-3 gap-3 mb-4">
           <StatsCard count={stats.free} label="Free Ports" variant="free" />
           <StatsCard count={stats.occupied} label="Occupied Ports" variant="occupied" />
           <StatsCard count={stats.system} label="System Ports" variant="system" />
         </div>
 
-        {/* Search and Filter */}
-        <div className="mb-6 flex gap-3">
-          <div className="flex-1">
-            <SearchBar value={searchQuery} onChange={setSearchQuery} />
-          </div>
+        {/* Search Bar - Full Width */}
+        <div className="mb-3">
+          <SearchBar value={searchQuery} onChange={setSearchQuery} />
+        </div>
+
+        {/* Port List Header with Filter */}
+        <div className="mb-3 flex items-center justify-between">
+          <h2 className="text-sm font-semibold text-foreground">
+            Common Developer Ports
+            {searchQuery && ` (${filteredPorts.length} results)`}
+          </h2>
           <StatusFilter
             selectedStatuses={selectedStatuses}
             onStatusToggle={handleStatusToggle}
           />
         </div>
 
-        {/* Port List */}
-        <div className="mb-4">
-          <h2 className="text-lg font-semibold text-foreground">
-            Common Developer Ports
-            {searchQuery && ` (${filteredPorts.length} results)`}
-          </h2>
-        </div>
-
         {isLoading ? (
-          <div className="text-center py-12 text-muted-foreground">
-            Loading ports...
-          </div>
+          <PortScanLoader />
         ) : (
-          <div className="space-y-3">
+          <div className="space-y-2">
             {filteredPorts.map((port) => (
               <PortListItem
                 key={port.port}
