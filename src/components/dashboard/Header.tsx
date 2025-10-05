@@ -2,6 +2,7 @@ import { Moon, Sun, RefreshCw, Activity } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { useThemeStore } from '@/store/themeStore';
 import { PortSettings } from './PortSettings';
+import { AboutDialog } from './AboutDialog';
 
 interface HeaderProps {
   onRefresh: () => void;
@@ -23,6 +24,8 @@ export function Header({ onRefresh, isRefreshing }: HeaderProps) {
         </div>
 
         <div className="flex items-center space-x-2">
+          <AboutDialog />
+
           <PortSettings />
 
           <Button

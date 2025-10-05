@@ -1,12 +1,13 @@
 import { useState, useMemo, useEffect } from 'react';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
+import SimpleBar from 'simplebar-react';
+import 'simplebar-react/dist/simplebar.min.css';
 import { Header } from './components/dashboard/Header';
 import { SearchBar } from './components/dashboard/SearchBar';
 import { AdminWarning } from './components/dashboard/AdminWarning';
 import { StatsCard } from './components/dashboard/StatsCard';
 import { PortListItem } from './components/dashboard/PortListItem';
 import { StatusFilter } from './components/dashboard/StatusFilter';
-import { Footer } from './components/dashboard/Footer';
 import { PortScanLoader } from './components/dashboard/PortScanLoader';
 import { useCommonPorts, useAllPorts, useRefreshPorts } from './hooks/usePorts';
 import { killProcess, isElevated } from './lib/tauri';
@@ -108,65 +109,72 @@ function AppContent() {
   }, [ports]);
 
   return (
-    <div className="min-h-screen bg-background">
+    <div className="h-screen bg-background flex flex-col overflow-hidden">
+      {/* Sticky Header */}
       <Header onRefresh={refreshPorts} isRefreshing={isRefetching} />
 
-      <main className="container px-4 py-4 mx-auto max-w-7xl">
-        {/* Admin Warning */}
-        {!isAdmin && <AdminWarning />}
+      <main className="flex-1 overflow-hidden flex flex-col">
+        <div className="container px-4 mx-auto max-w-7xl flex flex-col h-full">
+          {/* Fixed Top Section */}
+          <div className="py-4 space-y-4 flex-shrink-0">
+            {/* Admin Warning */}
+            {!isAdmin && <AdminWarning />}
 
-        {/* Stats */}
-        <div className="grid grid-cols-3 gap-3 mb-4">
-          <StatsCard count={stats.free} label="Free Ports" variant="free" />
-          <StatsCard count={stats.occupied} label="Occupied Ports" variant="occupied" />
-          <StatsCard count={stats.system} label="System Ports" variant="system" />
-        </div>
+            {/* Stats */}
+            <div className="grid grid-cols-3 gap-3">
+              <StatsCard count={stats.free} label="Free Ports" variant="free" />
+              <StatsCard count={stats.occupied} label="Occupied Ports" variant="occupied" />
+              <StatsCard count={stats.system} label="System Ports" variant="system" />
+            </div>
 
-        {/* Search Bar and Filter */}
-        <div className="flex gap-2 items-center mb-3">
-          <div className="flex-[3]">
-            <SearchBar value={searchQuery} onChange={setSearchQuery} />
+            {/* Search Bar and Filter */}
+            <div className="flex gap-2 items-center">
+              <div className="flex-[3]">
+                <SearchBar value={searchQuery} onChange={setSearchQuery} />
+              </div>
+              <div className="flex-1">
+                <StatusFilter
+                  selectedStatuses={selectedStatuses}
+                  onStatusToggle={handleStatusToggle}
+                />
+              </div>
+            </div>
+
+            {/* Port List Header */}
+            <div className="flex gap-2 items-center">
+              <h2 className="text-sm font-semibold text-foreground">
+                {showAllPorts ? 'All Running Ports' : 'Common Developer Ports'}
+                {searchQuery && ` (${filteredPorts.length} results)`}
+              </h2>
+              <Button
+                variant="outline"
+                size="xs"
+                onClick={() => setShowAllPorts(!showAllPorts)}
+                className="text-[10px] h-6 px-2"
+              >
+                {showAllPorts ? 'Show Common' : 'Show All'}
+              </Button>
+            </div>
           </div>
-          <div className="flex-1">
-            <StatusFilter
-              selectedStatuses={selectedStatuses}
-              onStatusToggle={handleStatusToggle}
-            />
-          </div>
-        </div>
 
-        {/* Port List Header */}
-        <div className="flex gap-2 items-center mb-3">
-          <h2 className="text-sm font-semibold text-foreground">
-            {showAllPorts ? 'All Running Ports' : 'Common Developer Ports'}
-            {searchQuery && ` (${filteredPorts.length} results)`}
-          </h2>
-          <Button
-            variant="outline"
-            size="xs"
-            onClick={() => setShowAllPorts(!showAllPorts)}
-            className="text-[10px] h-6 px-2"
-          >
-            {showAllPorts ? 'Show Common' : 'Show All'}
-          </Button>
+          {/* Scrollable Port List */}
+          <SimpleBar className="flex-1" style={{ maxHeight: '100%' }}>
+            {isLoading ? (
+              <PortScanLoader />
+            ) : (
+              <div className="space-y-2 pb-4">
+                {filteredPorts.map((port) => (
+                  <PortListItem
+                    key={port.port}
+                    port={port}
+                    onKill={handleKillProcess}
+                  />
+                ))}
+              </div>
+            )}
+          </SimpleBar>
         </div>
-
-        {isLoading ? (
-          <PortScanLoader />
-        ) : (
-          <div className="space-y-2">
-            {filteredPorts.map((port) => (
-              <PortListItem
-                key={port.port}
-                port={port}
-                onKill={handleKillProcess}
-              />
-            ))}
-          </div>
-        )}
       </main>
-
-      <Footer />
     </div>
   );
 }

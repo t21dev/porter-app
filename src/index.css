@@ -58,3 +58,24 @@
     font-feature-settings: "rlig" 1, "calt" 1;
   }
 }
+
+/* SimpleBar custom styling */
+.simplebar-scrollbar::before {
+  background-color: hsl(var(--muted-foreground));
+  opacity: 0.3;
+  border-radius: 4px;
+}
+
+.simplebar-scrollbar.simplebar-visible::before {
+  opacity: 0.5;
+}
+
+.simplebar-track.simplebar-vertical {
+  width: 8px;
+}
+
+.simplebar-track.simplebar-vertical .simplebar-scrollbar::before {
+  width: 6px;
+  left: 1px;
+  right: 1px;
+}
