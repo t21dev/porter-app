@@ -3,6 +3,17 @@ import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Port } from '@/types/api';
 import { getPortTypeInfo } from '@/lib/portTypes';
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+  AlertDialogTrigger,
+} from '@/components/ui/alert-dialog';
 
 interface PortListItemProps {
   port: Port;
@@ -15,15 +26,15 @@ export function PortListItem({ port, onKill }: PortListItemProps) {
   const PortIcon = portType.icon;
 
   const statusColors = {
-    free: 'border-green-500/50 bg-green-500/10',
-    occupied: 'border-red-500/50 bg-red-500/10',
-    system: 'border-yellow-500/50 bg-yellow-500/10',
+    free: 'border-emerald-500/40 bg-emerald-500/10',
+    occupied: 'border-amber-500/40 bg-amber-500/10',
+    system: 'border-blue-500/40 bg-blue-500/10',
   };
 
   const dotColors = {
-    free: 'bg-green-500',
-    occupied: 'bg-red-500',
-    system: 'bg-yellow-500',
+    free: 'bg-emerald-500',
+    occupied: 'bg-amber-500',
+    system: 'bg-blue-500',
   };
 
   const badgeVariants = {
@@ -73,15 +84,37 @@ export function PortListItem({ port, onKill }: PortListItemProps) {
 
       {/* Kill Button */}
       {isOccupied && port.process && (
-        <Button
-          variant="ghost"
-          size="sm"
-          onClick={() => onKill(port.process!.pid)}
-          className="text-red-500 hover:text-red-600 hover:bg-red-500/10 text-xs h-7 px-2 flex-shrink-0"
-        >
-          <Trash2 className="h-3 w-3 mr-1" />
-          Kill
-        </Button>
+        <AlertDialog>
+          <AlertDialogTrigger asChild>
+            <Button
+              variant="ghost"
+              size="sm"
+              className="text-red-500 hover:text-red-600 hover:bg-red-500/10 text-xs h-7 px-2 flex-shrink-0"
+            >
+              <Trash2 className="h-3 w-3 mr-1" />
+              Kill
+            </Button>
+          </AlertDialogTrigger>
+          <AlertDialogContent>
+            <AlertDialogHeader>
+              <AlertDialogTitle>Kill Process?</AlertDialogTitle>
+              <AlertDialogDescription>
+                Are you sure you want to kill <strong>{port.process.name}</strong> (PID: {port.process.pid}) on port {port.port}?
+                <br />
+                This action cannot be undone and may cause data loss.
+              </AlertDialogDescription>
+            </AlertDialogHeader>
+            <AlertDialogFooter>
+              <AlertDialogCancel>Cancel</AlertDialogCancel>
+              <AlertDialogAction
+                onClick={() => onKill(port.process!.pid)}
+                className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
+              >
+                Kill Process
+              </AlertDialogAction>
+            </AlertDialogFooter>
+          </AlertDialogContent>
+        </AlertDialog>
       )}
     </div>
   );

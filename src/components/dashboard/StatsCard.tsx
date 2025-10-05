@@ -6,15 +6,15 @@ interface StatsCardProps {
 
 export function StatsCard({ count, label, variant }: StatsCardProps) {
   const colors = {
-    free: 'border-green-500/50 bg-green-500/5',
-    occupied: 'border-red-500/50 bg-red-500/5',
-    system: 'border-yellow-500/50 bg-yellow-500/5',
+    free: 'border-emerald-500/40 bg-emerald-500/10',
+    occupied: 'border-amber-500/40 bg-amber-500/10',
+    system: 'border-blue-500/40 bg-blue-500/10',
   };
 
   const textColors = {
-    free: 'text-green-500',
-    occupied: 'text-red-500',
-    system: 'text-yellow-500',
+    free: 'text-emerald-500',
+    occupied: 'text-amber-500',
+    system: 'text-blue-500',
   };
 
   return (

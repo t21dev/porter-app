@@ -1,13 +1,11 @@
 import { useState, useEffect } from 'react';
 import { getCurrentWindow } from '@tauri-apps/api/window';
 import { Activity, Minus, Square, X, Copy } from 'lucide-react';
-import { useThemeStore } from '@/store/themeStore';
 
 const appWindow = getCurrentWindow();
 
 export function TitleBar() {
   const [isMaximized, setIsMaximized] = useState(false);
-  const { theme } = useThemeStore();
 
   useEffect(() => {
     const checkMaximized = async () => {

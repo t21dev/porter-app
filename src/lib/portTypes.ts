@@ -1,4 +1,4 @@
-import { LucideIcon, Globe, Database, Server, Cpu, Code, Package, FileCode } from 'lucide-react';
+import { LucideIcon, Globe, Database, Server, Code, Package, FileCode } from 'lucide-react';
 
 export interface PortTypeInfo {
   icon: LucideIcon;

@@ -9,10 +9,17 @@ interface ThemeStore {
   toggleTheme: () => void;
 }
 
+const getSystemTheme = (): Theme => {
+  if (typeof window !== 'undefined' && window.matchMedia) {
+    return window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light';
+  }
+  return 'dark';
+};
+
 export const useThemeStore = create<ThemeStore>()(
   persist(
     (set, get) => ({
-      theme: 'dark',
+      theme: getSystemTheme(),
       setTheme: (theme) => {
         set({ theme });
         document.documentElement.classList.toggle('dark', theme === 'dark');
@@ -27,6 +34,10 @@ export const useThemeStore = create<ThemeStore>()(
       onRehydrateStorage: () => (state) => {
         if (state) {
           document.documentElement.classList.toggle('dark', state.theme === 'dark');
+        } else {
+          // If no saved theme, use system preference
+          const systemTheme = getSystemTheme();
+          document.documentElement.classList.toggle('dark', systemTheme === 'dark');
         }
       },
     }
