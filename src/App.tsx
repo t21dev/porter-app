@@ -158,21 +158,23 @@ function AppContent() {
           </div>
 
           {/* Scrollable Port List */}
-          <SimpleBar className="flex-1" style={{ maxHeight: '100%' }}>
-            {isLoading ? (
-              <PortScanLoader />
-            ) : (
-              <div className="space-y-2 pb-4">
-                {filteredPorts.map((port) => (
-                  <PortListItem
-                    key={port.port}
-                    port={port}
-                    onKill={handleKillProcess}
-                  />
-                ))}
-              </div>
-            )}
-          </SimpleBar>
+          <div className="flex-1 overflow-hidden">
+            <SimpleBar style={{ height: '100%' }}>
+              {isLoading ? (
+                <PortScanLoader />
+              ) : (
+                <div className="space-y-2 pb-8 pr-2">
+                  {filteredPorts.map((port) => (
+                    <PortListItem
+                      key={port.port}
+                      port={port}
+                      onKill={handleKillProcess}
+                    />
+                  ))}
+                </div>
+              )}
+            </SimpleBar>
+          </div>
         </div>
       </main>
     </div>

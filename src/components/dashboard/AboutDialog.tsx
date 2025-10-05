@@ -13,8 +13,8 @@ export function AboutDialog() {
   return (
     <Dialog>
       <DialogTrigger asChild>
-        <Button variant="ghost" size="icon" className="h-8 w-8">
-          <Info className="h-4 w-4" />
+        <Button variant="ghost" size="icon" className="w-8 h-8">
+          <Info className="w-4 h-4" />
         </Button>
       </DialogTrigger>
       <DialogContent className="sm:max-w-md">
@@ -24,14 +24,14 @@ export function AboutDialog() {
             A sleek, fast, and secure desktop port monitoring application
           </DialogDescription>
         </DialogHeader>
-        <div className="space-y-4 py-4">
+        <div className="py-4 space-y-4">
           <div className="space-y-2">
             <p className="text-sm text-muted-foreground">
               Version <span className="font-medium text-foreground">0.1.0</span>
             </p>
-            <p className="text-sm text-muted-foreground">
+            {/* <p className="text-sm text-muted-foreground">
               Built with Tauri, React, and TypeScript
-            </p>
+            </p> */}
           </div>
 
           <div className="space-y-2">
@@ -50,7 +50,7 @@ export function AboutDialog() {
               href="https://github.com/t21dev/porter-app"
               target="_blank"
               rel="noopener noreferrer"
-              className="inline-flex items-center gap-2 text-sm text-muted-foreground hover:text-emerald-500 transition-colors"
+              className="inline-flex gap-2 items-center text-sm transition-colors text-muted-foreground hover:text-emerald-500"
             >
               <Github className="w-4 h-4" />
               View on GitHub

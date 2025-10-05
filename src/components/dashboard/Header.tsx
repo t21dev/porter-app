@@ -14,9 +14,9 @@ export function Header({ onRefresh, isRefreshing }: HeaderProps) {
 
   return (
     <header className="border-b border-border/40 bg-background">
-      <div className="container flex h-14 items-center justify-between px-6">
+      <div className="container flex justify-between items-center px-6 h-14">
         <div className="flex items-center space-x-3">
-          <Activity className="h-5 w-5 text-blue-500" />
+          <Activity className="w-5 h-5 text-blue-500" />
           <div>
             <div className="text-lg font-bold text-foreground">Porter</div>
             <div className="text-xs text-muted-foreground">Port Monitor</div>
@@ -24,7 +24,7 @@ export function Header({ onRefresh, isRefreshing }: HeaderProps) {
         </div>
 
         <div className="flex items-center space-x-2">
-          <AboutDialog />
+         
 
           <PortSettings />
 
@@ -33,7 +33,7 @@ export function Header({ onRefresh, isRefreshing }: HeaderProps) {
             size="icon"
             onClick={onRefresh}
             disabled={isRefreshing}
-            className="h-8 w-8"
+            className="w-8 h-8"
           >
             <RefreshCw className={`h-4 w-4 ${isRefreshing ? 'animate-spin' : ''}`} />
           </Button>
@@ -42,14 +42,15 @@ export function Header({ onRefresh, isRefreshing }: HeaderProps) {
             variant="ghost"
             size="icon"
             onClick={toggleTheme}
-            className="h-8 w-8"
+            className="w-8 h-8"
           >
             {theme === 'dark' ? (
-              <Sun className="h-4 w-4" />
+              <Sun className="w-4 h-4" />
             ) : (
-              <Moon className="h-4 w-4" />
+              <Moon className="w-4 h-4" />
             )}
           </Button>
+          <AboutDialog />
         </div>
       </div>
     </header>
