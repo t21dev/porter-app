@@ -4,6 +4,8 @@
 
 We're excited to announce the first alpha release of Porter - a sleek, fast, and secure desktop port monitoring application!
 
+![Porter Screenshot](./screenshot.png)
+
 ## 📦 Downloads
 
 ### Windows
