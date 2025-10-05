@@ -15,7 +15,12 @@
       "Bash(npm install:*)",
       "WebSearch",
       "Bash(npx:*)",
-      "Bash(npm uninstall:*)"
+      "Bash(npm uninstall:*)",
+      "Bash(git add:*)",
+      "Bash(git restore:*)",
+      "Bash(git tag:*)",
+      "Bash(git push:*)",
+      "Bash(git commit:*)"
     ],
     "deny": [],
     "ask": []
