@@ -113,7 +113,7 @@ function AppContent() {
 
       <main className="container px-4 py-4 mx-auto max-w-7xl">
         {/* Admin Warning */}
-        {/* {!isAdmin && <AdminWarning />} */}
+        {!isAdmin && <AdminWarning />}
 
         {/* Stats */}
         <div className="grid grid-cols-3 gap-3 mb-4">
