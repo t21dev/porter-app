@@ -8,20 +8,27 @@ import { PortListItem } from './components/dashboard/PortListItem';
 import { StatusFilter } from './components/dashboard/StatusFilter';
 import { Footer } from './components/dashboard/Footer';
 import { PortScanLoader } from './components/dashboard/PortScanLoader';
-import { useCommonPorts, useRefreshPorts } from './hooks/usePorts';
+import { useCommonPorts, useAllPorts, useRefreshPorts } from './hooks/usePorts';
 import { killProcess, isElevated } from './lib/tauri';
+import { Button } from './components/ui/button';
 
 const queryClient = new QueryClient();
 
 function AppContent() {
   const [searchQuery, setSearchQuery] = useState('');
   const [isAdmin, setIsAdmin] = useState(false);
+  const [showAllPorts, setShowAllPorts] = useState(false);
   const [selectedStatuses, setSelectedStatuses] = useState<Set<string>>(
     new Set(['free', 'occupied', 'system'])
   );
 
-  const { data: ports = [], isLoading, isRefetching } = useCommonPorts();
+  const { data: commonPorts = [], isLoading: isLoadingCommon, isRefetching: isRefetchingCommon } = useCommonPorts();
+  const { data: allPorts = [], isLoading: isLoadingAll, isRefetching: isRefetchingAll } = useAllPorts();
   const { refreshPorts } = useRefreshPorts();
+
+  const ports = showAllPorts ? allPorts : commonPorts;
+  const isLoading = showAllPorts ? isLoadingAll : isLoadingCommon;
+  const isRefetching = showAllPorts ? isRefetchingAll : isRefetchingCommon;
 
   const handleStatusToggle = (status: string) => {
     setSelectedStatuses((prev) => {
@@ -115,21 +122,33 @@ function AppContent() {
           <StatsCard count={stats.system} label="System Ports" variant="system" />
         </div>
 
-        {/* Search Bar - Full Width */}
-        <div className="mb-3">
-          <SearchBar value={searchQuery} onChange={setSearchQuery} />
+        {/* Search Bar and Filter */}
+        <div className="mb-3 flex items-center gap-2">
+          <div className="flex-[3]">
+            <SearchBar value={searchQuery} onChange={setSearchQuery} />
+          </div>
+          <div className="flex-1">
+            <StatusFilter
+              selectedStatuses={selectedStatuses}
+              onStatusToggle={handleStatusToggle}
+            />
+          </div>
         </div>
 
-        {/* Port List Header with Filter */}
-        <div className="mb-3 flex items-center justify-between">
+        {/* Port List Header */}
+        <div className="mb-3 flex items-center gap-2">
           <h2 className="text-sm font-semibold text-foreground">
-            Common Developer Ports
+            {showAllPorts ? 'All Running Ports' : 'Common Developer Ports'}
             {searchQuery && ` (${filteredPorts.length} results)`}
           </h2>
-          <StatusFilter
-            selectedStatuses={selectedStatuses}
-            onStatusToggle={handleStatusToggle}
-          />
+          <Button
+            variant="outline"
+            size="xs"
+            onClick={() => setShowAllPorts(!showAllPorts)}
+            className="text-[10px] h-6 px-2"
+          >
+            {showAllPorts ? 'Show Common' : 'Show All'}
+          </Button>
         </div>
 
         {isLoading ? (

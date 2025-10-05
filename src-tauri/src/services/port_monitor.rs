@@ -66,17 +66,25 @@ impl PortMonitor {
 
     /// Scan common developer ports
     pub fn scan_common_ports(&mut self) -> Result<Vec<Port>> {
-        let common_ports = vec![3000, 3001, 4200, 5000, 5173, 8000, 8080, 9000];
+        let common_ports = vec![
+            3000, 3001, 4200, 5000, 5173, 8000, 8080, 8888, 9000, 9090,
+            80, 443, 5432, 3306, 6379, 27017, 5672, 15672, 11211, 5984
+        ];
+        self.scan_ports(&common_ports)
+    }
+
+    /// Scan specific ports
+    pub fn scan_ports(&mut self, ports_to_scan: &[u16]) -> Result<Vec<Port>> {
         let all_ports = self.get_active_ports()?;
 
         let mut result = Vec::new();
-        for port_num in common_ports {
-            if let Some(port) = all_ports.iter().find(|p| p.port == port_num) {
+        for port_num in ports_to_scan {
+            if let Some(port) = all_ports.iter().find(|p| p.port == *port_num) {
                 result.push(port.clone());
             } else {
                 // Port is free
                 result.push(Port {
-                    port: port_num,
+                    port: *port_num,
                     status: PortStatus::Free,
                     protocol: Protocol::TCP,
                     process: None,

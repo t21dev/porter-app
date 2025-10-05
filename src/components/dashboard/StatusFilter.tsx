@@ -22,8 +22,8 @@ export function StatusFilter({ selectedStatuses, onStatusToggle }: StatusFilterP
   return (
     <DropdownMenu>
       <DropdownMenuTrigger asChild>
-        <Button variant="outline" size="sm" className="gap-2">
-          <Filter className="h-4 w-4" />
+        <Button variant="outline" size="sm" className="gap-2 text-nowrap">
+          <Filter className="w-4 h-4" />
           Filter Status
           {selectedStatuses.size < 3 && (
             <span className="ml-1 rounded-full bg-primary px-2 py-0.5 text-xs text-primary-foreground">

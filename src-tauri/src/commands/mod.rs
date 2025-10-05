@@ -24,9 +24,13 @@ pub async fn get_active_ports(state: State<'_, AppState>) -> Result<Vec<Port>, S
 }
 
 #[tauri::command]
-pub async fn get_common_ports(state: State<'_, AppState>) -> Result<Vec<Port>, String> {
+pub async fn get_common_ports(state: State<'_, AppState>, ports: Option<Vec<u16>>) -> Result<Vec<Port>, String> {
     let mut monitor = state.port_monitor.lock().unwrap();
-    monitor.scan_common_ports().map_err(|e| e.to_string())
+    if let Some(custom_ports) = ports {
+        monitor.scan_ports(&custom_ports).map_err(|e| e.to_string())
+    } else {
+        monitor.scan_common_ports().map_err(|e| e.to_string())
+    }
 }
 
 #[tauri::command]

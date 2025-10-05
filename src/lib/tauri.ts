@@ -6,8 +6,8 @@ export async function getActivePorts(): Promise<Port[]> {
   return await invoke<Port[]>('get_active_ports');
 }
 
-export async function getCommonPorts(): Promise<Port[]> {
-  return await invoke<Port[]>('get_common_ports');
+export async function getCommonPorts(ports?: number[]): Promise<Port[]> {
+  return await invoke<Port[]>('get_common_ports', { ports });
 }
 
 export async function getPortDetails(port: number): Promise<Port | null> {

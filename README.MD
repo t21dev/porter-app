@@ -2,9 +2,11 @@
 
 <div align="center">
 
+<img src="./icon.png" alt="Porter Icon" width="128" height="128" />
+
 ![Porter](https://img.shields.io/badge/Porter-Port%20Monitor-blue)
 ![Tauri](https://img.shields.io/badge/Tauri-2.0-24c8db)
-![React](https://img.shields.io/badge/React-18-61dafb)
+![React](https://img.shields.io/badge/React-19-61dafb)
 ![TypeScript](https://img.shields.io/badge/TypeScript-5-3178c6)
 
 A sleek, fast, and secure desktop port monitoring application built with Tauri, React, and TypeScript.
@@ -15,9 +17,11 @@ An Opensource Project of [t21.dev](https://t21.dev)
 
 ## 🚀 Features
 
-- **Real-time Port Monitoring** - Monitor common developer ports (3000-9000) in real-time
+- **Real-time Port Monitoring** - Monitor common developer ports and all system ports in real-time
+- **Customizable Port List** - Configure which ports to scan at startup via settings
 - **Process Management** - Kill processes occupying ports (requires admin privileges)
 - **Smart Filtering** - Filter ports by status (Free, Occupied, System) and search by port number or process name
+- **Show All Ports** - Toggle between common ports and all running ports
 - **Dark/Light Mode** - Beautiful dark and light themes with seamless switching
 - **Admin Privilege Detection** - Automatically detects and warns when running without admin rights
 - **Cross-Platform** - Works on Windows, macOS, and Linux
@@ -30,12 +34,13 @@ An Opensource Project of [t21.dev](https://t21.dev)
 ## 🛠️ Tech Stack
 
 ### Frontend
-- **React 18** - UI framework
+- **React 19** - UI framework
 - **TypeScript** - Type safety
-- **Tailwind CSS** - Styling
+- **Tailwind CSS v3** - Styling
 - **shadcn/ui** - UI components
 - **TanStack Query** - Data fetching and caching
 - **Zustand** - State management
+- **Lucide React** - Icons
 
 ### Backend
 - **Rust** - System-level operations
@@ -100,11 +105,14 @@ The built application will be available in `src-tauri/target/release/bundle/`
    - Click "Kill Process" on any occupied port to terminate the process
    - Requires administrator privileges
 
-### Keyboard Shortcuts
+6. **Customize Ports**
+   - Click the settings icon in the header
+   - Add or remove ports to scan at startup
+   - Changes are saved automatically
 
-- `Ctrl/Cmd + R` - Refresh port list
-- `Ctrl/Cmd + F` - Focus search bar
-- `Ctrl/Cmd + T` - Toggle theme
+7. **Toggle Views**
+   - Click "Show All" to view all running ports on the system
+   - Click "Show Common" to return to your configured port list
 
 ## 🔧 Configuration
 
@@ -117,8 +125,13 @@ Porter monitors the following common developer ports by default:
 - **8000** - Django, HTTP servers
 - **8080** - Alternative HTTP
 - **9000** - PHP-FPM
+- **80, 443** - HTTP/HTTPS
+- **5432** - PostgreSQL
+- **3306** - MySQL
+- **6379** - Redis
+- **27017** - MongoDB
 
-You can customize the port list in `src-tauri/src/services/port_monitor.rs`
+You can customize the port list via the settings icon in the app header. Your custom configuration is saved in browser localStorage.
 
 ## 🏗️ Project Structure
 
