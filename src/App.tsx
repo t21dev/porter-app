@@ -78,7 +78,9 @@ function AppContent() {
         pinned.push({
           port: portNum,
           status: 'free',
-          process: null
+          protocol: 'TCP',
+          ip_address: '0.0.0.0',
+          process: undefined
         });
       }
     });
