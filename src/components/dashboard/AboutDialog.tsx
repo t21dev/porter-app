@@ -8,6 +8,7 @@ import {
   DialogTitle,
   DialogTrigger,
 } from '@/components/ui/dialog';
+import { aboutConfig } from '@/config/about';
 
 export function AboutDialog() {
   return (
@@ -19,47 +20,49 @@ export function AboutDialog() {
       </DialogTrigger>
       <DialogContent className="sm:max-w-md">
         <DialogHeader>
-          <DialogTitle>About Porter</DialogTitle>
+          <DialogTitle>About {aboutConfig.app.name}</DialogTitle>
           <DialogDescription>
-            A sleek, fast, and secure desktop port monitoring application
+            {aboutConfig.app.description}
           </DialogDescription>
         </DialogHeader>
         <div className="py-4 space-y-4">
           <div className="space-y-2">
             <p className="text-sm text-muted-foreground">
-              Version <span className="font-medium text-foreground">0.1.0</span>
+              Version <span className="font-medium text-foreground">{aboutConfig.app.version}</span>
             </p>
-            {/* <p className="text-sm text-muted-foreground">
-              Built with Tauri, React, and TypeScript
-            </p> */}
+            {aboutConfig.showTechStack && (
+              <p className="text-sm text-muted-foreground">
+                {aboutConfig.techStack}
+              </p>
+            )}
           </div>
 
           <div className="space-y-2">
             <p className="text-sm text-muted-foreground">
               An Opensource Project of{' '}
               <a
-                href="https://t21.dev"
+                href={aboutConfig.organization.url}
                 target="_blank"
                 rel="noopener noreferrer"
                 className="font-medium text-emerald-500 hover:underline"
               >
-                t21.dev
+                {aboutConfig.organization.name}
               </a>
             </p>
             <a
-              href="https://github.com/t21dev/porter-app"
+              href={aboutConfig.repository.url}
               target="_blank"
               rel="noopener noreferrer"
               className="inline-flex gap-2 items-center text-sm transition-colors text-muted-foreground hover:text-emerald-500"
             >
               <Github className="w-4 h-4" />
-              View on GitHub
+              {aboutConfig.repository.label}
             </a>
           </div>
 
           <div className="pt-2 border-t">
             <p className="text-xs text-muted-foreground">
-              © 2025 Porter. Licensed under MIT License.
+              © {aboutConfig.license.year} {aboutConfig.license.holder}. Licensed under {aboutConfig.license.type}.
             </p>
           </div>
         </div>
