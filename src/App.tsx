@@ -9,10 +9,12 @@ import { StatsCard } from './components/dashboard/StatsCard';
 import { PortListItem } from './components/dashboard/PortListItem';
 import { StatusFilter } from './components/dashboard/StatusFilter';
 import { PortScanLoader } from './components/dashboard/PortScanLoader';
-import { usePinnedPorts, useAllPorts, useRefreshPorts } from './hooks/usePorts';
+import { useAllPorts, useRefreshPorts } from './hooks/usePorts';
 import { killProcess, isElevated } from './lib/tauri';
 import { Button } from './components/ui/button';
 import { Port } from './types/api';
+import { Toaster } from './components/ui/toaster';
+import { useToast } from './hooks/use-toast';
 
 const queryClient = new QueryClient();
 
@@ -23,8 +25,8 @@ function AppContent() {
   const [selectedStatuses, setSelectedStatuses] = useState<Set<string>>(
     new Set(['free', 'occupied', 'system'])
   );
+  const { toast } = useToast();
 
-  const { data: pinnedPorts = [], isLoading: isLoadingPinned, isRefetching: isRefetchingPinned } = usePinnedPorts();
   const { data: allPorts = [], isLoading: isLoadingAll, isRefetching: isRefetchingAll } = useAllPorts();
   const { refreshPorts } = useRefreshPorts();
 
@@ -60,6 +62,8 @@ function AppContent() {
   }, []);
 
   // Separate pinned and other ports from all ports
+  // Note: Only shows ports that are actively detected by the system scan
+  // If a pinned port isn't running or accessible, it won't appear in the list
   const { pinnedPortsList, otherPortsList } = useMemo(() => {
     const pinned: Port[] = [];
     const other: Port[] = [];
@@ -75,8 +79,8 @@ function AppContent() {
     return { pinnedPortsList: pinned, otherPortsList: other };
   }, [allPorts, pinnedPortNumbers]);
 
-  const isLoading = isLoadingPinned || isLoadingAll;
-  const isRefetching = isRefetchingPinned || isRefetchingAll;
+  const isLoading = isLoadingAll;
+  const isRefetching = isRefetchingAll;
 
   const handleStatusToggle = (status: string) => {
     setSelectedStatuses((prev) => {
@@ -130,24 +134,29 @@ function AppContent() {
 
   const handleKillProcess = async (pid: number) => {
     if (!isAdmin) {
-      alert(
-        'Cannot kill process: Administrator privileges required.\n\n' +
-        'Please restart Porter as Administrator:\n' +
-        '1. Close Porter\n' +
-        '2. Right-click on Porter\n' +
-        '3. Select "Run as administrator"'
-      );
+      toast({
+        variant: "destructive",
+        title: "Administrator privileges required",
+        description: "Please restart Porter as Administrator to kill processes.",
+      });
       return;
     }
 
     try {
       await killProcess(pid);
       refreshPorts();
-      alert('Process terminated successfully');
+      toast({
+        title: "Process terminated",
+        description: "The process was successfully terminated.",
+      });
     } catch (error) {
       console.error('Failed to kill process:', error);
       const errorMessage = error instanceof Error ? error.message : String(error);
-      alert(`Failed to kill process:\n\n${errorMessage}`);
+      toast({
+        variant: "destructive",
+        title: "Failed to kill process",
+        description: errorMessage,
+      });
     }
   };
 
@@ -161,6 +170,7 @@ function AppContent() {
 
   return (
     <div className="flex overflow-hidden flex-col h-screen bg-background">
+      <Toaster />
       {/* Sticky Header */}
       <Header onRefresh={refreshPorts} isRefreshing={isRefetching} />
 

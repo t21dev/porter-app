@@ -6,6 +6,7 @@ import {
   DropdownMenuContent,
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu';
+import { useToast } from '@/hooks/use-toast';
 
 const DEFAULT_PINNED_PORTS = [
   3000, 5173, 8080, 5432, 27017
@@ -17,6 +18,7 @@ export function PortSettings() {
   const [pinnedPorts, setPinnedPorts] = useState<number[]>(DEFAULT_PINNED_PORTS);
   const [newPort, setNewPort] = useState('');
   const [isOpen, setIsOpen] = useState(false);
+  const { toast } = useToast();
 
   useEffect(() => {
     // Migrate from old key if needed
@@ -47,11 +49,19 @@ export function PortSettings() {
     const port = parseInt(newPort);
     if (!isNaN(port) && port > 0 && port < 65536 && !pinnedPorts.includes(port)) {
       if (pinnedPorts.length >= MAX_PINNED_PORTS) {
-        alert(`You can only pin up to ${MAX_PINNED_PORTS} ports.`);
+        toast({
+          variant: "destructive",
+          title: "Maximum ports reached",
+          description: `You can only pin up to ${MAX_PINNED_PORTS} ports.`,
+        });
         return;
       }
       savePinnedPorts([...pinnedPorts, port].sort((a, b) => a - b));
       setNewPort('');
+      toast({
+        title: "Port pinned",
+        description: `Port ${port} has been added to your pinned ports.`,
+      });
     }
   };
 
