@@ -2,17 +2,24 @@ import { useQuery, useQueryClient } from '@tanstack/react-query';
 import { useState, useEffect } from 'react';
 import { getCommonPorts, getActivePorts } from '@/lib/tauri';
 
-export function useCommonPorts(refreshInterval: number = 2000) {
-  const [customPorts, setCustomPorts] = useState<number[] | undefined>(undefined);
+export function usePinnedPorts(refreshInterval: number = 2000) {
+  const [pinnedPorts, setPinnedPorts] = useState<number[] | undefined>(undefined);
 
   useEffect(() => {
     const loadPorts = () => {
-      const saved = localStorage.getItem('porter-custom-ports');
+      // Migrate from old key if needed
+      const oldSaved = localStorage.getItem('porter-custom-ports');
+      if (oldSaved && !localStorage.getItem('porter-pinned-ports')) {
+        localStorage.setItem('porter-pinned-ports', oldSaved);
+        localStorage.removeItem('porter-custom-ports');
+      }
+
+      const saved = localStorage.getItem('porter-pinned-ports');
       if (saved) {
         try {
-          setCustomPorts(JSON.parse(saved));
+          setPinnedPorts(JSON.parse(saved));
         } catch (e) {
-          console.error('Failed to load custom ports:', e);
+          console.error('Failed to load pinned ports:', e);
         }
       }
     };
@@ -20,18 +27,18 @@ export function useCommonPorts(refreshInterval: number = 2000) {
     loadPorts();
 
     const handlePortsChange = (e: CustomEvent) => {
-      setCustomPorts(e.detail);
+      setPinnedPorts(e.detail);
     };
 
-    window.addEventListener('ports-config-changed', handlePortsChange as EventListener);
+    window.addEventListener('pinned-ports-changed', handlePortsChange as EventListener);
     return () => {
-      window.removeEventListener('ports-config-changed', handlePortsChange as EventListener);
+      window.removeEventListener('pinned-ports-changed', handlePortsChange as EventListener);
     };
   }, []);
 
   return useQuery({
-    queryKey: ['ports', 'common', customPorts],
-    queryFn: () => getCommonPorts(customPorts),
+    queryKey: ['ports', 'pinned', pinnedPorts],
+    queryFn: () => getCommonPorts(pinnedPorts),
     refetchInterval: refreshInterval,
     refetchIntervalInBackground: true,
   });

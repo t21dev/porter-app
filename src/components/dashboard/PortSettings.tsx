@@ -1,54 +1,76 @@
 import { useState, useEffect } from 'react';
-import { Settings, X, Plus } from 'lucide-react';
+import { Settings, X, Plus, Pin } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import {
   DropdownMenu,
   DropdownMenuContent,
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu';
+import { useToast } from '@/hooks/use-toast';
 
-const DEFAULT_PORTS = [
-  3000, 3001, 4200, 5000, 5173, 8000, 8080, 8888, 9000, 9090,
-  80, 443, 5432, 3306, 6379, 27017, 5672, 15672, 11211, 5984
+const DEFAULT_PINNED_PORTS = [
+  3000, 5173, 8080, 5432, 27017
 ];
 
+const MAX_PINNED_PORTS = 10;
+
 export function PortSettings() {
-  const [ports, setPorts] = useState<number[]>(DEFAULT_PORTS);
+  const [pinnedPorts, setPinnedPorts] = useState<number[]>(DEFAULT_PINNED_PORTS);
   const [newPort, setNewPort] = useState('');
   const [isOpen, setIsOpen] = useState(false);
+  const { toast } = useToast();
 
   useEffect(() => {
-    const saved = localStorage.getItem('porter-custom-ports');
+    // Migrate from old key if needed
+    const oldSaved = localStorage.getItem('porter-custom-ports');
+    if (oldSaved && !localStorage.getItem('porter-pinned-ports')) {
+      localStorage.setItem('porter-pinned-ports', oldSaved);
+      localStorage.removeItem('porter-custom-ports');
+    }
+
+    const saved = localStorage.getItem('porter-pinned-ports');
     if (saved) {
       try {
-        setPorts(JSON.parse(saved));
+        setPinnedPorts(JSON.parse(saved));
       } catch (e) {
-        console.error('Failed to load custom ports:', e);
+        console.error('Failed to load pinned ports:', e);
       }
     }
   }, []);
 
-  const savePorts = (newPorts: number[]) => {
-    setPorts(newPorts);
-    localStorage.setItem('porter-custom-ports', JSON.stringify(newPorts));
+  const savePinnedPorts = (newPorts: number[]) => {
+    setPinnedPorts(newPorts);
+    localStorage.setItem('porter-pinned-ports', JSON.stringify(newPorts));
     // Trigger a custom event to notify the app
-    window.dispatchEvent(new CustomEvent('ports-config-changed', { detail: newPorts }));
+    window.dispatchEvent(new CustomEvent('pinned-ports-changed', { detail: newPorts }));
   };
 
   const addPort = () => {
     const port = parseInt(newPort);
-    if (!isNaN(port) && port > 0 && port < 65536 && !ports.includes(port)) {
-      savePorts([...ports, port].sort((a, b) => a - b));
+    if (!isNaN(port) && port > 0 && port < 65536 && !pinnedPorts.includes(port)) {
+      if (pinnedPorts.length >= MAX_PINNED_PORTS) {
+        toast({
+          variant: "destructive",
+          title: "Maximum ports reached",
+          description: `You can only pin up to ${MAX_PINNED_PORTS} ports.`,
+        });
+        return;
+      }
+      savePinnedPorts([...pinnedPorts, port].sort((a, b) => a - b));
       setNewPort('');
+      toast({
+        title: "Port pinned",
+        description: `Port ${port} has been added to your pinned ports.`,
+      });
     }
   };
 
   const removePort = (port: number) => {
-    savePorts(ports.filter(p => p !== port));
+    savePinnedPorts(pinnedPorts.filter(p => p !== port));
   };
 
   const resetToDefaults = () => {
-    savePorts(DEFAULT_PORTS);
+    savePinnedPorts(DEFAULT_PINNED_PORTS);
   };
 
   return (
@@ -61,7 +83,10 @@ export function PortSettings() {
       <DropdownMenuContent align="end" className="w-80 p-4">
         <div className="space-y-3">
           <div className="flex items-center justify-between">
-            <h3 className="text-sm font-semibold">Port Configuration</h3>
+            <div className="flex items-center gap-2">
+              <Pin className="h-4 w-4" />
+              <h3 className="text-sm font-semibold">Pinned Ports</h3>
+            </div>
             <Button
               variant="outline"
               size="xs"
@@ -73,7 +98,7 @@ export function PortSettings() {
           </div>
 
           <p className="text-xs text-muted-foreground">
-            Customize which ports are scanned at startup
+            Pin your frequently used ports for quick access
           </p>
 
           <div className="flex gap-2">
@@ -98,11 +123,12 @@ export function PortSettings() {
 
           <div className="max-h-60 overflow-y-auto">
             <div className="flex flex-wrap gap-1.5">
-              {ports.map((port) => (
+              {pinnedPorts.map((port) => (
                 <div
                   key={port}
                   className="flex items-center gap-1 px-2 py-0.5 bg-secondary rounded text-xs"
                 >
+                  <Pin className="h-3 w-3" />
                   <span>{port}</span>
                   <button
                     onClick={() => removePort(port)}
@@ -116,7 +142,7 @@ export function PortSettings() {
           </div>
 
           <p className="text-[10px] text-muted-foreground">
-            {ports.length} port{ports.length !== 1 ? 's' : ''} configured
+            {pinnedPorts.length} / {MAX_PINNED_PORTS} port{pinnedPorts.length !== 1 ? 's' : ''} pinned
           </p>
         </div>
       </DropdownMenuContent>
