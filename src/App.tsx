@@ -62,16 +62,33 @@ function AppContent() {
   }, []);
 
   // Separate pinned and other ports from all ports
-  // Note: Only shows ports that are actively detected by the system scan
-  // If a pinned port isn't running or accessible, it won't appear in the list
+  // Create Port objects for all pinned ports, even if not currently running
   const { pinnedPortsList, otherPortsList } = useMemo(() => {
     const pinned: Port[] = [];
     const other: Port[] = [];
+    const allPortsMap = new Map(allPorts.map(p => [p.port, p]));
 
-    allPorts.forEach(port => {
-      if (pinnedPortNumbers.has(port.port)) {
-        pinned.push(port);
+    // Add all pinned ports (create placeholder for non-running ones)
+    pinnedPortNumbers.forEach(portNum => {
+      const existingPort = allPortsMap.get(portNum);
+      if (existingPort) {
+        pinned.push(existingPort);
       } else {
+        // Create a placeholder port object for non-running pinned ports
+        pinned.push({
+          port: portNum,
+          status: 'free',
+          process: null
+        });
+      }
+    });
+
+    // Sort pinned ports by port number
+    pinned.sort((a, b) => a.port - b.port);
+
+    // Add remaining ports to other list
+    allPorts.forEach(port => {
+      if (!pinnedPortNumbers.has(port.port)) {
         other.push(port);
       }
     });
@@ -204,7 +221,7 @@ function AppContent() {
             {/* Port List Header */}
             <div className="flex gap-2 items-center">
               <h2 className="text-sm font-semibold text-foreground">
-                📌 Pinned Ports
+                {showAllPorts ? '🌐 All Ports' : '📌 Pinned Ports'}
                 {searchQuery && ` (${filteredPinnedPorts.length + filteredOtherPorts.length} results)`}
               </h2>
             </div>
