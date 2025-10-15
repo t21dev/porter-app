@@ -1,4 +1,4 @@
-import { Trash2 } from 'lucide-react';
+import { Trash2, Pin } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Port } from '@/types/api';
@@ -18,9 +18,10 @@ import {
 interface PortListItemProps {
   port: Port;
   onKill: (pid: number) => void;
+  isPinned?: boolean;
 }
 
-export function PortListItem({ port, onKill }: PortListItemProps) {
+export function PortListItem({ port, onKill, isPinned = false }: PortListItemProps) {
   const isOccupied = port.status === 'occupied';
   const portType = getPortTypeInfo(port.port);
   const PortIcon = portType.icon;
@@ -48,6 +49,13 @@ export function PortListItem({ port, onKill }: PortListItemProps) {
       className={`rounded-lg border ${statusColors[port.status]} p-3 flex items-center justify-between hover:bg-accent/5 transition-colors`}
     >
       <div className="flex items-center space-x-2.5 flex-1 min-w-0">
+        {/* Pin Indicator */}
+        {isPinned && (
+          <div className="flex-shrink-0 text-amber-500">
+            <Pin className="h-3.5 w-3.5 fill-current" />
+          </div>
+        )}
+
         {/* Port Icon */}
         <div className={`${portType.color} flex-shrink-0`}>
           <PortIcon className="h-4 w-4" />

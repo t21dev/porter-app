@@ -20,7 +20,11 @@
       "Bash(git restore:*)",
       "Bash(git tag:*)",
       "Bash(git push:*)",
-      "Bash(git commit:*)"
+      "Bash(git commit:*)",
+      "Bash(npm run dev)",
+      "Bash(npm run tauri:*)",
+      "Bash(timeout:*)",
+      "mcp__ide__getDiagnostics"
     ],
     "deny": [],
     "ask": []

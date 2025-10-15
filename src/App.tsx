@@ -9,9 +9,10 @@ import { StatsCard } from './components/dashboard/StatsCard';
 import { PortListItem } from './components/dashboard/PortListItem';
 import { StatusFilter } from './components/dashboard/StatusFilter';
 import { PortScanLoader } from './components/dashboard/PortScanLoader';
-import { useCommonPorts, useAllPorts, useRefreshPorts } from './hooks/usePorts';
+import { usePinnedPorts, useAllPorts, useRefreshPorts } from './hooks/usePorts';
 import { killProcess, isElevated } from './lib/tauri';
 import { Button } from './components/ui/button';
+import { Port } from './types/api';
 
 const queryClient = new QueryClient();
 
@@ -23,13 +24,59 @@ function AppContent() {
     new Set(['free', 'occupied', 'system'])
   );
 
-  const { data: commonPorts = [], isLoading: isLoadingCommon, isRefetching: isRefetchingCommon } = useCommonPorts();
+  const { data: pinnedPorts = [], isLoading: isLoadingPinned, isRefetching: isRefetchingPinned } = usePinnedPorts();
   const { data: allPorts = [], isLoading: isLoadingAll, isRefetching: isRefetchingAll } = useAllPorts();
   const { refreshPorts } = useRefreshPorts();
 
-  const ports = showAllPorts ? allPorts : commonPorts;
-  const isLoading = showAllPorts ? isLoadingAll : isLoadingCommon;
-  const isRefetching = showAllPorts ? isRefetchingAll : isRefetchingCommon;
+  // Get pinned port numbers for checking
+  const [pinnedPortNumbers, setPinnedPortNumbers] = useState<Set<number>>(new Set());
+
+  useEffect(() => {
+    // Migrate from old key if needed
+    const oldSaved = localStorage.getItem('porter-custom-ports');
+    if (oldSaved && !localStorage.getItem('porter-pinned-ports')) {
+      localStorage.setItem('porter-pinned-ports', oldSaved);
+      localStorage.removeItem('porter-custom-ports');
+    }
+
+    const saved = localStorage.getItem('porter-pinned-ports');
+    if (saved) {
+      try {
+        const ports = JSON.parse(saved);
+        setPinnedPortNumbers(new Set(ports));
+      } catch (e) {
+        console.error('Failed to load pinned ports:', e);
+      }
+    }
+
+    const handlePortsChange = (e: CustomEvent) => {
+      setPinnedPortNumbers(new Set(e.detail));
+    };
+
+    window.addEventListener('pinned-ports-changed', handlePortsChange as EventListener);
+    return () => {
+      window.removeEventListener('pinned-ports-changed', handlePortsChange as EventListener);
+    };
+  }, []);
+
+  // Separate pinned and other ports from all ports
+  const { pinnedPortsList, otherPortsList } = useMemo(() => {
+    const pinned: Port[] = [];
+    const other: Port[] = [];
+
+    allPorts.forEach(port => {
+      if (pinnedPortNumbers.has(port.port)) {
+        pinned.push(port);
+      } else {
+        other.push(port);
+      }
+    });
+
+    return { pinnedPortsList: pinned, otherPortsList: other };
+  }, [allPorts, pinnedPortNumbers]);
+
+  const isLoading = isLoadingPinned || isLoadingAll;
+  const isRefetching = isRefetchingPinned || isRefetchingAll;
 
   const handleStatusToggle = (status: string) => {
     setSelectedStatuses((prev) => {
@@ -57,26 +104,29 @@ function AppContent() {
     checkElevation();
   }, []);
 
-  const filteredPorts = useMemo(() => {
-    let filtered = ports;
+  // Filter pinned and other ports separately
+  const { filteredPinnedPorts, filteredOtherPorts } = useMemo(() => {
+    const applyFilters = (ports: Port[]) => {
+      let filtered = ports;
 
-    // Filter by status
-    filtered = filtered.filter((port) => selectedStatuses.has(port.status));
+      // Filter by status
+      filtered = filtered.filter((port) => selectedStatuses.has(port.status));
 
-    // Filter by search query
-    if (searchQuery) {
-      const query = searchQuery.toLowerCase();
-      filtered = filtered.filter((port) => {
-        return (
-          port.port.toString().includes(query) ||
-          port.status.toLowerCase().includes(query) ||
-          port.process?.name.toLowerCase().includes(query)
-        );
-      });
-    }
+      // Filter by search query
+      if (searchQuery) {
+        filtered = filtered.filter((port) => {
+          return port.port.toString().includes(searchQuery);
+        });
+      }
 
-    return filtered;
-  }, [ports, searchQuery, selectedStatuses]);
+      return filtered;
+    };
+
+    return {
+      filteredPinnedPorts: applyFilters(pinnedPortsList),
+      filteredOtherPorts: applyFilters(otherPortsList)
+    };
+  }, [pinnedPortsList, otherPortsList, searchQuery, selectedStatuses]);
 
   const handleKillProcess = async (pid: number) => {
     if (!isAdmin) {
@@ -102,21 +152,22 @@ function AppContent() {
   };
 
   const stats = useMemo(() => {
-    const free = ports.filter(p => p.status === 'free').length;
-    const occupied = ports.filter(p => p.status === 'occupied').length;
-    const system = ports.filter(p => p.status === 'system').length;
+    const allDisplayedPorts = [...pinnedPortsList, ...otherPortsList];
+    const free = allDisplayedPorts.filter(p => p.status === 'free').length;
+    const occupied = allDisplayedPorts.filter(p => p.status === 'occupied').length;
+    const system = allDisplayedPorts.filter(p => p.status === 'system').length;
     return { free, occupied, system };
-  }, [ports]);
+  }, [pinnedPortsList, otherPortsList]);
 
   return (
-    <div className="h-screen bg-background flex flex-col overflow-hidden">
+    <div className="flex overflow-hidden flex-col h-screen bg-background">
       {/* Sticky Header */}
       <Header onRefresh={refreshPorts} isRefreshing={isRefetching} />
 
-      <main className="flex-1 overflow-hidden flex flex-col">
-        <div className="container px-4 mx-auto max-w-7xl flex flex-col h-full">
+      <main className="flex overflow-hidden flex-col flex-1">
+        <div className="container flex flex-col px-4 mx-auto max-w-7xl h-full">
           {/* Fixed Top Section */}
-          <div className="py-4 space-y-4 flex-shrink-0">
+          <div className="flex-shrink-0 py-4 space-y-4">
             {/* Admin Warning */}
             {!isAdmin && <AdminWarning />}
 
@@ -143,34 +194,69 @@ function AppContent() {
             {/* Port List Header */}
             <div className="flex gap-2 items-center">
               <h2 className="text-sm font-semibold text-foreground">
-                {showAllPorts ? 'All Running Ports' : 'Common Developer Ports'}
-                {searchQuery && ` (${filteredPorts.length} results)`}
+                📌 Pinned Ports
+                {searchQuery && ` (${filteredPinnedPorts.length + filteredOtherPorts.length} results)`}
               </h2>
-              <Button
-                variant="outline"
-                size="xs"
-                onClick={() => setShowAllPorts(!showAllPorts)}
-                className="text-[10px] h-6 px-2"
-              >
-                {showAllPorts ? 'Show Common' : 'Show All'}
-              </Button>
             </div>
           </div>
 
           {/* Scrollable Port List */}
-          <div className="flex-1 overflow-hidden">
+          <div className="overflow-hidden flex-1">
             <SimpleBar style={{ height: '100%' }}>
               {isLoading ? (
                 <PortScanLoader />
               ) : (
-                <div className="space-y-2 pb-8 pr-2">
-                  {filteredPorts.map((port) => (
-                    <PortListItem
-                      key={port.port}
-                      port={port}
-                      onKill={handleKillProcess}
-                    />
-                  ))}
+                <div className="pr-2 pb-8 space-y-2">
+                  {/* When searching, show all results together */}
+                  {searchQuery ? (
+                    <>
+                      {[...filteredPinnedPorts, ...filteredOtherPorts].map((port) => (
+                        <PortListItem
+                          key={port.port}
+                          port={port}
+                          onKill={handleKillProcess}
+                          isPinned={pinnedPortNumbers.has(port.port)}
+                        />
+                      ))}
+                    </>
+                  ) : (
+                    <>
+                      {/* Pinned Ports Section */}
+                      {filteredPinnedPorts.map((port) => (
+                        <PortListItem
+                          key={port.port}
+                          port={port}
+                          onKill={handleKillProcess}
+                          isPinned={true}
+                        />
+                      ))}
+
+                      {/* Divider and Show Other Ports Button */}
+                      {!searchQuery && filteredOtherPorts.length > 0 && (
+                        <div className="py-3">
+                          <div className="mb-3 border-t border-border"></div>
+                          <Button
+                            variant="outline"
+                            size="sm"
+                            onClick={() => setShowAllPorts(!showAllPorts)}
+                            className="w-full text-xs"
+                          >
+                            {showAllPorts ? 'Hide Other Ports' : `Show Other Ports (${filteredOtherPorts.length})`}
+                          </Button>
+                        </div>
+                      )}
+
+                      {/* Other Ports Section (shown when button clicked) */}
+                      {showAllPorts && filteredOtherPorts.map((port) => (
+                        <PortListItem
+                          key={port.port}
+                          port={port}
+                          onKill={handleKillProcess}
+                          isPinned={false}
+                        />
+                      ))}
+                    </>
+                  )}
                 </div>
               )}
             </SimpleBar>
