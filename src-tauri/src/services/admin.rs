@@ -61,7 +61,31 @@ pub fn request_elevation() -> Result<()> {
         std::process::exit(0);
     }
 
-    #[cfg(not(target_os = "windows"))]
+    #[cfg(target_os = "macos")]
+    {
+        // On macOS, we don't need to restart the app.
+        // Elevation is requested per-operation when killing processes.
+        // This is handled in process_manager.rs using osascript
+        anyhow::bail!(
+            "On macOS, you don't need to restart the app. \
+            When you try to kill a process that requires elevated privileges, \
+            you'll be prompted for your password automatically."
+        );
+    }
+
+    #[cfg(target_os = "linux")]
+    {
+        // On Linux, we don't need to restart the app.
+        // Elevation is requested per-operation when killing processes.
+        // This is handled in process_manager.rs using pkexec
+        anyhow::bail!(
+            "On Linux, you don't need to restart the app. \
+            When you try to kill a process that requires elevated privileges, \
+            you'll be prompted for your password automatically (requires PolicyKit/pkexec)."
+        );
+    }
+
+    #[cfg(not(any(target_os = "windows", target_os = "macos", target_os = "linux")))]
     {
         anyhow::bail!("Please restart Porter with sudo/root privileges to kill system processes.");
     }
