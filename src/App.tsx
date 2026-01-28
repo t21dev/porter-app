@@ -152,15 +152,7 @@ function AppContent() {
   }, [pinnedPortsList, otherPortsList, searchQuery, selectedStatuses]);
 
   const handleKillProcess = async (pid: number) => {
-    if (!isAdmin) {
-      toast({
-        variant: "destructive",
-        title: "Administrator privileges required",
-        description: "Please restart Porter as Administrator to kill processes.",
-      });
-      return;
-    }
-
+    // Always try to kill - on macOS/Linux the backend will prompt for elevation if needed
     try {
       await killProcess(pid);
       refreshPorts();
