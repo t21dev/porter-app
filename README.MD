@@ -54,12 +54,36 @@ A sleek, fast, and secure desktop port monitoring application built with Tauri, 
 
 ## 📦 Installation
 
-### Prerequisites
+### Download Pre-built Release
+
+Download the latest release for your platform from the [Releases page](https://github.com/t21dev/porter-app/releases).
+
+| Platform | File |
+|----------|------|
+| Windows | `Porter_x.x.x_x64-setup.exe` or `.msi` |
+| macOS | `Porter_x.x.x_aarch64.dmg` (Apple Silicon) or `Porter_x.x.x_x64.dmg` (Intel) |
+| Linux | `.deb` or `.AppImage` |
+
+#### macOS Installation Note
+
+macOS may show an error saying **"Porter is damaged and can't be opened"**. This happens because the app is not notarized with Apple (requires a paid developer account).
+
+**To fix this**, open Terminal and run:
+```bash
+xattr -cr /Applications/Porter.app
+```
+Then open the app normally. Alternatively, right-click the app and select "Open" instead of double-clicking.
+
+---
+
+### Building from Source
+
+#### Prerequisites
 - Node.js 18+
 - Rust 1.70+
 - npm or yarn
 
-### Development Setup
+#### Development Setup
 
 1. Clone the repository
 ```bash
