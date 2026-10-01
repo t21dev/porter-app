@@ -14,6 +14,7 @@ import { PorterMark } from '@/components/TitleBar';
 import { useUpdateCheck } from '@/hooks/useUpdateCheck';
 import { UpdateDialog } from './UpdateNotice';
 import { cn } from '@/lib/utils';
+import { useToast } from '@/hooks/use-toast';
 
 export function AboutDialog() {
   return (
@@ -78,8 +79,33 @@ export function AboutDialog() {
 }
 
 function UpdateRow() {
-  const { data, isFetching, isError, refetch } = useUpdateCheck();
+  const { data, isFetching: isBackgroundFetching, isError, refetch } = useUpdateCheck();
   const [notesOpen, setNotesOpen] = useState(false);
+  const [isChecking, setIsChecking] = useState(false);
+  const { toast } = useToast();
+  const isFetching = isBackgroundFetching || isChecking;
+
+  const handleCheck = async () => {
+    setIsChecking(true);
+    // Keep the spinner visible long enough to read as a real check.
+    const [result] = await Promise.all([refetch(), new Promise((r) => setTimeout(r, 700))]);
+    setIsChecking(false);
+
+    if (result.isError || !result.data) {
+      toast({
+        variant: 'destructive',
+        title: 'Could not check for updates',
+        description: 'GitHub could not be reached. Check your connection and try again.',
+      });
+    } else if (result.data.available) {
+      setNotesOpen(true);
+    } else {
+      toast({
+        title: "You're up to date",
+        description: `Porter ${result.data.current} is the latest version.`,
+      });
+    }
+  };
 
   let status: React.ReactNode;
   if (isFetching) {
@@ -119,11 +145,14 @@ function UpdateRow() {
       ) : (
         <button
           type="button"
-          onClick={() => refetch()}
+          onClick={handleCheck}
           disabled={isFetching}
           className="inline-flex h-7 shrink-0 items-center gap-1.5 rounded-md px-2.5 text-[12px] font-medium text-muted-foreground transition-colors duration-150 hover:bg-accent hover:text-foreground disabled:opacity-50"
         >
-          <RefreshCw className={cn('h-3.5 w-3.5', isFetching && 'animate-spin')} />
+          <RefreshCw
+            className={cn('h-3.5 w-3.5', isFetching && 'animate-spin')}
+            style={{ animationDuration: '800ms' }}
+          />
           Check now
         </button>
       )}

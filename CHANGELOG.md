@@ -7,6 +7,9 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Changed
+- "Check now" in About spins while checking, then shows an up-to-date toast, an error toast, or opens the update dialog when a new version exists
+
 ## [0.2.1] - 2026-10-01
 
 ### Added
