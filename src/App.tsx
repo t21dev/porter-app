@@ -17,6 +17,7 @@ import { cn } from './lib/utils';
 import { Port } from './types/api';
 import { Toaster } from './components/ui/toaster';
 import { useToast } from './hooks/use-toast';
+import { installScaleShortcuts } from './store/uiScaleStore';
 
 const queryClient = new QueryClient();
 
@@ -119,6 +120,8 @@ function AppContent() {
       return newSet;
     });
   };
+
+  useEffect(() => installScaleShortcuts(), []);
 
   // Check for admin privileges on startup
   useEffect(() => {

@@ -9,6 +9,8 @@ import {
 } from '@/components/ui/dropdown-menu';
 import { useToast } from '@/hooks/use-toast';
 import { cn } from '@/lib/utils';
+import { isMac } from '@/lib/platform';
+import { UI_SCALES, useUiScaleStore } from '@/store/uiScaleStore';
 
 const DEFAULT_PINNED_PORTS = [
   3000, 5173, 8080, 5432, 27017
@@ -76,6 +78,8 @@ export function PortSettings() {
   };
 
   const full = pinnedPorts.length >= MAX_PINNED_PORTS;
+  const { scale, setScale } = useUiScaleStore();
+  const activeScale = UI_SCALES.find((s) => s.value === scale) ?? UI_SCALES[1];
 
   return (
     <DropdownMenu open={isOpen} onOpenChange={setIsOpen}>
@@ -83,14 +87,60 @@ export function PortSettings() {
         <Button
           variant="ghost"
           size="icon"
-          aria-label="Pinned port settings"
-          title="Pinned ports"
+          aria-label="Settings"
+          title="Settings"
           className={cn(isOpen && 'bg-accent text-foreground')}
         >
           <Settings2 className="h-[15px] w-[15px]" />
         </Button>
       </DropdownMenuTrigger>
       <DropdownMenuContent align="end" sideOffset={8} className="w-80 p-0">
+        <div className="px-4 pb-3.5 pt-3.5">
+          <div className="flex items-baseline justify-between">
+            <h3 className="text-[13px] font-semibold text-foreground">Interface size</h3>
+            <span className="text-[11.5px] text-muted-foreground">
+              {activeScale.label}{' '}
+              <span className="font-mono text-subtle tabular">{Math.round(activeScale.value * 100)}%</span>
+            </span>
+          </div>
+          <div
+            role="radiogroup"
+            aria-label="Interface size"
+            className="mt-2.5 grid grid-cols-4 gap-0.5 rounded-lg border border-border bg-background p-[3px]"
+          >
+            {UI_SCALES.map((option, i) => {
+              const active = option.value === scale;
+              return (
+                <button
+                  key={option.value}
+                  type="button"
+                  role="radio"
+                  aria-checked={active}
+                  aria-label={`${option.label} (${Math.round(option.value * 100)}%)`}
+                  title={`${option.label} · ${Math.round(option.value * 100)}%`}
+                  onClick={() => setScale(option.value)}
+                  className={cn(
+                    'flex h-8 items-center justify-center rounded-md font-medium leading-none',
+                    'transition-[background-color,color,transform] duration-200 ease-out active:scale-[0.95]',
+                    'focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring/50',
+                    active ? 'bg-elevated text-foreground' : 'text-subtle hover:text-muted-foreground'
+                  )}
+                  style={{ fontSize: `${11 + i * 2.5}px` }}
+                >
+                  Aa
+                </button>
+              );
+            })}
+          </div>
+          <p className="mt-2 text-[11px] text-subtle">
+            Scales text, icons and spacing. Shortcut:{' '}
+            <kbd className="font-mono">{isMac ? '⌘' : 'Ctrl'} +</kbd> /{' '}
+            <kbd className="font-mono">{isMac ? '⌘' : 'Ctrl'} −</kbd>
+          </p>
+        </div>
+
+        <div className="border-t border-border" />
+
         <div className="flex items-start justify-between gap-3 px-4 pb-3 pt-3.5">
           <div>
             <h3 className="text-[13px] font-semibold text-foreground">Pinned ports</h3>
