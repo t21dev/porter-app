@@ -22,6 +22,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - About dialog now reads the version from package.json
 
 ### Added
+- Check for updates: Porter looks for a newer GitHub release on launch (and every six hours), shows an "Update" pill in the title bar with release notes and a download link, and has a manual "Check now" in the About dialog
+- New app icon matching the redesigned mark
 - Subtle motion: staggered list entrance, live-update pulse, theme crossfade, collapsible "Other ports"
 - `/` to focus search, `Esc` to clear it
 - Empty states for no pinned ports and no search results

@@ -1,4 +1,5 @@
-import { Info, Github, ArrowUpRight } from 'lucide-react';
+import { useState } from 'react';
+import { Info, Github, ArrowUpRight, RefreshCw, Check, ArrowDown } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import {
   Dialog,
@@ -10,6 +11,9 @@ import {
 } from '@/components/ui/dialog';
 import { aboutConfig } from '@/config/about';
 import { PorterMark } from '@/components/TitleBar';
+import { useUpdateCheck } from '@/hooks/useUpdateCheck';
+import { UpdateDialog } from './UpdateNotice';
+import { cn } from '@/lib/utils';
 
 export function AboutDialog() {
   return (
@@ -33,6 +37,8 @@ export function AboutDialog() {
             <p className="pt-2 text-[12px] text-muted-foreground">{aboutConfig.techStack}</p>
           )}
         </DialogHeader>
+
+        <UpdateRow />
 
         <div className="border-t border-border">
           <a
@@ -68,5 +74,59 @@ export function AboutDialog() {
         </div>
       </DialogContent>
     </Dialog>
+  );
+}
+
+function UpdateRow() {
+  const { data, isFetching, isError, refetch } = useUpdateCheck();
+  const [notesOpen, setNotesOpen] = useState(false);
+
+  let status: React.ReactNode;
+  if (isFetching) {
+    status = 'Checking for updates…';
+  } else if (isError) {
+    status = 'Could not reach GitHub';
+  } else if (data?.available) {
+    status = (
+      <span className="text-free">
+        Version <span className="font-mono tabular">{data.latest}</span> is available
+      </span>
+    );
+  } else if (data) {
+    status = (
+      <span className="inline-flex items-center gap-1.5">
+        <Check className="h-3.5 w-3.5 text-free" />
+        You&apos;re up to date
+      </span>
+    );
+  }
+
+  return (
+    <div className="flex items-center justify-between gap-3 border-t border-border px-6 py-3">
+      <span className="text-[13px] text-muted-foreground">{status}</span>
+      {data?.available && !isFetching ? (
+        <>
+          <button
+            type="button"
+            onClick={() => setNotesOpen(true)}
+            className="inline-flex h-7 shrink-0 items-center gap-1.5 rounded-md bg-primary px-2.5 text-[12px] font-medium text-primary-foreground transition-[background-color,transform] duration-150 ease-out hover:bg-primary/85 active:scale-[0.97]"
+          >
+            <ArrowDown className="h-3.5 w-3.5" />
+            View update
+          </button>
+          <UpdateDialog info={data} open={notesOpen} onOpenChange={setNotesOpen} />
+        </>
+      ) : (
+        <button
+          type="button"
+          onClick={() => refetch()}
+          disabled={isFetching}
+          className="inline-flex h-7 shrink-0 items-center gap-1.5 rounded-md px-2.5 text-[12px] font-medium text-muted-foreground transition-colors duration-150 hover:bg-accent hover:text-foreground disabled:opacity-50"
+        >
+          <RefreshCw className={cn('h-3.5 w-3.5', isFetching && 'animate-spin')} />
+          Check now
+        </button>
+      )}
+    </div>
   );
 }

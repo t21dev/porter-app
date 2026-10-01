@@ -3,6 +3,7 @@ import { Button } from '@/components/ui/button';
 import { useThemeStore } from '@/store/themeStore';
 import { PortSettings } from './PortSettings';
 import { AboutDialog } from './AboutDialog';
+import { UpdateNotice } from './UpdateNotice';
 import { cn } from '@/lib/utils';
 
 interface HeaderProps {
@@ -17,6 +18,7 @@ export function Header({ onRefresh, isRefreshing }: HeaderProps) {
 
   return (
     <>
+      <UpdateNotice />
       <PortSettings />
 
       <Button
