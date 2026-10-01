@@ -7,6 +7,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [0.2.1] - 2026-10-01
+
 ### Added
 - Interface size setting (Compact 90%, Default 100%, Large 115%, Larger 130%) in the settings menu; scales text, icons and spacing and resizes the window to match, capped to the screen's usable area
 - `Ctrl`/`Cmd` + `=` / `-` / `0` shortcuts to step through or reset the interface size
