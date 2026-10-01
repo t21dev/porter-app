@@ -1,58 +1,61 @@
-import { Moon, Sun, RefreshCw, Activity } from 'lucide-react';
+import { Moon, Sun, RefreshCw } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { useThemeStore } from '@/store/themeStore';
 import { PortSettings } from './PortSettings';
 import { AboutDialog } from './AboutDialog';
+import { cn } from '@/lib/utils';
 
 interface HeaderProps {
   onRefresh: () => void;
   isRefreshing?: boolean;
 }
 
+/** Action cluster rendered inside the title bar. */
 export function Header({ onRefresh, isRefreshing }: HeaderProps) {
   const { theme, toggleTheme } = useThemeStore();
+  const isDark = theme === 'dark';
 
   return (
-    <header className="border-b border-border/40 bg-background">
-      <div className="container flex justify-between items-center px-6 h-14">
-        <div className="flex items-center space-x-3">
-          <Activity className="w-5 h-5 text-blue-500" />
-          <div>
-            <div className="text-lg font-bold text-foreground">Porter</div>
-            <div className="text-xs text-muted-foreground">Port Monitor</div>
-          </div>
-        </div>
+    <>
+      <PortSettings />
 
-        <div className="flex items-center space-x-2">
-         
+      <Button
+        variant="ghost"
+        size="icon"
+        onClick={onRefresh}
+        disabled={isRefreshing}
+        aria-label="Refresh ports"
+        title="Refresh"
+      >
+        <RefreshCw
+          className={cn('h-[15px] w-[15px]', isRefreshing && 'animate-spin')}
+          style={{ animationDuration: '900ms' }}
+        />
+      </Button>
 
-          <PortSettings />
+      <Button
+        variant="ghost"
+        size="icon"
+        onClick={toggleTheme}
+        aria-label={isDark ? 'Switch to light theme' : 'Switch to dark theme'}
+        title={isDark ? 'Light theme' : 'Dark theme'}
+        className="relative overflow-hidden"
+      >
+        <Sun
+          className={cn(
+            'absolute h-[15px] w-[15px] transition-all duration-300 ease-out',
+            isDark ? 'rotate-0 scale-100 opacity-100' : '-rotate-90 scale-50 opacity-0'
+          )}
+        />
+        <Moon
+          className={cn(
+            'absolute h-[15px] w-[15px] transition-all duration-300 ease-out',
+            isDark ? 'rotate-90 scale-50 opacity-0' : 'rotate-0 scale-100 opacity-100'
+          )}
+        />
+      </Button>
 
-          <Button
-            variant="ghost"
-            size="icon"
-            onClick={onRefresh}
-            disabled={isRefreshing}
-            className="w-8 h-8"
-          >
-            <RefreshCw className={`h-4 w-4 ${isRefreshing ? 'animate-spin' : ''}`} />
-          </Button>
-
-          <Button
-            variant="ghost"
-            size="icon"
-            onClick={toggleTheme}
-            className="w-8 h-8"
-          >
-            {theme === 'dark' ? (
-              <Sun className="w-4 h-4" />
-            ) : (
-              <Moon className="w-4 h-4" />
-            )}
-          </Button>
-          <AboutDialog />
-        </div>
-      </div>
-    </header>
+      <AboutDialog />
+    </>
   );
 }

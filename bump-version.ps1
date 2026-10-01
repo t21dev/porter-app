@@ -20,7 +20,7 @@ Write-Host "Bumping version to $Version..." -ForegroundColor Blue
 Write-Host "✓ Updated package.json" -ForegroundColor Green
 
 # Update Cargo.toml
-(Get-Content src-tauri/Cargo.toml) -replace 'version = ".*"', "version = `"$Version`"" | Set-Content src-tauri/Cargo.toml
+(Get-Content src-tauri/Cargo.toml) -replace '^version = ".*"', "version = `"$Version`"" | Set-Content src-tauri/Cargo.toml
 Write-Host "✓ Updated src-tauri/Cargo.toml" -ForegroundColor Green
 
 # Update tauri.conf.json

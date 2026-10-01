@@ -26,7 +26,14 @@ export const useThemeStore = create<ThemeStore>()(
       },
       toggleTheme: () => {
         const newTheme = get().theme === 'dark' ? 'light' : 'dark';
-        get().setTheme(newTheme);
+        const apply = () => get().setTheme(newTheme);
+        const doc = document as Document & { startViewTransition?: (cb: () => void) => unknown };
+        const reduced = window.matchMedia?.('(prefers-reduced-motion: reduce)').matches;
+        if (doc.startViewTransition && !reduced) {
+          doc.startViewTransition(apply);
+        } else {
+          apply();
+        }
       },
     }),
     {

@@ -23,14 +23,18 @@ A sleek, fast, and secure desktop port monitoring application built with Tauri, 
 - **Process Management** - Kill processes occupying ports (requires admin privileges)
 - **Smart Filtering** - Filter ports by status (Free, Occupied, System) and search by port number or process name
 - **Show All Ports** - Toggle between common ports and all running ports
-- **Dark/Light Mode** - Beautiful dark and light themes with seamless switching
+- **Dark/Light Mode** - Minimal near-black and light themes with a smooth crossfade between them
+- **Custom Title Bar** - Frameless window with integrated controls (native traffic lights on macOS)
 - **Admin Privilege Detection** - Automatically detects and warns when running without admin rights
 - **Cross-Platform** - Works on Windows, macOS, and Linux
 - **Fast & Lightweight** - Built with Tauri for minimal resource usage
 
 ## 📸 Screenshots
 
-![Porter Screenshot](./screenshot.png)
+<p align="center">
+  <img src="./screenshot.png" alt="Porter in dark mode" width="49%" />
+  <img src="./screenshot-light.png" alt="Porter in light mode" width="49%" />
+</p>
 
 ## 🛠️ Tech Stack
 
@@ -118,26 +122,25 @@ The built application will be available in `src-tauri/target/release/bundle/`
 
 2. **View Ports**
    - Common developer ports are displayed automatically on startup
-   - Green = Free, Red = Occupied, Yellow = System
+   - Green = Free, Amber = In use, Blue = System
 
 3. **Search Ports**
-   - Use the search bar to find specific ports by number or process name
+   - Use the search bar to find a port by number (press `/` to focus it, `Esc` to clear)
 
 4. **Filter by Status**
-   - Click the "Filter Status" dropdown to show/hide Free, Occupied, or System ports
+   - Toggle the Free, Occupied, and System chips next to the search bar
 
 5. **Kill Processes**
-   - Click "Kill Process" on any occupied port to terminate the process
+   - Click the ✕ on any in-use port and confirm to terminate the process
    - Requires administrator privileges
 
 6. **Customize Ports**
-   - Click the settings icon in the header
+   - Click the settings icon in the title bar
    - Add or remove ports to scan at startup
    - Changes are saved automatically
 
 7. **Toggle Views**
-   - Click "Show All" to view all running ports on the system
-   - Click "Show Common" to return to your configured port list
+   - Expand "Other ports" below your pinned list to see every running port on the system
 
 ## 🔧 Configuration
 

@@ -1,6 +1,4 @@
-import { AlertCircle } from 'lucide-react';
-import { Alert, AlertDescription } from '@/components/ui/alert';
-import { Button } from '@/components/ui/button';
+import { ShieldAlert, ArrowUpRight } from 'lucide-react';
 import { invoke } from '@tauri-apps/api/core';
 import { useState, useEffect } from 'react';
 
@@ -30,25 +28,34 @@ export function AdminWarning() {
   };
 
   return (
-    <Alert variant="destructive" className="mb-6">
-      <AlertCircle className="h-4 w-4" />
-      <AlertDescription className="flex items-center justify-between">
-        <span>
-          {isWindows
-            ? 'Porter is running without administrator privileges. To kill processes, please restart as Administrator.'
-            : 'Porter is running without elevated privileges. You\'ll be prompted for your password when killing processes that require it.'}
-        </span>
-        {isWindows && (
-          <Button
-            variant="outline"
-            size="sm"
-            onClick={handleRestartAsAdmin}
-            className="ml-4 shrink-0"
-          >
-            Restart as Admin
-          </Button>
+    <div
+      role="status"
+      className="reveal flex items-center gap-3 rounded-lg border border-occupied/20 bg-occupied/[0.06] py-2.5 pl-3 pr-2"
+    >
+      <ShieldAlert className="h-4 w-4 shrink-0 text-occupied" strokeWidth={1.75} />
+      <p className="flex-1 text-[12.5px] leading-snug text-muted-foreground">
+        {isWindows ? (
+          <>
+            <span className="font-medium text-foreground">Limited mode.</span> Restart as
+            Administrator to kill processes.
+          </>
+        ) : (
+          <>
+            <span className="font-medium text-foreground">Not elevated.</span> You&apos;ll be asked
+            for your password when a process needs it.
+          </>
         )}
-      </AlertDescription>
-    </Alert>
+      </p>
+      {isWindows && (
+        <button
+          type="button"
+          onClick={handleRestartAsAdmin}
+          className="group inline-flex h-7 shrink-0 items-center gap-1 rounded-md px-2.5 text-[12px] font-medium text-occupied transition-colors duration-150 ease-out hover:bg-occupied/10 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-occupied/40 active:scale-[0.97]"
+        >
+          Restart as admin
+          <ArrowUpRight className="h-3.5 w-3.5 transition-transform duration-200 ease-out group-hover:-translate-y-px group-hover:translate-x-px" />
+        </button>
+      )}
+    </div>
   );
 }

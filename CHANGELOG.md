@@ -10,6 +10,24 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### Added
 - Initial release features
 
+## [0.2.0] - 2026-10-01
+
+### Changed
+- Redesigned the interface: minimal near-black (`#0d0d0d`) dark theme, refined light theme, Geist + Geist Mono typography
+- Frameless window with a custom title bar that hosts the app actions and window controls (native traffic lights kept on macOS)
+- Stats merged into one overview panel with a proportional distribution bar and animated counters
+- Status filter is now an inline segmented toggle instead of a dropdown
+- Port list rebuilt as a single dense surface with hairline dividers, monospace port numbers, and a compact kill action
+- Restyled dialogs, menus, toasts, admin notice, and pinned-port settings
+- About dialog now reads the version from package.json
+
+### Added
+- Subtle motion: staggered list entrance, live-update pulse, theme crossfade, collapsible "Other ports"
+- `/` to focus search, `Esc` to clear it
+- Empty states for no pinned ports and no search results
+- Skeleton loader for the first scan
+- Respects `prefers-reduced-motion`
+
 ## [0.1.0] - 2025-10-05
 
 ### Added

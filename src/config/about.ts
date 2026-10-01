@@ -1,7 +1,9 @@
+import pkg from '../../package.json';
+
 export const aboutConfig = {
   app: {
     name: 'Porter',
-    version: '0.2.0',
+    version: pkg.version,
     description: 'A sleek, fast, and secure desktop port monitoring application',
   },
   organization: {

@@ -28,12 +28,12 @@ echo -e "${BLUE}Bumping version to ${VERSION}...${NC}"
 # Update package.json
 if [[ "$OSTYPE" == "darwin"* ]] || [[ "$OSTYPE" == "linux-gnu"* ]]; then
   sed -i.bak "s/\"version\": \".*\"/\"version\": \"$VERSION\"/" package.json && rm package.json.bak
-  sed -i.bak "s/version = \".*\"/version = \"$VERSION\"/" src-tauri/Cargo.toml && rm src-tauri/Cargo.toml.bak
+  sed -i.bak "s/^version = \".*\"/version = \"$VERSION\"/" src-tauri/Cargo.toml && rm src-tauri/Cargo.toml.bak
   sed -i.bak "s/\"version\": \".*\"/\"version\": \"$VERSION\"/" src-tauri/tauri.conf.json && rm src-tauri/tauri.conf.json.bak
 else
   # Windows with Git Bash
   sed -i "s/\"version\": \".*\"/\"version\": \"$VERSION\"/" package.json
-  sed -i "s/version = \".*\"/version = \"$VERSION\"/" src-tauri/Cargo.toml
+  sed -i "s/^version = \".*\"/version = \"$VERSION\"/" src-tauri/Cargo.toml
   sed -i "s/\"version\": \".*\"/\"version\": \"$VERSION\"/" src-tauri/tauri.conf.json
 fi
 

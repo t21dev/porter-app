@@ -1,51 +1,72 @@
+/* Hallmark · genre: modern-minimal · scope: desktop app · theme: custom (vibe: "quiet instrument panel, ink on near-black")
+ * paper: #0d0d0d (dark) / near-white (light) · accent: none — status hues only as signals
+ * type: Geist + Geist Mono · motion: transform/opacity only, ease-out-expo
+ */
+@import '@fontsource-variable/geist';
+@import '@fontsource-variable/geist-mono';
+
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
 
 @layer base {
   :root {
-    --background: 0 0% 100%;
-    --foreground: 0 0% 3.9%;
+    --background: 0 0% 98.4%;
+    --foreground: 0 0% 9%;
     --card: 0 0% 100%;
-    --card-foreground: 0 0% 3.9%;
+    --card-foreground: 0 0% 9%;
     --popover: 0 0% 100%;
-    --popover-foreground: 0 0% 3.9%;
-    --primary: 0 0% 10%;
+    --popover-foreground: 0 0% 9%;
+    --elevated: 0 0% 94.5%;
+    --primary: 0 0% 9%;
     --primary-foreground: 0 0% 98%;
-    --secondary: 0 0% 96.1%;
+    --secondary: 0 0% 95%;
     --secondary-foreground: 0 0% 9%;
-    --muted: 0 0% 96.1%;
-    --muted-foreground: 0 0% 45.1%;
-    --accent: 0 0% 96.1%;
+    --muted: 0 0% 95%;
+    --muted-foreground: 0 0% 40%;
+    --subtle: 0 0% 58%;
+    --accent: 0 0% 95.5%;
     --accent-foreground: 0 0% 9%;
-    --destructive: 0 72% 51%;
+    --destructive: 0 72% 50%;
     --destructive-foreground: 0 0% 98%;
-    --border: 0 0% 89.8%;
-    --input: 0 0% 89.8%;
-    --ring: 0 0% 3.9%;
-    --radius: 0.5rem;
+    --border: 0 0% 90%;
+    --input: 0 0% 88%;
+    --ring: 0 0% 45%;
+    --free: 152 62% 36%;
+    --occupied: 32 92% 44%;
+    --system: 215 78% 50%;
+    --radius: 0.625rem;
+
+    --ease-out: cubic-bezier(0.16, 1, 0.3, 1);
+    --ease-in: cubic-bezier(0.7, 0, 0.84, 0);
+    --ease-in-out: cubic-bezier(0.65, 0, 0.35, 1);
   }
 
   .dark {
-    --background: 0 0% 10%;
-    --foreground: 210 40% 98%;
-    --card: 0 0% 10%;
-    --card-foreground: 210 40% 98%;
-    --popover: 0 0% 10%;
-    --popover-foreground: 210 40% 98%;
-    --primary: 210 40% 20%;
-    --primary-foreground: 0 0% 98%;
-    --secondary: 217 33% 17%;
-    --secondary-foreground: 210 40% 98%;
-    --muted: 217 33% 17%;
-    --muted-foreground: 215 20% 65%;
-    --accent: 217 33% 17%;
-    --accent-foreground: 210 40% 98%;
-    --destructive: 0 72% 51%;
+    --background: 0 0% 5.1%;
+    --foreground: 0 0% 93%;
+    --card: 0 0% 7.3%;
+    --card-foreground: 0 0% 93%;
+    --popover: 0 0% 8.6%;
+    --popover-foreground: 0 0% 93%;
+    --elevated: 0 0% 12%;
+    --primary: 0 0% 93%;
+    --primary-foreground: 0 0% 6%;
+    --secondary: 0 0% 11%;
+    --secondary-foreground: 0 0% 93%;
+    --muted: 0 0% 11%;
+    --muted-foreground: 0 0% 58%;
+    --subtle: 0 0% 40%;
+    --accent: 0 0% 10.5%;
+    --accent-foreground: 0 0% 93%;
+    --destructive: 0 75% 62%;
     --destructive-foreground: 0 0% 98%;
-    --border: 217 33% 17%;
-    --input: 217 33% 17%;
-    --ring: 217 91% 60%;
+    --border: 0 0% 12.5%;
+    --input: 0 0% 15%;
+    --ring: 0 0% 55%;
+    --free: 152 52% 54%;
+    --occupied: 38 92% 60%;
+    --system: 215 90% 68%;
   }
 }
 
@@ -53,29 +74,139 @@
   * {
     @apply border-border;
   }
+  html,
   body {
-    @apply bg-background text-foreground;
-    font-feature-settings: "rlig" 1, "calt" 1;
+    overflow: clip;
+  }
+  body {
+    @apply bg-background text-foreground font-sans antialiased;
+    font-feature-settings: "rlig" 1, "calt" 1, "ss01" 1;
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+    text-rendering: optimizeLegibility;
+    user-select: none;
+  }
+  input {
+    user-select: text;
+  }
+  ::selection {
+    background: hsl(var(--foreground) / 0.18);
   }
 }
 
-/* SimpleBar custom styling */
+@layer utilities {
+  .tabular {
+    font-variant-numeric: tabular-nums;
+  }
+
+  /* Staggered entrance. Set --i inline; capped by the caller. */
+  .reveal {
+    animation: reveal 420ms var(--ease-out) both;
+    animation-delay: calc(var(--i, 0) * 28ms);
+  }
+
+  /* Expanding region without animating height. */
+  .collapse-grid {
+    display: grid;
+    grid-template-rows: 0fr;
+    opacity: 0;
+    transition:
+      grid-template-rows 320ms var(--ease-in-out),
+      opacity 220ms var(--ease-out);
+  }
+  .collapse-grid[data-open='true'] {
+    grid-template-rows: 1fr;
+    opacity: 1;
+  }
+  .collapse-grid > * {
+    min-height: 0;
+    overflow: hidden;
+  }
+}
+
+@keyframes reveal {
+  from {
+    opacity: 0;
+    transform: translateY(6px);
+  }
+  to {
+    opacity: 1;
+    transform: none;
+  }
+}
+
+@keyframes ping-once {
+  0% {
+    transform: scale(1);
+    opacity: 0.55;
+  }
+  100% {
+    transform: scale(2.6);
+    opacity: 0;
+  }
+}
+
+@keyframes grow-x {
+  from {
+    transform: scaleX(0);
+  }
+  to {
+    transform: scaleX(1);
+  }
+}
+
+@keyframes shimmer {
+  from {
+    transform: translateX(-100%);
+  }
+  to {
+    transform: translateX(100%);
+  }
+}
+
+/* Theme crossfade via the View Transitions API (no-op where unsupported). */
+::view-transition-old(root),
+::view-transition-new(root) {
+  animation-duration: 260ms;
+  animation-timing-function: var(--ease-in-out);
+}
+
+/* SimpleBar */
 .simplebar-scrollbar::before {
-  background-color: hsl(var(--muted-foreground));
-  opacity: 0.3;
-  border-radius: 4px;
+  background-color: hsl(var(--foreground));
+  opacity: 0;
+  border-radius: 999px;
+  transition: opacity 200ms var(--ease-out);
 }
-
 .simplebar-scrollbar.simplebar-visible::before {
-  opacity: 0.5;
+  opacity: 0.14;
 }
-
+.simplebar-track.simplebar-vertical:hover .simplebar-scrollbar::before {
+  opacity: 0.26;
+}
 .simplebar-track.simplebar-vertical {
-  width: 8px;
+  width: 9px;
+}
+.simplebar-track.simplebar-vertical .simplebar-scrollbar::before {
+  width: 4px;
+  left: 2px;
+  right: 2px;
 }
 
-.simplebar-track.simplebar-vertical .simplebar-scrollbar::before {
-  width: 6px;
-  left: 1px;
-  right: 1px;
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 150ms !important;
+    animation-iteration-count: 1 !important;
+    animation-delay: 0ms !important;
+    transition-duration: 150ms !important;
+  }
+  .reveal {
+    animation-name: fade-only;
+  }
+  @keyframes fade-only {
+    from { opacity: 0; }
+    to { opacity: 1; }
+  }
 }

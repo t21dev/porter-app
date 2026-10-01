@@ -1,12 +1,14 @@
 import { useState, useEffect } from 'react';
-import { Settings, X, Plus, Pin } from 'lucide-react';
+import { Settings2, X, Plus } from 'lucide-react';
 import { Button } from '@/components/ui/button';
+import { Input } from '@/components/ui/input';
 import {
   DropdownMenu,
   DropdownMenuContent,
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu';
 import { useToast } from '@/hooks/use-toast';
+import { cn } from '@/lib/utils';
 
 const DEFAULT_PINNED_PORTS = [
   3000, 5173, 8080, 5432, 27017
@@ -73,77 +75,103 @@ export function PortSettings() {
     savePinnedPorts(DEFAULT_PINNED_PORTS);
   };
 
+  const full = pinnedPorts.length >= MAX_PINNED_PORTS;
+
   return (
     <DropdownMenu open={isOpen} onOpenChange={setIsOpen}>
       <DropdownMenuTrigger asChild>
-        <Button variant="ghost" size="icon" className="h-8 w-8">
-          <Settings className="h-4 w-4" />
+        <Button
+          variant="ghost"
+          size="icon"
+          aria-label="Pinned port settings"
+          title="Pinned ports"
+          className={cn(isOpen && 'bg-accent text-foreground')}
+        >
+          <Settings2 className="h-[15px] w-[15px]" />
         </Button>
       </DropdownMenuTrigger>
-      <DropdownMenuContent align="end" className="w-80 p-4">
-        <div className="space-y-3">
-          <div className="flex items-center justify-between">
-            <div className="flex items-center gap-2">
-              <Pin className="h-4 w-4" />
-              <h3 className="text-sm font-semibold">Pinned Ports</h3>
-            </div>
-            <Button
-              variant="outline"
-              size="xs"
-              onClick={resetToDefaults}
-              className="text-[10px] h-6 px-2"
-            >
-              Reset
-            </Button>
+      <DropdownMenuContent align="end" sideOffset={8} className="w-80 p-0">
+        <div className="flex items-start justify-between gap-3 px-4 pb-3 pt-3.5">
+          <div>
+            <h3 className="text-[13px] font-semibold text-foreground">Pinned ports</h3>
+            <p className="mt-0.5 text-[12px] text-muted-foreground">
+              Always shown at the top, running or not.
+            </p>
           </div>
+          <button
+            type="button"
+            onClick={resetToDefaults}
+            className="shrink-0 rounded-md px-2 py-1 text-[11.5px] font-medium text-muted-foreground transition-colors duration-150 hover:bg-accent hover:text-foreground"
+          >
+            Reset
+          </button>
+        </div>
 
-          <p className="text-xs text-muted-foreground">
-            Pin your frequently used ports for quick access
-          </p>
+        <div className="flex gap-2 px-4 pb-3">
+          <Input
+            type="number"
+            value={newPort}
+            onChange={(e) => setNewPort(e.target.value)}
+            onKeyDown={(e) => {
+              e.stopPropagation();
+              if (e.key === 'Enter') addPort();
+            }}
+            placeholder="Port number"
+            className="h-8 font-mono tabular placeholder:font-sans"
+            min="1"
+            max="65535"
+            autoFocus
+          />
+          <Button
+            size="sm"
+            onClick={addPort}
+            disabled={!newPort}
+            className="h-8 shrink-0 px-2.5"
+            aria-label="Pin port"
+          >
+            <Plus className="h-3.5 w-3.5" />
+            Pin
+          </Button>
+        </div>
 
-          <div className="flex gap-2">
-            <input
-              type="number"
-              value={newPort}
-              onChange={(e) => setNewPort(e.target.value)}
-              onKeyDown={(e) => e.key === 'Enter' && addPort()}
-              placeholder="Add port..."
-              className="flex-1 px-2 py-1 text-xs border rounded bg-background"
-              min="1"
-              max="65535"
-            />
-            <Button
-              size="xs"
-              onClick={addPort}
-              className="h-7 px-2"
-            >
-              <Plus className="h-3 w-3" />
-            </Button>
-          </div>
-
-          <div className="max-h-60 overflow-y-auto">
+        <div className="max-h-60 overflow-y-auto border-t border-border px-4 py-3">
+          {pinnedPorts.length === 0 ? (
+            <p className="text-[12px] text-subtle">No pinned ports yet.</p>
+          ) : (
             <div className="flex flex-wrap gap-1.5">
               {pinnedPorts.map((port) => (
-                <div
+                <span
                   key={port}
-                  className="flex items-center gap-1 px-2 py-0.5 bg-secondary rounded text-xs"
+                  className="group inline-flex h-7 items-center gap-1 rounded-md border border-border bg-background pl-2 pr-1 font-mono text-[12px] text-foreground tabular animate-in fade-in zoom-in-95 duration-200"
                 >
-                  <Pin className="h-3 w-3" />
-                  <span>{port}</span>
+                  {port}
                   <button
+                    type="button"
                     onClick={() => removePort(port)}
-                    className="hover:text-destructive"
+                    aria-label={`Unpin port ${port}`}
+                    className="flex h-5 w-5 items-center justify-center rounded text-subtle transition-colors duration-150 hover:bg-destructive/10 hover:text-destructive"
                   >
                     <X className="h-3 w-3" />
                   </button>
-                </div>
+                </span>
               ))}
             </div>
-          </div>
+          )}
+        </div>
 
-          <p className="text-[10px] text-muted-foreground">
-            {pinnedPorts.length} / {MAX_PINNED_PORTS} port{pinnedPorts.length !== 1 ? 's' : ''} pinned
-          </p>
+        <div className="flex items-center gap-2 border-t border-border px-4 py-2.5">
+          <div className="h-1 flex-1 overflow-hidden rounded-full bg-elevated">
+            <div
+              className={cn(
+                'h-full origin-left rounded-full transition-transform duration-300 ease-out',
+                full ? 'bg-occupied' : 'bg-foreground/50'
+              )}
+              style={{ transform: `scaleX(${pinnedPorts.length / MAX_PINNED_PORTS})` }}
+            />
+          </div>
+          <span className="font-mono text-[11px] text-subtle tabular">
+            {pinnedPorts.length}/{MAX_PINNED_PORTS}
+          </span>
         </div>
       </DropdownMenuContent>
     </DropdownMenu>

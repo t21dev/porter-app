@@ -9,12 +9,21 @@ export default {
   ],
   theme: {
     extend: {
+      fontFamily: {
+        sans: ['"Geist Variable"', 'ui-sans-serif', 'system-ui', 'sans-serif'],
+        mono: ['"Geist Mono Variable"', 'ui-monospace', 'SFMono-Regular', 'monospace'],
+      },
       colors: {
         border: "hsl(var(--border))",
         input: "hsl(var(--input))",
         ring: "hsl(var(--ring))",
         background: "hsl(var(--background))",
         foreground: "hsl(var(--foreground))",
+        elevated: "hsl(var(--elevated))",
+        subtle: "hsl(var(--subtle))",
+        free: "hsl(var(--free))",
+        occupied: "hsl(var(--occupied))",
+        system: "hsl(var(--system))",
         primary: {
           DEFAULT: "hsl(var(--primary))",
           foreground: "hsl(var(--primary-foreground))",
@@ -45,9 +54,18 @@ export default {
         },
       },
       borderRadius: {
+        xl: "calc(var(--radius) + 4px)",
         lg: "var(--radius)",
         md: "calc(var(--radius) - 2px)",
         sm: "calc(var(--radius) - 4px)",
+      },
+      transitionTimingFunction: {
+        out: "var(--ease-out)",
+        in: "var(--ease-in)",
+        "in-out": "var(--ease-in-out)",
+      },
+      boxShadow: {
+        float: "0 1px 0 0 hsl(0 0% 100% / 0.03) inset, 0 12px 32px -8px rgb(0 0 0 / 0.45), 0 2px 6px -2px rgb(0 0 0 / 0.3)",
       },
     },
   },

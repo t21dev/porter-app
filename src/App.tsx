@@ -1,17 +1,19 @@
-import { useState, useMemo, useEffect } from 'react';
+import { useState, useMemo, useEffect, type CSSProperties, type ReactNode } from 'react';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
+import { ChevronDown } from 'lucide-react';
 import SimpleBar from 'simplebar-react';
 import 'simplebar-react/dist/simplebar.min.css';
+import { TitleBar } from './components/TitleBar';
 import { Header } from './components/dashboard/Header';
 import { SearchBar } from './components/dashboard/SearchBar';
 import { AdminWarning } from './components/dashboard/AdminWarning';
-import { StatsCard } from './components/dashboard/StatsCard';
+import { StatsOverview } from './components/dashboard/StatsCard';
 import { PortListItem } from './components/dashboard/PortListItem';
 import { StatusFilter } from './components/dashboard/StatusFilter';
 import { PortScanLoader } from './components/dashboard/PortScanLoader';
 import { useAllPorts, useRefreshPorts } from './hooks/usePorts';
 import { killProcess, isElevated } from './lib/tauri';
-import { Button } from './components/ui/button';
+import { cn } from './lib/utils';
 import { Port } from './types/api';
 import { Toaster } from './components/ui/toaster';
 import { useToast } from './hooks/use-toast';
@@ -27,7 +29,12 @@ function AppContent() {
   );
   const { toast } = useToast();
 
-  const { data: allPorts = [], isLoading: isLoadingAll, isRefetching: isRefetchingAll } = useAllPorts();
+  const {
+    data: allPorts = [],
+    isLoading: isLoadingAll,
+    isRefetching: isRefetchingAll,
+    dataUpdatedAt,
+  } = useAllPorts();
   const { refreshPorts } = useRefreshPorts();
 
   // Get pinned port numbers for checking
@@ -179,111 +186,163 @@ function AppContent() {
     return { free, occupied, system };
   }, [pinnedPortsList, otherPortsList]);
 
+  const searchResults = [...filteredPinnedPorts, ...filteredOtherPorts];
+
   return (
-    <div className="flex overflow-hidden flex-col h-screen bg-background">
+    <div className="flex h-screen flex-col overflow-hidden bg-background">
       <Toaster />
-      {/* Sticky Header */}
-      <Header onRefresh={refreshPorts} isRefreshing={isRefetching} />
+      <TitleBar pulseKey={dataUpdatedAt}>
+        <Header onRefresh={refreshPorts} isRefreshing={isRefetching} />
+      </TitleBar>
 
-      <main className="flex overflow-hidden flex-col flex-1">
-        <div className="container flex flex-col px-4 mx-auto max-w-7xl h-full">
-          {/* Fixed Top Section */}
-          <div className="flex-shrink-0 py-4 space-y-4">
-            {/* Admin Warning */}
-            {!isAdmin && <AdminWarning />}
+      <main className="flex flex-1 flex-col overflow-hidden">
+        {/* Fixed top section */}
+        <div className="shrink-0 space-y-3 px-5 pb-4 pt-5">
+          {!isAdmin && <AdminWarning />}
 
-            {/* Stats */}
-            <div className="grid grid-cols-3 gap-3">
-              <StatsCard count={stats.free} label="Free Ports" variant="free" />
-              <StatsCard count={stats.occupied} label="Occupied Ports" variant="occupied" />
-              <StatsCard count={stats.system} label="System Ports" variant="system" />
-            </div>
+          <StatsOverview free={stats.free} occupied={stats.occupied} system={stats.system} />
 
-            {/* Search Bar and Filter */}
-            <div className="flex gap-2 items-center">
-              <div className="flex-[3]">
-                <SearchBar value={searchQuery} onChange={setSearchQuery} />
-              </div>
-              <div className="flex-1">
-                <StatusFilter
-                  selectedStatuses={selectedStatuses}
-                  onStatusToggle={handleStatusToggle}
-                />
-              </div>
-            </div>
-
-            {/* Port List Header */}
-            <div className="flex gap-2 items-center">
-              <h2 className="text-sm font-semibold text-foreground">
-                {showAllPorts ? '🌐 All Ports' : '📌 Pinned Ports'}
-                {searchQuery && ` (${filteredPinnedPorts.length + filteredOtherPorts.length} results)`}
-              </h2>
-            </div>
+          <div className="reveal flex items-center gap-2" style={{ '--i': 2 } as CSSProperties}>
+            <SearchBar value={searchQuery} onChange={setSearchQuery} />
+            <StatusFilter selectedStatuses={selectedStatuses} onStatusToggle={handleStatusToggle} />
           </div>
+        </div>
 
-          {/* Scrollable Port List */}
-          <div className="overflow-hidden flex-1">
-            <SimpleBar style={{ height: '100%' }}>
+        {/* Scrollable port list */}
+        <div className="flex-1 overflow-hidden">
+          <SimpleBar style={{ height: '100%' }}>
+            <div className="px-5 pb-8">
               {isLoading ? (
                 <PortScanLoader />
-              ) : (
-                <div className="pr-2 pb-8 space-y-2">
-                  {/* When searching, show all results together */}
-                  {searchQuery ? (
-                    <>
-                      {[...filteredPinnedPorts, ...filteredOtherPorts].map((port) => (
+              ) : searchQuery ? (
+                <>
+                  <SectionLabel
+                    title="Results"
+                    count={searchResults.length}
+                    hint={`matching “${searchQuery}”`}
+                  />
+                  {searchResults.length > 0 ? (
+                    <ListSurface>
+                      {searchResults.map((port, i) => (
                         <PortListItem
                           key={port.port}
                           port={port}
+                          index={i}
                           onKill={handleKillProcess}
                           isPinned={pinnedPortNumbers.has(port.port)}
+                          showPin
                         />
                       ))}
-                    </>
+                    </ListSurface>
                   ) : (
-                    <>
-                      {/* Pinned Ports Section */}
-                      {filteredPinnedPorts.map((port) => (
+                    <EmptyState
+                      title={`No ports match “${searchQuery}”`}
+                      body="Try a shorter number, or check the status filters."
+                    />
+                  )}
+                </>
+              ) : (
+                <>
+                  <SectionLabel title="Pinned" count={filteredPinnedPorts.length} />
+                  {filteredPinnedPorts.length > 0 ? (
+                    <ListSurface>
+                      {filteredPinnedPorts.map((port, i) => (
                         <PortListItem
                           key={port.port}
                           port={port}
+                          index={i}
                           onKill={handleKillProcess}
                           isPinned={true}
                         />
                       ))}
-
-                      {/* Divider and Show Other Ports Button */}
-                      {!searchQuery && filteredOtherPorts.length > 0 && (
-                        <div className="py-3">
-                          <div className="mb-3 border-t border-border"></div>
-                          <Button
-                            variant="outline"
-                            size="sm"
-                            onClick={() => setShowAllPorts(!showAllPorts)}
-                            className="w-full text-xs"
-                          >
-                            {showAllPorts ? 'Hide Other Ports' : `Show Other Ports (${filteredOtherPorts.length})`}
-                          </Button>
-                        </div>
-                      )}
-
-                      {/* Other Ports Section (shown when button clicked) */}
-                      {showAllPorts && filteredOtherPorts.map((port) => (
-                        <PortListItem
-                          key={port.port}
-                          port={port}
-                          onKill={handleKillProcess}
-                          isPinned={false}
-                        />
-                      ))}
-                    </>
+                    </ListSurface>
+                  ) : (
+                    <EmptyState
+                      title={pinnedPortNumbers.size === 0 ? 'No pinned ports' : 'Nothing to show'}
+                      body={
+                        pinnedPortNumbers.size === 0
+                          ? 'Pin the ports you use most from the settings menu above.'
+                          : 'Your pinned ports are hidden by the current status filters.'
+                      }
+                    />
                   )}
-                </div>
+
+                  {/* Other ports, collapsed by default */}
+                  {filteredOtherPorts.length > 0 && (
+                    <div className="mt-5">
+                      <button
+                        type="button"
+                        onClick={() => setShowAllPorts(!showAllPorts)}
+                        aria-expanded={showAllPorts}
+                        className="group flex w-full items-center gap-3 rounded-lg py-1.5 text-left focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring/50"
+                      >
+                        <span className="text-[12px] font-medium text-muted-foreground transition-colors duration-150 group-hover:text-foreground">
+                          {showAllPorts ? 'Hide other ports' : 'Other ports'}
+                        </span>
+                        <span className="font-mono text-[11px] text-subtle tabular">
+                          {filteredOtherPorts.length}
+                        </span>
+                        <span className="h-px flex-1 bg-border" />
+                        <ChevronDown
+                          className={cn(
+                            'h-4 w-4 text-subtle transition-transform duration-300 ease-out group-hover:text-foreground',
+                            showAllPorts && 'rotate-180'
+                          )}
+                        />
+                      </button>
+
+                      <div className="collapse-grid mt-2" data-open={showAllPorts}>
+                        <div>
+                          {showAllPorts && (
+                            <ListSurface>
+                              {filteredOtherPorts.map((port, i) => (
+                                <PortListItem
+                                  key={port.port}
+                                  port={port}
+                                  index={i}
+                                  onKill={handleKillProcess}
+                                  isPinned={false}
+                                />
+                              ))}
+                            </ListSurface>
+                          )}
+                        </div>
+                      </div>
+                    </div>
+                  )}
+                </>
               )}
-            </SimpleBar>
-          </div>
+            </div>
+          </SimpleBar>
         </div>
       </main>
+    </div>
+  );
+}
+
+function SectionLabel({ title, count, hint }: { title: string; count: number; hint?: string }) {
+  return (
+    <div className="mb-2 flex items-baseline gap-2 px-0.5">
+      <h2 className="text-[12px] font-medium text-muted-foreground">{title}</h2>
+      <span className="font-mono text-[11px] text-subtle tabular">{count}</span>
+      {hint && <span className="truncate text-[11.5px] text-subtle">{hint}</span>}
+    </div>
+  );
+}
+
+function ListSurface({ children }: { children: ReactNode }) {
+  return (
+    <div className="divide-y divide-border overflow-hidden rounded-xl border border-border bg-card">
+      {children}
+    </div>
+  );
+}
+
+function EmptyState({ title, body }: { title: string; body: string }) {
+  return (
+    <div className="reveal flex flex-col items-center rounded-xl border border-dashed border-border px-6 py-10 text-center">
+      <p className="text-[13px] font-medium text-foreground">{title}</p>
+      <p className="mt-1 max-w-xs text-[12px] text-muted-foreground">{body}</p>
     </div>
   );
 }
