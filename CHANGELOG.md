@@ -7,7 +7,14 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Added
+- "Other ports" is now a sortable table: click Port, Service, Process or Status to sort, click again to reverse; the choice is remembered
+- "By app" view groups other ports under the app using them (largest first, collapsed by default), similar to Task Manager
+- The list holds still while your pointer is over it, so live refreshes no longer move rows while you scroll; a "Paused while you browse" note shows how many changes are waiting
+- Toolbar and column headers stay pinned while scrolling the list
+
 ### Changed
+- Other ports are always in a stable order instead of the order the system reports them in
 - "Check now" in About spins while checking, then shows an up-to-date toast, an error toast, or opens the update dialog when a new version exists
 
 ## [0.2.1] - 2026-10-01

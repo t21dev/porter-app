@@ -10,6 +10,7 @@ import { AdminWarning } from './components/dashboard/AdminWarning';
 import { StatsOverview } from './components/dashboard/StatsCard';
 import { PortListItem } from './components/dashboard/PortListItem';
 import { StatusFilter } from './components/dashboard/StatusFilter';
+import { OtherPortsList } from './components/dashboard/OtherPortsList';
 import { PortScanLoader } from './components/dashboard/PortScanLoader';
 import { useAllPorts, useRefreshPorts } from './hooks/usePorts';
 import { killProcess, isElevated } from './lib/tauri';
@@ -25,6 +26,7 @@ function AppContent() {
   const [searchQuery, setSearchQuery] = useState('');
   const [isAdmin, setIsAdmin] = useState(false);
   const [showAllPorts, setShowAllPorts] = useState(false);
+  const [otherPortsSettled, setOtherPortsSettled] = useState(false);
   const [selectedStatuses, setSelectedStatuses] = useState<Set<string>>(
     new Set(['free', 'occupied', 'system'])
   );
@@ -122,6 +124,15 @@ function AppContent() {
   };
 
   useEffect(() => installScaleShortcuts(), []);
+
+  // The expand animation needs overflow clipped; lift it afterwards so the
+  // other-ports column header can stay sticky.
+  useEffect(() => {
+    setOtherPortsSettled(false);
+    if (!showAllPorts) return;
+    const t = window.setTimeout(() => setOtherPortsSettled(true), 360);
+    return () => window.clearTimeout(t);
+  }, [showAllPorts]);
 
   // Check for admin privileges on startup
   useEffect(() => {
@@ -294,20 +305,14 @@ function AppContent() {
                         />
                       </button>
 
-                      <div className="collapse-grid mt-2" data-open={showAllPorts}>
-                        <div>
+                      <div
+                        className="collapse-grid mt-2"
+                        data-open={showAllPorts}
+                      >
+                        {/* Unclip once open so the sticky column header can stick. */}
+                        <div style={otherPortsSettled && showAllPorts ? { overflow: 'visible' } : undefined}>
                           {showAllPorts && (
-                            <ListSurface>
-                              {filteredOtherPorts.map((port, i) => (
-                                <PortListItem
-                                  key={port.port}
-                                  port={port}
-                                  index={i}
-                                  onKill={handleKillProcess}
-                                  isPinned={false}
-                                />
-                              ))}
-                            </ListSurface>
+                            <OtherPortsList ports={filteredOtherPorts} onKill={handleKillProcess} />
                           )}
                         </div>
                       </div>
