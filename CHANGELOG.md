@@ -7,6 +7,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [0.2.2] - 2026-10-02
+
 ### Added
 - "Other ports" is now a sortable table: click Port, Service, Process or Status to sort, click again to reverse; the choice is remembered
 - "By app" view groups other ports under the app using them (largest first, collapsed by default), similar to Task Manager
