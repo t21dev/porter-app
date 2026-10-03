@@ -33,19 +33,21 @@ pub(crate) struct ProcListener {
     pub address: String,
     pub port: u16,
     pub inode: u64,
+    pub listening: bool,
 }
 
-/// The listening sockets in the text of /proc/net/tcp or /proc/net/tcp6.
-/// State 0A is TCP_LISTEN; everything else is a connection, not a port in use.
+/// The sockets in the text of /proc/net/tcp or /proc/net/tcp6: listeners
+/// (state 0A, TCP_LISTEN) only, or every connection with `include_connections`.
 /// Lives here rather than in linux.rs so it is compiled and tested everywhere.
 #[cfg_attr(not(target_os = "linux"), allow(dead_code))]
-pub(crate) fn parse_proc_net_tcp(content: &str) -> Vec<ProcListener> {
+pub(crate) fn parse_proc_net_tcp(content: &str, include_connections: bool) -> Vec<ProcListener> {
     content
         .lines()
         .skip(1)
         .filter_map(|line| {
             let parts: Vec<&str> = line.split_whitespace().collect();
-            if parts.len() < 10 || parts[3] != "0A" {
+            let listening = parts.get(3) == Some(&"0A");
+            if parts.len() < 10 || !(listening || include_connections) {
                 return None;
             }
             let (addr, port) = parts[1].split_once(':')?;
@@ -53,6 +55,7 @@ pub(crate) fn parse_proc_net_tcp(content: &str) -> Vec<ProcListener> {
                 address: parse_proc_address(addr)?,
                 port: u16::from_str_radix(port, 16).ok()?,
                 inode: parts[9].parse().ok()?,
+                listening,
             })
         })
         .collect()
@@ -94,9 +97,21 @@ mod tests {
     #[test]
     fn only_listeners_are_kept() {
         assert_eq!(
-            parse_proc_net_tcp(TCP),
-            vec![ProcListener { address: "127.0.0.1".into(), port: 8080, inode: 41234 }]
+            parse_proc_net_tcp(TCP, false),
+            vec![ProcListener {
+                address: "127.0.0.1".into(),
+                port: 8080,
+                inode: 41234,
+                listening: true
+            }]
         );
+    }
+
+    #[test]
+    fn connections_come_back_when_asked_for() {
+        let all = parse_proc_net_tcp(TCP, true);
+        assert_eq!(all.len(), 2);
+        assert_eq!((all[1].port, all[1].listening), (40000, false));
     }
 
     #[test]
@@ -104,8 +119,13 @@ mod tests {
         let tcp6 = "  sl  local_address remote_address st tx_queue rx_queue tr tm->when retrnsmt uid timeout inode
    0: 00000000000000000000000001000000:1435 00000000000000000000000000000000:0000 0A 00000000:00000000 00:00000000 00000000 1000 0 5555 1 0000000000000000 100 0 0 10 0";
         assert_eq!(
-            parse_proc_net_tcp(tcp6),
-            vec![ProcListener { address: "::1".into(), port: 5173, inode: 5555 }]
+            parse_proc_net_tcp(tcp6, false),
+            vec![ProcListener {
+                address: "::1".into(),
+                port: 5173,
+                inode: 5555,
+                listening: true
+            }]
         );
     }
 

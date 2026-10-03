@@ -3,20 +3,26 @@ use anyhow::Result;
 use std::collections::HashMap;
 use std::fs;
 
-/// Listening TCP sockets, IPv4 and IPv6, with the PID that owns each.
+/// TCP sockets, IPv4 and IPv6, with the PID that owns each: listeners only, or
+/// every connection too with `include_connections`.
 ///
 /// The owner is found by matching socket inodes against /proc/<pid>/fd links.
 /// That walk happens once per scan for all sockets together. It used to run
 /// once per connection, reading every descriptor of every process each time:
 /// millions of readlink calls every few seconds on a busy machine.
-pub fn get_network_connections() -> Result<Vec<NetworkConnection>> {
+pub fn get_network_connections(include_connections: bool) -> Result<Vec<NetworkConnection>> {
     let mut listeners = Vec::new();
     for path in ["/proc/net/tcp", "/proc/net/tcp6"] {
         if let Ok(content) = fs::read_to_string(path) {
-            listeners.extend(parse_proc_net_tcp(&content));
+            listeners.extend(parse_proc_net_tcp(&content, include_connections));
         }
     }
-    let mut owners: HashMap<u64, u32> = listeners.iter().map(|l| (l.inode, 0)).collect();
+    // Inode 0 is a socket with no owner left (TIME_WAIT); nothing to look up.
+    let mut owners: HashMap<u64, u32> = listeners
+        .iter()
+        .filter(|l| l.inode != 0)
+        .map(|l| (l.inode, 0))
+        .collect();
     let mut left = owners.len();
 
     if left > 0 {
@@ -54,7 +60,7 @@ pub fn get_network_connections() -> Result<Vec<NetworkConnection>> {
             remote_address: String::new(),
             remote_port: 0,
             protocol: Protocol::TCP,
-            state: "LISTEN".to_string(),
+            state: if l.listening { "LISTEN" } else { "CONNECTED" }.to_string(),
         })
         .collect())
 }

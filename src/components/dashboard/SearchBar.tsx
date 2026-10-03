@@ -26,11 +26,8 @@ export function SearchBar({ value, onChange, placeholder = 'Search by port numbe
   }, []);
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const newValue = e.target.value;
-    // Only allow numbers
-    if (newValue === '' || /^\d*$/.test(newValue)) {
-      onChange(newValue);
-    }
+    // Numbers find ports; letters find the process holding one.
+    onChange(e.target.value);
   };
 
   return (
@@ -39,7 +36,6 @@ export function SearchBar({ value, onChange, placeholder = 'Search by port numbe
       <Input
         ref={inputRef}
         type="text"
-        inputMode="numeric"
         placeholder={placeholder}
         value={value}
         onChange={handleChange}

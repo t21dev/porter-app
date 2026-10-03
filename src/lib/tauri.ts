@@ -2,8 +2,9 @@ import { invoke } from '@tauri-apps/api/core';
 import { Port, SystemInfo } from '@/types/api';
 
 // Port monitoring commands
-export async function getActivePorts(): Promise<Port[]> {
-  return await invoke<Port[]>('get_active_ports');
+/** Listening ports, plus every connection's local port when asked for. */
+export async function getActivePorts(includeConnections = false): Promise<Port[]> {
+  return await invoke<Port[]>('get_active_ports', { includeConnections });
 }
 
 export async function getCommonPorts(ports?: number[]): Promise<Port[]> {

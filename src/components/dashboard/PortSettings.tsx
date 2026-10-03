@@ -11,8 +11,9 @@ import { useToast } from '@/hooks/use-toast';
 import { cn } from '@/lib/utils';
 import { isMac } from '@/lib/platform';
 import { UI_SCALES, useUiScaleStore } from '@/store/uiScaleStore';
+import { useScanStore } from '@/store/scanStore';
 
-const DEFAULT_PINNED_PORTS = [
+export const DEFAULT_PINNED_PORTS = [
   3000, 5173, 8080, 5432, 27017
 ];
 
@@ -80,6 +81,7 @@ export function PortSettings() {
   const full = pinnedPorts.length >= MAX_PINNED_PORTS;
   const { scale, setScale } = useUiScaleStore();
   const activeScale = UI_SCALES.find((s) => s.value === scale) ?? UI_SCALES[1];
+  const { showConnections, setShowConnections } = useScanStore();
 
   return (
     <DropdownMenu open={isOpen} onOpenChange={setIsOpen}>
@@ -137,6 +139,39 @@ export function PortSettings() {
             <kbd className="font-mono">{isMac ? '⌘' : 'Ctrl'} +</kbd> /{' '}
             <kbd className="font-mono">{isMac ? '⌘' : 'Ctrl'} −</kbd>
           </p>
+        </div>
+
+        <div className="border-t border-border" />
+
+        <div className="flex items-start justify-between gap-4 px-4 py-3.5">
+          <div>
+            <h3 id="show-connections-label" className="text-[13px] font-semibold text-foreground">
+              Show outgoing connections
+            </h3>
+            <p className="mt-0.5 text-[12px] text-muted-foreground">
+              Also list the local port of every connection this machine has open, not just
+              listening ports. A much longer list, and more work each refresh.
+            </p>
+          </div>
+          <button
+            type="button"
+            role="switch"
+            aria-checked={showConnections}
+            aria-labelledby="show-connections-label"
+            onClick={() => setShowConnections(!showConnections)}
+            className={cn(
+              'relative mt-0.5 h-5 w-9 shrink-0 rounded-full border transition-colors duration-200 ease-out',
+              'focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring/50',
+              showConnections ? 'border-foreground/60 bg-foreground/80' : 'border-border bg-elevated'
+            )}
+          >
+            <span
+              className={cn(
+                'absolute left-0.5 top-1/2 h-3.5 w-3.5 -translate-y-1/2 rounded-full transition-transform duration-200 ease-out',
+                showConnections ? 'translate-x-4 bg-background' : 'translate-x-0 bg-muted-foreground'
+              )}
+            />
+          </button>
         </div>
 
         <div className="border-t border-border" />

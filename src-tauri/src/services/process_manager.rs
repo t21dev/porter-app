@@ -164,7 +164,7 @@ impl ProcessManager {
 
     /// Kill process by port number
     pub fn kill_process_by_port(&mut self, port: u16) -> Result<bool> {
-        let connections = platform::get_network_connections()?;
+        let connections = platform::get_network_connections(true)?;
 
         for conn in connections {
             if conn.local_port == port && conn.pid > 0 {

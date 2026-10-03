@@ -6,19 +6,23 @@ use windows::Win32::NetworkManagement::IpHelper::*;
 #[cfg(target_os = "windows")]
 use windows::Win32::Networking::WinSock::*;
 
-/// Every listening TCP socket, IPv4 and IPv6.
+/// TCP sockets, IPv4 and IPv6: listeners only, or every connection too.
 ///
-/// Listeners only: the table of all connections also holds the local end of
-/// every outgoing connection (browser tabs, sync clients), which on a normal
-/// desktop is most of the rows. Those ephemeral ports are not something a port
-/// monitor can act on, and each one cost a process lookup per scan. IPv6 is
-/// included because a dev server bound to "localhost" often listens on ::1
-/// alone, and used to show as free.
+/// Listeners are the default: the table of all connections also holds the
+/// local end of every outgoing connection (browser tabs, sync clients), which
+/// on a normal desktop is most of the rows and costs a process lookup each.
+/// IPv6 is included because a dev server bound to "localhost" often listens on
+/// ::1 alone, and used to show as free.
 #[cfg(target_os = "windows")]
-pub fn get_network_connections() -> Result<Vec<NetworkConnection>> {
+pub fn get_network_connections(include_connections: bool) -> Result<Vec<NetworkConnection>> {
+    let class = if include_connections {
+        TCP_TABLE_OWNER_PID_ALL
+    } else {
+        TCP_TABLE_OWNER_PID_LISTENER
+    };
     let mut connections = Vec::new();
     unsafe {
-        if let Some(buffer) = tcp_table(AF_INET.0 as u32) {
+        if let Some(buffer) = tcp_table(AF_INET.0 as u32, class) {
             let table = &*(buffer.as_ptr() as *const MIB_TCPTABLE_OWNER_PID);
             let entries =
                 std::slice::from_raw_parts(table.table.as_ptr(), table.dwNumEntries as usize);
@@ -35,7 +39,7 @@ pub fn get_network_connections() -> Result<Vec<NetworkConnection>> {
                 });
             }
         }
-        if let Some(buffer) = tcp_table(AF_INET6.0 as u32) {
+        if let Some(buffer) = tcp_table(AF_INET6.0 as u32, class) {
             let table = &*(buffer.as_ptr() as *const MIB_TCP6TABLE_OWNER_PID);
             let entries =
                 std::slice::from_raw_parts(table.table.as_ptr(), table.dwNumEntries as usize);
@@ -56,12 +60,12 @@ pub fn get_network_connections() -> Result<Vec<NetworkConnection>> {
     Ok(connections)
 }
 
-/// The listener table for one address family, or None if it cannot be read.
+/// One TCP table for one address family, or None if it cannot be read.
 /// Retries if the table grows between the size query and the read.
 #[cfg(target_os = "windows")]
-unsafe fn tcp_table(family: u32) -> Option<Vec<u32>> {
+unsafe fn tcp_table(family: u32, class: TCP_TABLE_CLASS) -> Option<Vec<u32>> {
     let mut size: u32 = 0;
-    let _ = GetExtendedTcpTable(None, &mut size, false, family, TCP_TABLE_OWNER_PID_LISTENER, 0);
+    let _ = GetExtendedTcpTable(None, &mut size, false, family, class, 0);
     for _ in 0..4 {
         if size == 0 {
             return None;
@@ -73,7 +77,7 @@ unsafe fn tcp_table(family: u32) -> Option<Vec<u32>> {
             &mut size,
             false,
             family,
-            TCP_TABLE_OWNER_PID_LISTENER,
+            class,
             0,
         );
         match result {
@@ -113,7 +117,7 @@ pub fn is_system_process(pid: u32) -> bool {
 }
 
 #[cfg(not(target_os = "windows"))]
-pub fn get_network_connections() -> Result<Vec<NetworkConnection>> {
+pub fn get_network_connections(_include_connections: bool) -> Result<Vec<NetworkConnection>> {
     Ok(Vec::new())
 }
 

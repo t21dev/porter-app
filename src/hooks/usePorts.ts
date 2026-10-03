@@ -2,6 +2,7 @@ import { useQuery, useQueryClient } from '@tanstack/react-query';
 import { useState, useEffect, useCallback } from 'react';
 import { getCurrentWindow } from '@tauri-apps/api/window';
 import { getCommonPorts, getActivePorts } from '@/lib/tauri';
+import { useScanStore } from '@/store/scanStore';
 
 /**
  * Whether the window is minimised. The webview keeps reporting itself as
@@ -69,6 +70,7 @@ export function usePinnedPorts(refreshInterval: number = 2000) {
 export function useAllPorts(refreshInterval: number = 3000) {
   const minimized = useMinimized();
   const queryClient = useQueryClient();
+  const showConnections = useScanStore((s) => s.showConnections);
 
   // Catch up the moment the window comes back rather than up to one interval later.
   useEffect(() => {
@@ -76,8 +78,10 @@ export function useAllPorts(refreshInterval: number = 3000) {
   }, [minimized, queryClient]);
 
   return useQuery({
-    queryKey: ['ports', 'all'],
-    queryFn: getActivePorts,
+    queryKey: ['ports', 'all', showConnections],
+    queryFn: () => getActivePorts(showConnections),
+    // Keep showing the last list while the other kind loads, instead of the loader.
+    placeholderData: (previous) => previous,
     refetchInterval: minimized ? false : refreshInterval,
     // Nothing to watch while the window is minimised or hidden.
     refetchIntervalInBackground: false,

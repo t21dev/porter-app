@@ -26,9 +26,12 @@ async fn blocking<T: Send + 'static>(
         .map_err(|e| e.to_string())
 }
 
+/// Listening ports, and with `include_connections` also the local end of every
+/// connection (the "Show outgoing connections" setting, off by default).
 #[tauri::command]
-pub async fn get_active_ports() -> Result<Vec<Port>, String> {
-    blocking(|| PortMonitor::new().get_active_ports()).await
+pub async fn get_active_ports(include_connections: Option<bool>) -> Result<Vec<Port>, String> {
+    let include = include_connections.unwrap_or(false);
+    blocking(move || PortMonitor::new().get_active_ports(include)).await
 }
 
 #[tauri::command]

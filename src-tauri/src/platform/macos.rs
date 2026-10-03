@@ -2,13 +2,18 @@ use super::{NetworkConnection, Protocol};
 use anyhow::Result;
 use std::process::Command;
 
-pub fn get_network_connections() -> Result<Vec<NetworkConnection>> {
+/// Sockets from lsof: TCP listeners only, or every connection with
+/// `include_connections`. Asking lsof for listeners alone is much less work
+/// for it than listing every connection and throwing most away.
+pub fn get_network_connections(include_connections: bool) -> Result<Vec<NetworkConnection>> {
     let mut connections = Vec::new();
 
-    // Use lsof command to get network connections
-    let output = Command::new("lsof")
-        .args(&["-i", "-P", "-n"])
-        .output()?;
+    let args: &[&str] = if include_connections {
+        &["-i", "-P", "-n"]
+    } else {
+        &["-iTCP", "-sTCP:LISTEN", "-P", "-n"]
+    };
+    let output = Command::new("lsof").args(args).output()?;
 
     let stdout = String::from_utf8_lossy(&output.stdout);
 
@@ -19,7 +24,8 @@ pub fn get_network_connections() -> Result<Vec<NetworkConnection>> {
             continue;
         }
 
-        let name_field = parts[8];
+        // "local->remote" for a connection; the local side is the port in use.
+        let name_field = parts[8].split("->").next().unwrap_or(parts[8]);
 
         // Parse address:port
         if let Some((addr, port_str)) = name_field.rsplit_once(':') {
@@ -39,7 +45,10 @@ pub fn get_network_connections() -> Result<Vec<NetworkConnection>> {
                     remote_port: 0,
                     protocol,
                     pid,
-                    state: parts.get(9).unwrap_or(&"").to_string(),
+                    state: parts
+                        .get(9)
+                        .map(|s| s.trim_matches(|c| c == '(' || c == ')').to_string())
+                        .unwrap_or_default(),
                 });
             }
         }

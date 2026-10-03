@@ -23,6 +23,7 @@ A sleek, fast, and secure desktop port monitoring application built with Tauri, 
 - **Process Management** - Kill processes occupying ports (requires admin privileges)
 - **Smart Filtering** - Filter ports by status (Free, Occupied, System) and search by port number or process name
 - **Show All Ports** - Toggle between common ports and all running ports
+- **Outgoing Connections** - Optionally list the local port of every open connection too, not just listening ports (Settings, off by default)
 - **Dark/Light Mode** - Minimal near-black and light themes with a smooth crossfade between them
 - **Custom Title Bar** - Frameless window with integrated controls (native traffic lights on macOS)
 - **Admin Privilege Detection** - Automatically detects and warns when running without admin rights
@@ -125,7 +126,7 @@ The built application will be available in `src-tauri/target/release/bundle/`
    - Green = Free, Amber = In use, Blue = System
 
 3. **Search Ports**
-   - Use the search bar to find a port by number (press `/` to focus it, `Esc` to clear)
+   - Use the search bar to find a port by number or by the name of the process holding it (press `/` to focus it, `Esc` to clear)
 
 4. **Filter by Status**
    - Toggle the Free, Occupied, and System chips next to the search bar
@@ -140,7 +141,8 @@ The built application will be available in `src-tauri/target/release/bundle/`
    - Changes are saved automatically
 
 7. **Toggle Views**
-   - Expand "Other ports" below your pinned list to see every running port on the system
+   - Expand "Other ports" below your pinned list to see every listening port on the system
+   - Turn on **Show outgoing connections** in settings to also list the local port of every open connection
 
 ## 🔧 Configuration
 

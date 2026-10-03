@@ -17,9 +17,12 @@ impl PortMonitor {
         Self
     }
 
-    /// Every listening port, with the name and PID of its owner.
-    pub fn get_active_ports(&mut self) -> Result<Vec<Port>> {
-        let conns = platform::get_network_connections()?;
+    /// Every listening port, with the name and PID of its owner. With
+    /// `include_connections`, also the local port of every connection.
+    pub fn get_active_ports(&mut self, include_connections: bool) -> Result<Vec<Port>> {
+        let mut conns = platform::get_network_connections(include_connections)?;
+        // A port can have a listener and connections; the listener names it.
+        conns.sort_by_key(|c| c.state != "LISTEN");
         let pids: Vec<Pid> = {
             let mut v: Vec<u32> = conns.iter().map(|c| c.pid).filter(|p| *p > 0).collect();
             v.sort_unstable();
@@ -47,9 +50,9 @@ impl PortMonitor {
     /// One port with everything known about its process: path, command line,
     /// working directory, start time and memory. Only this one process is read.
     pub fn get_port_details(&mut self, port: u16) -> Result<Option<Port>> {
-        let Some(conn) = platform::get_network_connections()?
-            .into_iter()
-            .find(|c| c.local_port == port)
+        let mut conns = platform::get_network_connections(true)?;
+        conns.sort_by_key(|c| c.state != "LISTEN");
+        let Some(conn) = conns.into_iter().find(|c| c.local_port == port)
         else {
             return Ok(None);
         };
@@ -95,7 +98,7 @@ impl PortMonitor {
     /// Scan specific ports
     pub fn scan_ports(&mut self, ports_to_scan: &[u16]) -> Result<Vec<Port>> {
         let all_ports: HashMap<u16, Port> = self
-            .get_active_ports()?
+            .get_active_ports(false)?
             .into_iter()
             .map(|p| (p.port, p))
             .collect();

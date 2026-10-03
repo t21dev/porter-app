@@ -19,6 +19,7 @@ import { Port } from './types/api';
 import { Toaster } from './components/ui/toaster';
 import { useToast } from './hooks/use-toast';
 import { installScaleShortcuts } from './store/uiScaleStore';
+import { DEFAULT_PINNED_PORTS } from './components/dashboard/PortSettings';
 
 const queryClient = new QueryClient();
 
@@ -41,7 +42,11 @@ function AppContent() {
   const { refreshPorts } = useRefreshPorts();
 
   // Get pinned port numbers for checking
-  const [pinnedPortNumbers, setPinnedPortNumbers] = useState<Set<number>>(new Set());
+  // Until the user changes them, the defaults the settings menu shows are the
+  // ones pinned. This started empty, so a fresh install showed no ports at all.
+  const [pinnedPortNumbers, setPinnedPortNumbers] = useState<Set<number>>(
+    () => new Set(DEFAULT_PINNED_PORTS)
+  );
 
   useEffect(() => {
     // Migrate from old key if needed
@@ -157,10 +162,14 @@ function AppContent() {
       filtered = filtered.filter((port) => selectedStatuses.has(port.status));
 
       // Filter by search query
+      // Port number, or the name of the process holding it, as the README says.
       if (searchQuery) {
-        filtered = filtered.filter((port) => {
-          return port.port.toString().includes(searchQuery);
-        });
+        const q = searchQuery.trim().toLowerCase();
+        filtered = filtered.filter(
+          (port) =>
+            port.port.toString().includes(q) ||
+            (port.status !== 'free' && !!port.process?.name.toLowerCase().includes(q))
+        );
       }
 
       return filtered;
