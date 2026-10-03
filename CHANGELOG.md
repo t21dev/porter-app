@@ -7,6 +7,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [0.4.0] - 2026-10-04
+
 ### Added
 - Pin or unpin a port straight from its row, under Other ports, in search
   results or in the pinned list, without opening settings. Unpinning shows an
