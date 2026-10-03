@@ -7,6 +7,21 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [0.3.1] - 2026-10-03
+
+### Added
+- **Show outgoing connections** in settings, off by default. Turn it on to list
+  the local port of every open connection as well as listening ports, as
+  versions before 0.3.0 did.
+
+### Fixed
+- A fresh install pinned no ports, although settings listed five defaults. The
+  defaults are now pinned until you change them.
+- Search finds ports by the name of the process holding them, as well as by
+  number. The search box used to accept digits only.
+- On macOS, a connection was listed under its remote port instead of its local
+  one.
+
 ## [0.3.0] - 2026-10-03
 
 ### Changed
