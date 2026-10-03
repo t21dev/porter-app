@@ -65,9 +65,18 @@ Download the latest release for your platform from the [Releases page](https://g
 
 | Platform | File |
 |----------|------|
-| Windows | `Porter_x.x.x_x64-setup.exe` or `.msi` |
+| Windows | `Porter_x.x.x_x64-setup.exe` or `.msi`, or `Porter_x.x.x_x64_portable.zip` to run without installing |
 | macOS | `Porter_x.x.x_aarch64.dmg` (Apple Silicon) or `Porter_x.x.x_x64.dmg` (Intel) |
 | Linux | `.deb` or `.AppImage` |
+
+#### Portable version (Windows)
+
+Unzip `Porter_x.x.x_x64_portable.zip` anywhere, a USB stick included, and run
+`Porter.exe`. Nothing is installed. The `portable` file next to it keeps your
+settings and pinned ports in a `data` folder beside the exe, so deleting the
+folder removes every trace. Delete the `portable` file to use the normal
+per-user data folder instead. It needs the Microsoft Edge WebView2 Runtime,
+which Windows 10 and 11 already have.
 
 #### macOS Installation Note
 
@@ -78,6 +87,30 @@ macOS may show an error saying **"Porter is damaged and can't be opened"**. This
 xattr -cr /Applications/Porter.app
 ```
 Then open the app normally. Alternatively, right-click the app and select "Open" instead of double-clicking.
+
+---
+
+### Run in Docker
+
+Porter also runs in a container, shown in your browser. It shares the host's
+process namespace and reads the host's socket table, so it lists the listening
+ports of the machine the container runs on. That makes it useful on a headless
+Linux server, or for seeing which of your containers holds which port.
+
+```bash
+docker compose up -d --build
+```
+
+Then open <http://localhost:6080>. The view has no password, so the port is
+published on `127.0.0.1` only; to reach it from another machine, use an SSH
+tunnel (`ssh -L 6080:localhost:6080 your-server`).
+
+- On a Linux host, Porter sees every listening port on the host and the process
+  behind it, and can stop it.
+- On Docker Desktop (Windows, macOS), the host is Docker's Linux VM, so Porter
+  shows your containers' published ports (owned by `dockerd`) rather than the
+  ports of Windows or macOS itself.
+- Settings and pinned ports are kept in the `porter-data` volume.
 
 ---
 

@@ -7,6 +7,19 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Added
+- A portable version for Windows: a zip that runs without installing and keeps
+  its settings in a `data` folder next to the exe while a `portable` file sits
+  beside it.
+- Porter runs in Docker. `docker compose up` starts it on a virtual display
+  shown in the browser at `http://localhost:6080`. Sharing the host's process
+  namespace, it reads the host's socket table, so it lists the host's
+  listening ports (on Docker Desktop, your containers' published ports).
+
+### Changed
+- Releases are created once before the builds start, so parallel builds can no
+  longer split a release into several drafts.
+
 ## [0.3.1] - 2026-10-03
 
 ### Added

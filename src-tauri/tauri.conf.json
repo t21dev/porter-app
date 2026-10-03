@@ -13,6 +13,8 @@
     "windows": [
       {
         "title": "Porter - Port Monitor",
+        "label": "main",
+        "create": false,
         "width": 700,
         "height": 900,
         "minWidth": 700,

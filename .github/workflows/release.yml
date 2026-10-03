@@ -7,7 +7,49 @@ on:
   workflow_dispatch:
 
 jobs:
+  # One draft release, created before any build starts, so the parallel build
+  # jobs upload into the same release instead of each creating their own.
+  create-release:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+    outputs:
+      release_id: ${{ steps.create.outputs.id }}
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Create the draft release
+        id: create
+        shell: bash
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          TAG: ${{ github.ref_name }}
+        run: |
+          VERSION=${TAG#v}
+          NOTES=$(sed -n "/## \[$VERSION\]/,/## \[/p" CHANGELOG.md | sed '$d' | tail -n +2)
+          if [ -z "$NOTES" ]; then
+            NOTES="See CHANGELOG.md for details."
+          fi
+          cat > body.md <<EOF
+          ## What's Changed
+          $NOTES
+
+          ## 📦 Downloads
+          Choose the appropriate installer for your platform below. On Windows,
+          the \`_portable.zip\` runs without installing and keeps its data
+          next to the exe.
+
+          ## 🚀 Installation
+          See [Installation Guide](https://github.com/t21dev/porter-app#installation) for detailed instructions.
+          EOF
+          ID=$(gh api -X POST "repos/${{ github.repository }}/releases" \
+            -f tag_name="$TAG" -f name="Porter v$VERSION" \
+            -F draft=true -F prerelease=false -F body=@body.md --jq .id)
+          echo "id=$ID" >> "$GITHUB_OUTPUT"
+
   release:
+    needs: create-release
     permissions:
       contents: write
     strategy:
@@ -43,35 +85,28 @@ jobs:
       - name: Install frontend dependencies
         run: npm install
 
-      - name: Extract changelog
-        id: changelog
-        shell: bash
-        run: |
-          VERSION=${GITHUB_REF#refs/tags/v}
-          # Extract changelog section for this version
-          CHANGELOG=$(sed -n "/## \[$VERSION\]/,/## \[/p" CHANGELOG.md | sed '$d' | tail -n +2)
-          if [ -z "$CHANGELOG" ]; then
-            CHANGELOG="See CHANGELOG.md for details."
-          fi
-          echo "notes<<EOF" >> $GITHUB_OUTPUT
-          echo "$CHANGELOG" >> $GITHUB_OUTPUT
-          echo "EOF" >> $GITHUB_OUTPUT
-
       - name: Build the app
         uses: tauri-apps/tauri-action@v0.5
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         with:
-          tagName: ${{ github.ref_name }}
-          releaseName: 'Porter v__VERSION__'
-          releaseBody: |
-            ## What's Changed
-            ${{ steps.changelog.outputs.notes }}
+          releaseId: ${{ needs.create-release.outputs.release_id }}
 
-            ## 📦 Downloads
-            Choose the appropriate installer for your platform below.
-
-            ## 🚀 Installation
-            See [Installation Guide](https://github.com/t21dev/porter-app#installation) for detailed instructions.
-          releaseDraft: true
-          prerelease: false
+      # A zip that runs without installing. The `portable` file next to the
+      # exe keeps all data in a `data` folder beside it.
+      - name: Portable zip (Windows)
+        if: matrix.platform == 'windows-latest'
+        shell: pwsh
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          $version = "${{ github.ref_name }}".TrimStart('v')
+          $dir = "Porter"
+          New-Item -ItemType Directory $dir | Out-Null
+          Copy-Item "src-tauri/target/release/porter-app.exe" "$dir/Porter.exe"
+          Set-Content "$dir/portable" "Porter keeps its data in the data folder next to it while this file is here. Delete this file to use the normal per-user data folder instead. Needs the Microsoft Edge WebView2 Runtime, which Windows 10 and 11 already have."
+          $zip = "Porter_${version}_x64_portable.zip"
+          Compress-Archive -Path $dir -DestinationPath $zip
+          # Straight to the release by id: a draft has no public tag to look up.
+          gh api -X POST "https://uploads.github.com/repos/${{ github.repository }}/releases/${{ needs.create-release.outputs.release_id }}/assets?name=$zip" `
+            -H "Content-Type: application/zip" --input $zip --jq .name

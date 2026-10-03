@@ -1,0 +1,30 @@
+# Porter for a Docker host: open http://localhost:6080
+#
+# pid: host shares the host's process namespace, so Porter reads the host's
+# socket table (through /proc/1/net) and names the process behind each port.
+# On Docker Desktop (Windows, macOS) the host is Docker's Linux VM, which is
+# where your containers' published ports live.
+services:
+  porter:
+    build:
+      context: .
+      dockerfile: docker/Dockerfile
+    image: porter:latest
+    pid: host
+    cap_add:
+      # Read other processes' /proc entries to name a port's owner.
+      - SYS_PTRACE
+    ports:
+      # The browser view has no password, so it is published on this machine's
+      # loopback only. Reach it from elsewhere through an SSH tunnel.
+      - "127.0.0.1:6080:6080"
+    environment:
+      # Inside the container; the line above decides who can reach it.
+      PORTER_BIND: 0.0.0.0
+    volumes:
+      # Keeps settings and pinned ports between restarts.
+      - porter-data:/root/.local/share/com.triptoafsin.porter
+    restart: unless-stopped
+
+volumes:
+  porter-data:

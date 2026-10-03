@@ -11,9 +11,14 @@ use std::fs;
 /// once per connection, reading every descriptor of every process each time:
 /// millions of readlink calls every few seconds on a busy machine.
 pub fn get_network_connections(include_connections: bool) -> Result<Vec<NetworkConnection>> {
+    // The socket tables of the network namespace to watch. /proc/net is this
+    // process's own. The Docker image points it at /proc/1/net, which with
+    // the host's process namespace (pid: host) is the host's network, while
+    // the container keeps its own network for the browser view.
+    let net = std::env::var("PORTER_NET_DIR").unwrap_or_else(|_| "/proc/net".to_string());
     let mut listeners = Vec::new();
-    for path in ["/proc/net/tcp", "/proc/net/tcp6"] {
-        if let Ok(content) = fs::read_to_string(path) {
+    for file in ["tcp", "tcp6"] {
+        if let Ok(content) = fs::read_to_string(format!("{net}/{file}")) {
             listeners.extend(parse_proc_net_tcp(&content, include_connections));
         }
     }

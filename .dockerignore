@@ -1,0 +1,10 @@
+node_modules
+dist
+src-tauri/target
+src-tauri/target-*
+issue-ss
+docs
+.git
+*.png
+!src-tauri/icons/*.png
+!public/**/*.png
