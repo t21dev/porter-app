@@ -7,18 +7,18 @@ export interface Port {
   protocol: Protocol;
   process?: Process;
   ip_address: string;
-  created_at?: string;
 }
 
+/** The port list carries only pid and name. The rest comes from
+    get_port_details, for one port at a time. */
 export interface Process {
   pid: number;
   name: string;
-  path: string;
-  command: string;
+  path?: string;
+  command?: string;
   working_dir?: string;
-  cpu_usage: number;
-  memory_usage: number;
-  started_at: string;
+  memory_usage?: number;
+  started_at?: string;
   user?: string;
 }
 

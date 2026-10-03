@@ -58,7 +58,7 @@ export function PortDetailModal({ port, onClose, onKill }: PortDetailModalProps)
                     </>
                   )}
                   <div className="text-muted-foreground">Started:</div>
-                  <div>{formatUptime(port.process.started_at)} ago</div>
+                  <div>{port.process.started_at ? `${formatUptime(port.process.started_at)} ago` : 'Unknown'}</div>
                 </div>
               </div>
 
@@ -66,10 +66,8 @@ export function PortDetailModal({ port, onClose, onKill }: PortDetailModalProps)
               <div className="border-t pt-4">
                 <h3 className="font-semibold mb-2">Resource Usage</h3>
                 <div className="grid grid-cols-2 gap-2 text-sm">
-                  <div className="text-muted-foreground">CPU:</div>
-                  <div>{port.process.cpu_usage.toFixed(1)}%</div>
                   <div className="text-muted-foreground">Memory:</div>
-                  <div>{formatBytes(port.process.memory_usage)}</div>
+                  <div>{port.process.memory_usage !== undefined ? formatBytes(port.process.memory_usage) : 'Unknown'}</div>
                 </div>
               </div>
 

@@ -6,62 +6,44 @@ use windows::Win32::NetworkManagement::IpHelper::*;
 #[cfg(target_os = "windows")]
 use windows::Win32::Networking::WinSock::*;
 
+/// Every listening TCP socket, IPv4 and IPv6.
+///
+/// Listeners only: the table of all connections also holds the local end of
+/// every outgoing connection (browser tabs, sync clients), which on a normal
+/// desktop is most of the rows. Those ephemeral ports are not something a port
+/// monitor can act on, and each one cost a process lookup per scan. IPv6 is
+/// included because a dev server bound to "localhost" often listens on ::1
+/// alone, and used to show as free.
 #[cfg(target_os = "windows")]
 pub fn get_network_connections() -> Result<Vec<NetworkConnection>> {
     let mut connections = Vec::new();
-
     unsafe {
-        // Get TCP connections
-        let mut size: u32 = 0;
-
-        // Get required buffer size
-        let _ = GetExtendedTcpTable(
-            None,
-            &mut size,
-            false,
-            AF_INET.0 as u32,
-            TCP_TABLE_OWNER_PID_ALL,
-            0,
-        );
-
-        if size == 0 {
-            return Ok(connections);
-        }
-
-        // Allocate buffer
-        let mut buffer = vec![0u8; size as usize];
-
-        // Get TCP table
-        let result = GetExtendedTcpTable(
-            Some(buffer.as_mut_ptr() as *mut _),
-            &mut size,
-            false,
-            AF_INET.0 as u32,
-            TCP_TABLE_OWNER_PID_ALL,
-            0,
-        );
-
-        if result == 0 {
+        if let Some(buffer) = tcp_table(AF_INET.0 as u32) {
             let table = &*(buffer.as_ptr() as *const MIB_TCPTABLE_OWNER_PID);
-            let entries = std::slice::from_raw_parts(
-                &table.table[0],
-                table.dwNumEntries as usize,
-            );
-
+            let entries =
+                std::slice::from_raw_parts(table.table.as_ptr(), table.dwNumEntries as usize);
             for entry in entries {
-                let local_addr = format!(
-                    "{}.{}.{}.{}",
-                    entry.dwLocalAddr & 0xFF,
-                    (entry.dwLocalAddr >> 8) & 0xFF,
-                    (entry.dwLocalAddr >> 16) & 0xFF,
-                    (entry.dwLocalAddr >> 24) & 0xFF,
-                );
-
-                let local_port = u16::from_be(entry.dwLocalPort as u16);
-
+                let ip = std::net::Ipv4Addr::from(u32::from_be(entry.dwLocalAddr));
                 connections.push(NetworkConnection {
-                    local_address: local_addr,
-                    local_port,
+                    local_address: ip.to_string(),
+                    local_port: u16::from_be(entry.dwLocalPort as u16),
+                    remote_address: String::new(),
+                    remote_port: 0,
+                    protocol: Protocol::TCP,
+                    pid: entry.dwOwningPid,
+                    state: format_tcp_state(entry.dwState),
+                });
+            }
+        }
+        if let Some(buffer) = tcp_table(AF_INET6.0 as u32) {
+            let table = &*(buffer.as_ptr() as *const MIB_TCP6TABLE_OWNER_PID);
+            let entries =
+                std::slice::from_raw_parts(table.table.as_ptr(), table.dwNumEntries as usize);
+            for entry in entries {
+                let ip = std::net::Ipv6Addr::from(entry.ucLocalAddr);
+                connections.push(NetworkConnection {
+                    local_address: ip.to_string(),
+                    local_port: u16::from_be(entry.dwLocalPort as u16),
                     remote_address: String::new(),
                     remote_port: 0,
                     protocol: Protocol::TCP,
@@ -71,8 +53,37 @@ pub fn get_network_connections() -> Result<Vec<NetworkConnection>> {
             }
         }
     }
-
     Ok(connections)
+}
+
+/// The listener table for one address family, or None if it cannot be read.
+/// Retries if the table grows between the size query and the read.
+#[cfg(target_os = "windows")]
+unsafe fn tcp_table(family: u32) -> Option<Vec<u32>> {
+    let mut size: u32 = 0;
+    let _ = GetExtendedTcpTable(None, &mut size, false, family, TCP_TABLE_OWNER_PID_LISTENER, 0);
+    for _ in 0..4 {
+        if size == 0 {
+            return None;
+        }
+        // u32 elements keep the buffer aligned for the table structs.
+        let mut buffer = vec![0u32; (size as usize).div_ceil(4)];
+        let result = GetExtendedTcpTable(
+            Some(buffer.as_mut_ptr() as *mut _),
+            &mut size,
+            false,
+            family,
+            TCP_TABLE_OWNER_PID_LISTENER,
+            0,
+        );
+        match result {
+            0 => return Some(buffer),
+            // ERROR_INSUFFICIENT_BUFFER: the table grew, size now holds the new size
+            122 => continue,
+            _ => return None,
+        }
+    }
+    None
 }
 
 #[cfg(target_os = "windows")]

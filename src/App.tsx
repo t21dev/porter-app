@@ -1,4 +1,4 @@
-import { useState, useMemo, useEffect, type CSSProperties, type ReactNode } from 'react';
+import { useState, useMemo, useEffect, useCallback, type CSSProperties, type ReactNode } from 'react';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import { ChevronDown } from 'lucide-react';
 import SimpleBar from 'simplebar-react';
@@ -172,7 +172,8 @@ function AppContent() {
     };
   }, [pinnedPortsList, otherPortsList, searchQuery, selectedStatuses]);
 
-  const handleKillProcess = async (pid: number) => {
+  // Stable, so memoised rows are not re-rendered by a new callback each poll.
+  const handleKillProcess = useCallback(async (pid: number) => {
     // Always try to kill - on macOS/Linux the backend will prompt for elevation if needed
     try {
       await killProcess(pid);
@@ -190,7 +191,7 @@ function AppContent() {
         description: errorMessage,
       });
     }
-  };
+  }, [refreshPorts, toast]);
 
   const stats = useMemo(() => {
     const allDisplayedPorts = [...pinnedPortsList, ...otherPortsList];

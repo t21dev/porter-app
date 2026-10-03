@@ -1,4 +1,4 @@
-import type { CSSProperties } from 'react';
+import { memo, type CSSProperties } from 'react';
 import { Pin, X } from 'lucide-react';
 import { Port } from '@/types/api';
 import { getPortTypeInfo } from '@/lib/portTypes';
@@ -31,7 +31,9 @@ const statusStyles = {
   system: { dot: 'bg-system', text: 'text-system', tint: 'bg-system/10', label: 'System' },
 } as const;
 
-export function PortListItem({ port, onKill, isPinned = false, showPin = false, index = 0 }: PortListItemProps) {
+// Memoised: a poll returns the same object for a port that did not change, so
+// only rows whose port actually changed re-render.
+export const PortListItem = memo(function PortListItem({ port, onKill, isPinned = false, showPin = false, index = 0 }: PortListItemProps) {
   const isOccupied = port.status === 'occupied';
   const portType = getPortTypeInfo(port.port);
   const PortIcon = portType.icon;
@@ -141,4 +143,4 @@ export function PortListItem({ port, onKill, isPinned = false, showPin = false, 
       </div>
     </div>
   );
-}
+});

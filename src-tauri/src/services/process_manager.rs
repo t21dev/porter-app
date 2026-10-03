@@ -1,6 +1,14 @@
 use crate::platform;
 use anyhow::{Result, anyhow};
-use sysinfo::{Pid, System};
+use sysinfo::{Pid, ProcessRefreshKind, ProcessesToUpdate, System};
+
+/// Whether a process is running now. A fresh snapshot, because a refresh of
+/// specific PIDs never drops the ones that have exited from the list.
+fn is_running(pid: Pid) -> bool {
+    let mut sys = System::new();
+    sys.refresh_processes_specifics(ProcessesToUpdate::Some(&[pid]), ProcessRefreshKind::new());
+    sys.process(pid).is_some()
+}
 
 #[cfg(not(target_os = "windows"))]
 use sysinfo::Signal;
@@ -15,15 +23,16 @@ pub struct ProcessManager {
 impl ProcessManager {
     pub fn new() -> Self {
         Self {
-            system: System::new_all(),
+            system: System::new(),
         }
     }
 
     /// Kill a process by PID
     pub fn kill_process(&mut self, pid: u32) -> Result<bool> {
-        self.system.refresh_processes(sysinfo::ProcessesToUpdate::All);
-
         let pid_obj = Pid::from_u32(pid);
+        // Only the process being killed, not every process on the machine.
+        self.system
+            .refresh_processes_specifics(ProcessesToUpdate::Some(&[pid_obj]), ProcessRefreshKind::new());
 
         if let Some(process) = self.system.process(pid_obj) {
             // On Windows, try direct kill. On Unix, try SIGTERM first
@@ -32,9 +41,7 @@ impl ProcessManager {
                 // Windows: use kill() directly (sends SIGKILL equivalent)
                 if process.kill() {
                     std::thread::sleep(std::time::Duration::from_millis(300));
-                    self.system.refresh_processes(sysinfo::ProcessesToUpdate::All);
-
-                    if self.system.process(pid_obj).is_none() {
+                    if !is_running(pid_obj) {
                         return Ok(true);
                     }
 
@@ -56,9 +63,7 @@ impl ProcessManager {
                 // Unix: Try SIGTERM first, then SIGKILL
                 if process.kill_with(Signal::Term).unwrap_or(false) {
                     std::thread::sleep(std::time::Duration::from_millis(500));
-                    self.system.refresh_processes(sysinfo::ProcessesToUpdate::All);
-
-                    if self.system.process(pid_obj).is_none() {
+                    if !is_running(pid_obj) {
                         return Ok(true);
                     }
 

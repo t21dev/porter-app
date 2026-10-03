@@ -12,6 +12,7 @@
     "core:window:allow-toggle-maximize",
     "core:window:allow-close",
     "core:window:allow-is-maximized",
+    "core:window:allow-is-minimized",
     "core:window:allow-set-size",
     "core:window:allow-set-min-size",
     "core:window:allow-set-max-size",

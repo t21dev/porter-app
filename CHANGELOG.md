@@ -7,6 +7,24 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Changed
+- Much lighter on the machine. Idle CPU dropped from about 15% of a core to
+  about 1.5%, and to nothing while minimised. Each refresh used to re-read
+  every process on the system; it now reads only the processes that own a
+  port, and only their names. The data sent to the window each refresh went
+  from about 120 KB to about 6 KB.
+- The port list shows listening ports only. It used to include the local end of
+  every outgoing connection, which was most of the list and nothing you could
+  free up.
+- Refreshing pauses while the window is minimised and catches up on restore.
+
+### Fixed
+- Ports listening on IPv6 only (such as a dev server bound to `localhost` that
+  resolved to `::1`) showed as free on Windows.
+- On Linux, finding the process behind each port walked every open file of
+  every process once per connection. It now does one pass per refresh, keeps
+  listening sockets only, and reads IPv6 addresses correctly.
+
 ## [0.2.2] - 2026-10-02
 
 ### Added
