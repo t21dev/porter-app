@@ -19,7 +19,8 @@ import { Port } from './types/api';
 import { Toaster } from './components/ui/toaster';
 import { useToast } from './hooks/use-toast';
 import { installScaleShortcuts } from './store/uiScaleStore';
-import { DEFAULT_PINNED_PORTS } from './components/dashboard/PortSettings';
+import { MAX_PINNED_PORTS, usePinStore } from './store/pinStore';
+import { ToastAction } from './components/ui/toast';
 
 const queryClient = new QueryClient();
 
@@ -41,40 +42,37 @@ function AppContent() {
   } = useAllPorts();
   const { refreshPorts } = useRefreshPorts();
 
-  // Get pinned port numbers for checking
-  // Until the user changes them, the defaults the settings menu shows are the
-  // ones pinned. This started empty, so a fresh install showed no ports at all.
-  const [pinnedPortNumbers, setPinnedPortNumbers] = useState<Set<number>>(
-    () => new Set(DEFAULT_PINNED_PORTS)
-  );
+  // Pinned ports come from one shared store, so a pin made from a row and one
+  // made in settings show up in both places at once.
+  const pins = usePinStore((s) => s.pins);
+  const pinnedPortNumbers = useMemo(() => new Set(pins), [pins]);
 
-  useEffect(() => {
-    // Migrate from old key if needed
-    const oldSaved = localStorage.getItem('porter-custom-ports');
-    if (oldSaved && !localStorage.getItem('porter-pinned-ports')) {
-      localStorage.setItem('porter-pinned-ports', oldSaved);
-      localStorage.removeItem('porter-custom-ports');
-    }
-
-    const saved = localStorage.getItem('porter-pinned-ports');
-    if (saved) {
-      try {
-        const ports = JSON.parse(saved);
-        setPinnedPortNumbers(new Set(ports));
-      } catch (e) {
-        console.error('Failed to load pinned ports:', e);
+  // Pin or unpin from a row. Unpinning a port that is not running makes it
+  // vanish from the list, so that toast carries an undo.
+  const togglePin = useCallback(
+    (port: number) => {
+      const result = usePinStore.getState().toggle(port);
+      if (result === 'full') {
+        toast({
+          variant: 'destructive',
+          title: 'Maximum ports reached',
+          description: `You can pin up to ${MAX_PINNED_PORTS} ports. Unpin one first.`,
+        });
+      } else if (result === 'unpinned') {
+        toast({
+          title: `Port ${port} unpinned`,
+          action: (
+            <ToastAction altText="Undo" onClick={() => usePinStore.getState().pin(port)}>
+              Undo
+            </ToastAction>
+          ),
+        });
+      } else {
+        toast({ title: `Port ${port} pinned`, description: 'It now stays at the top, running or not.' });
       }
-    }
-
-    const handlePortsChange = (e: CustomEvent) => {
-      setPinnedPortNumbers(new Set(e.detail));
-    };
-
-    window.addEventListener('pinned-ports-changed', handlePortsChange as EventListener);
-    return () => {
-      window.removeEventListener('pinned-ports-changed', handlePortsChange as EventListener);
-    };
-  }, []);
+    },
+    [toast]
+  );
 
   // Separate pinned and other ports from all ports
   // Create Port objects for all pinned ports, even if not currently running
@@ -255,6 +253,7 @@ function AppContent() {
                           onKill={handleKillProcess}
                           isPinned={pinnedPortNumbers.has(port.port)}
                           showPin
+                          onTogglePin={togglePin}
                         />
                       ))}
                     </ListSurface>
@@ -277,6 +276,7 @@ function AppContent() {
                           index={i}
                           onKill={handleKillProcess}
                           isPinned={true}
+                          onTogglePin={togglePin}
                         />
                       ))}
                     </ListSurface>
@@ -322,7 +322,11 @@ function AppContent() {
                         {/* Unclip once open so the sticky column header can stick. */}
                         <div style={otherPortsSettled && showAllPorts ? { overflow: 'visible' } : undefined}>
                           {showAllPorts && (
-                            <OtherPortsList ports={filteredOtherPorts} onKill={handleKillProcess} />
+                            <OtherPortsList
+                              ports={filteredOtherPorts}
+                              onKill={handleKillProcess}
+                              onTogglePin={togglePin}
+                            />
                           )}
                         </div>
                       </div>

@@ -61,6 +61,8 @@ function sortPorts(ports: Port[], key: SortKey, dir: SortDir): Port[] {
 interface OtherPortsListProps {
   ports: Port[];
   onKill: (pid: number) => void;
+  /** Pin a port from its row, without going into settings. */
+  onTogglePin?: (port: number) => void;
 }
 
 /**
@@ -68,7 +70,7 @@ interface OtherPortsListProps {
  * frozen order while the pointer is over it so live refreshes never move rows
  * out from under the user.
  */
-export function OtherPortsList({ ports, onKill }: OtherPortsListProps) {
+export function OtherPortsList({ ports, onKill, onTogglePin }: OtherPortsListProps) {
   const [prefs, setPrefs] = useState<ViewPrefs>(loadPrefs);
   const [paused, setPaused] = useState(false);
   // Groups start collapsed, like Task Manager; this tracks the open ones.
@@ -277,6 +279,8 @@ export function OtherPortsList({ ports, onKill }: OtherPortsListProps) {
             onSort={toggleSort}
             className="justify-end"
           />
+          {/* Room for the rows' pin and kill buttons, so Status lines up */}
+          {onTogglePin && <span className="w-7 shrink-0" />}
           <span className="w-7 shrink-0" />
         </div>
       </div>
@@ -308,7 +312,7 @@ export function OtherPortsList({ ports, onKill }: OtherPortsListProps) {
                 {!isCollapsed && (
                   <Rows>
                     {items.map((port, i) => (
-                      <PortListItem key={port.port} port={port} index={i} onKill={handleKill} />
+                      <PortListItem key={port.port} port={port} index={i} onKill={handleKill} onTogglePin={onTogglePin} />
                     ))}
                   </Rows>
                 )}
@@ -318,7 +322,7 @@ export function OtherPortsList({ ports, onKill }: OtherPortsListProps) {
         ) : (
           <Rows>
             {rows.map((port, i) => (
-              <PortListItem key={port.port} port={port} index={i} onKill={handleKill} />
+              <PortListItem key={port.port} port={port} index={i} onKill={handleKill} onTogglePin={onTogglePin} />
             ))}
           </Rows>
         )}

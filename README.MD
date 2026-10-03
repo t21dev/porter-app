@@ -168,10 +168,10 @@ The built application will be available in `src-tauri/target/release/bundle/`
    - Click the ✕ on any in-use port and confirm to terminate the process
    - Requires administrator privileges
 
-6. **Customize Ports**
-   - Click the settings icon in the title bar
-   - Add or remove ports to scan at startup
-   - Changes are saved automatically
+6. **Pin Ports**
+   - Hover any row and click the pin to keep that port at the top, running or not; click it again on a pinned row to unpin (with Undo)
+   - Or use the settings icon in the title bar to type port numbers in
+   - Up to 50 pinned ports, saved automatically
 
 7. **Toggle Views**
    - Expand "Other ports" below your pinned list to see every listening port on the system

@@ -8,6 +8,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ## [Unreleased]
 
 ### Added
+- Pin or unpin a port straight from its row, under Other ports, in search
+  results or in the pinned list, without opening settings. Unpinning shows an
+  Undo.
+- Up to 50 pinned ports, up from 10.
 - A portable version for Windows: a zip that runs without installing and keeps
   its settings in a `data` folder next to the exe while a `portable` file sits
   beside it.

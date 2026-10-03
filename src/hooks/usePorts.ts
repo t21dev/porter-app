@@ -3,6 +3,7 @@ import { useState, useEffect, useCallback } from 'react';
 import { getCurrentWindow } from '@tauri-apps/api/window';
 import { getCommonPorts, getActivePorts } from '@/lib/tauri';
 import { useScanStore } from '@/store/scanStore';
+import { usePinStore } from '@/store/pinStore';
 
 /**
  * Whether the window is minimised. The webview keeps reporting itself as
@@ -25,38 +26,7 @@ function useMinimized() {
 }
 
 export function usePinnedPorts(refreshInterval: number = 2000) {
-  const [pinnedPorts, setPinnedPorts] = useState<number[] | undefined>(undefined);
-
-  useEffect(() => {
-    const loadPorts = () => {
-      // Migrate from old key if needed
-      const oldSaved = localStorage.getItem('porter-custom-ports');
-      if (oldSaved && !localStorage.getItem('porter-pinned-ports')) {
-        localStorage.setItem('porter-pinned-ports', oldSaved);
-        localStorage.removeItem('porter-custom-ports');
-      }
-
-      const saved = localStorage.getItem('porter-pinned-ports');
-      if (saved) {
-        try {
-          setPinnedPorts(JSON.parse(saved));
-        } catch (e) {
-          console.error('Failed to load pinned ports:', e);
-        }
-      }
-    };
-
-    loadPorts();
-
-    const handlePortsChange = (e: CustomEvent) => {
-      setPinnedPorts(e.detail);
-    };
-
-    window.addEventListener('pinned-ports-changed', handlePortsChange as EventListener);
-    return () => {
-      window.removeEventListener('pinned-ports-changed', handlePortsChange as EventListener);
-    };
-  }, []);
+  const pinnedPorts = usePinStore((s) => s.pins);
 
   return useQuery({
     queryKey: ['ports', 'pinned', pinnedPorts],

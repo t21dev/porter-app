@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useState } from 'react';
 import { Settings2, X, Plus } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -12,70 +12,30 @@ import { cn } from '@/lib/utils';
 import { isMac } from '@/lib/platform';
 import { UI_SCALES, useUiScaleStore } from '@/store/uiScaleStore';
 import { useScanStore } from '@/store/scanStore';
-
-export const DEFAULT_PINNED_PORTS = [
-  3000, 5173, 8080, 5432, 27017
-];
-
-const MAX_PINNED_PORTS = 10;
+import { MAX_PINNED_PORTS, usePinStore } from '@/store/pinStore';
 
 export function PortSettings() {
-  const [pinnedPorts, setPinnedPorts] = useState<number[]>(DEFAULT_PINNED_PORTS);
   const [newPort, setNewPort] = useState('');
   const [isOpen, setIsOpen] = useState(false);
   const { toast } = useToast();
-
-  useEffect(() => {
-    // Migrate from old key if needed
-    const oldSaved = localStorage.getItem('porter-custom-ports');
-    if (oldSaved && !localStorage.getItem('porter-pinned-ports')) {
-      localStorage.setItem('porter-pinned-ports', oldSaved);
-      localStorage.removeItem('porter-custom-ports');
-    }
-
-    const saved = localStorage.getItem('porter-pinned-ports');
-    if (saved) {
-      try {
-        setPinnedPorts(JSON.parse(saved));
-      } catch (e) {
-        console.error('Failed to load pinned ports:', e);
-      }
-    }
-  }, []);
-
-  const savePinnedPorts = (newPorts: number[]) => {
-    setPinnedPorts(newPorts);
-    localStorage.setItem('porter-pinned-ports', JSON.stringify(newPorts));
-    // Trigger a custom event to notify the app
-    window.dispatchEvent(new CustomEvent('pinned-ports-changed', { detail: newPorts }));
-  };
+  const { pins: pinnedPorts, pin, unpin: removePort, reset: resetToDefaults } = usePinStore();
 
   const addPort = () => {
     const port = parseInt(newPort);
-    if (!isNaN(port) && port > 0 && port < 65536 && !pinnedPorts.includes(port)) {
-      if (pinnedPorts.length >= MAX_PINNED_PORTS) {
-        toast({
-          variant: "destructive",
-          title: "Maximum ports reached",
-          description: `You can only pin up to ${MAX_PINNED_PORTS} ports.`,
-        });
-        return;
-      }
-      savePinnedPorts([...pinnedPorts, port].sort((a, b) => a - b));
-      setNewPort('');
+    if (isNaN(port) || port < 1 || port > 65535 || pinnedPorts.includes(port)) return;
+    if (pin(port) === 'full') {
       toast({
-        title: "Port pinned",
-        description: `Port ${port} has been added to your pinned ports.`,
+        variant: "destructive",
+        title: "Maximum ports reached",
+        description: `You can pin up to ${MAX_PINNED_PORTS} ports.`,
       });
+      return;
     }
-  };
-
-  const removePort = (port: number) => {
-    savePinnedPorts(pinnedPorts.filter(p => p !== port));
-  };
-
-  const resetToDefaults = () => {
-    savePinnedPorts(DEFAULT_PINNED_PORTS);
+    setNewPort('');
+    toast({
+      title: "Port pinned",
+      description: `Port ${port} has been added to your pinned ports.`,
+    });
   };
 
   const full = pinnedPorts.length >= MAX_PINNED_PORTS;
@@ -180,7 +140,7 @@ export function PortSettings() {
           <div>
             <h3 className="text-[13px] font-semibold text-foreground">Pinned ports</h3>
             <p className="mt-0.5 text-[12px] text-muted-foreground">
-              Always shown at the top, running or not.
+              Always shown at the top, running or not. You can also pin or unpin any port from its row.
             </p>
           </div>
           <button

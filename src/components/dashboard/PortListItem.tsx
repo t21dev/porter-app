@@ -1,5 +1,5 @@
 import { memo, type CSSProperties } from 'react';
-import { Pin, X } from 'lucide-react';
+import { Pin, PinOff, X } from 'lucide-react';
 import { Port } from '@/types/api';
 import { getPortTypeInfo } from '@/lib/portTypes';
 import { cn } from '@/lib/utils';
@@ -23,6 +23,8 @@ interface PortListItemProps {
   showPin?: boolean;
   /** Position in the list, used to stagger the entrance (capped). */
   index?: number;
+  /** Pin or unpin this port. Shows the pin button when given. */
+  onTogglePin?: (port: number) => void;
 }
 
 const statusStyles = {
@@ -33,7 +35,7 @@ const statusStyles = {
 
 // Memoised: a poll returns the same object for a port that did not change, so
 // only rows whose port actually changed re-render.
-export const PortListItem = memo(function PortListItem({ port, onKill, isPinned = false, showPin = false, index = 0 }: PortListItemProps) {
+export const PortListItem = memo(function PortListItem({ port, onKill, isPinned = false, showPin = false, index = 0, onTogglePin }: PortListItemProps) {
   const isOccupied = port.status === 'occupied';
   const portType = getPortTypeInfo(port.port);
   const PortIcon = portType.icon;
@@ -96,6 +98,29 @@ export const PortListItem = memo(function PortListItem({ port, onKill, isPinned 
       >
         {s.label}
       </span>
+
+      {/* Pin: on hover or keyboard focus, so the row stays calm at rest */}
+      {onTogglePin && (
+        <button
+          type="button"
+          onClick={() => onTogglePin(port.port)}
+          aria-label={isPinned ? `Unpin port ${port.port}` : `Pin port ${port.port}`}
+          aria-pressed={isPinned}
+          title={isPinned ? 'Unpin' : 'Pin to the top'}
+          className={cn(
+            'flex h-7 w-7 shrink-0 items-center justify-center rounded-md text-subtle',
+            'opacity-0 transition-[opacity,background-color,color,transform] duration-150 ease-out',
+            'group-hover:opacity-100 focus-visible:opacity-100 hover:bg-accent hover:text-foreground',
+            'focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring/50 active:scale-90'
+          )}
+        >
+          {isPinned ? (
+            <PinOff className="h-3.5 w-3.5" strokeWidth={2} />
+          ) : (
+            <Pin className="h-3.5 w-3.5" strokeWidth={2} />
+          )}
+        </button>
+      )}
 
       {/* Kill */}
       <div className="flex w-7 shrink-0 justify-end">
