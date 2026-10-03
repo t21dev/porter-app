@@ -7,6 +7,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [0.3.0] - 2026-10-03
+
 ### Changed
 - Much lighter on the machine. Idle CPU dropped from about 15% of a core to
   about 1.5%, and to nothing while minimised. Each refresh used to re-read
