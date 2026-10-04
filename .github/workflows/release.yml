@@ -27,7 +27,13 @@ jobs:
           TAG: ${{ github.ref_name }}
         run: |
           VERSION=${TAG#v}
-          NOTES=$(sed -n "/## \[$VERSION\]/,/## \[/p" CHANGELOG.md | sed '$d' | tail -n +2)
+          # The app's update dialog shows these notes, and Porter 0.5 and older
+          # render each line on its own, so join the changelog's wrapped lines
+          # into their bullet or paragraph.
+          NOTES=$(sed -n "/## \[$VERSION\]/,/## \[/p" CHANGELOG.md | sed '$d' | tail -n +2 \
+            | awk 'NR > 1 && /^  [^ -]/ { sub(/^ +/, ""); line = line " " $0; next }
+                   { if (NR > 1) print line; line = $0 }
+                   END { print line }')
           if [ -z "$NOTES" ]; then
             NOTES="See CHANGELOG.md for details."
           fi
@@ -41,7 +47,7 @@ jobs:
           next to the exe.
 
           ## 🚀 Installation
-          See [Installation Guide](https://github.com/t21dev/porter-app#installation) for detailed instructions.
+          Installation guide: https://github.com/t21dev/porter-app#installation
           EOF
           ID=$(gh api -X POST "repos/${{ github.repository }}/releases" \
             -f tag_name="$TAG" -f name="Porter v$VERSION" \
@@ -138,6 +144,8 @@ jobs:
           gh api -X POST "https://uploads.github.com/repos/$REPO/releases/$ID/assets?name=SHA256SUMS.txt" \
             -H "Content-Type: text/plain" --input SHA256SUMS.txt --jq .name
           gh api "repos/$REPO/releases/$ID" --jq .body > body.md
-          printf '\n## SHA-256 checksums\n\n```\n%s\n```\n' "$(cat SHA256SUMS.txt)" >> body.md
+          # Only a pointer in the notes: older Porter versions show the notes in
+          # their update dialog, and a block of hashes scrolls sideways there.
+          printf '\n## SHA-256 checksums\nThe checksum of every file is in SHA256SUMS.txt, attached below.\n' >> body.md
           # The tag goes with the edit: without it a draft loses its tag.
           gh api -X PATCH "repos/$REPO/releases/$ID" -f tag_name="$TAG" -F body=@body.md --jq .html_url
