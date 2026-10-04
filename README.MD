@@ -175,6 +175,7 @@ The built application will be available in `src-tauri/target/release/bundle/`
 
 7. **Toggle Views**
    - Expand "Other ports" below your pinned list to see every listening port on the system
+   - Turn on **Only show pinned ports** in settings to hide Other ports entirely for a shorter, cleaner view
    - Turn on **Show outgoing connections** in settings to also list the local port of every open connection
 
 ## 🔧 Configuration

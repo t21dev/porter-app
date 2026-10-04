@@ -1,12 +1,21 @@
 import { create } from 'zustand';
 
 const KEY = 'porter-show-connections';
+const PINNED_ONLY_KEY = 'porter-pinned-only';
 
-function read(): boolean {
+function read(key: string = KEY): boolean {
   try {
-    return localStorage.getItem(KEY) === 'true';
+    return localStorage.getItem(key) === 'true';
   } catch {
     return false;
+  }
+}
+
+function write(key: string, value: boolean) {
+  try {
+    localStorage.setItem(key, String(value));
+  } catch {
+    /* storage blocked: keep it for this session */
   }
 }
 
@@ -18,16 +27,23 @@ interface ScanState {
    */
   showConnections: boolean;
   setShowConnections: (value: boolean) => void;
+  /**
+   * Show only pinned ports: no Other ports section, and search and the counts
+   * cover pinned ports alone. Off by default.
+   */
+  pinnedOnly: boolean;
+  setPinnedOnly: (value: boolean) => void;
 }
 
 export const useScanStore = create<ScanState>((set) => ({
   showConnections: read(),
   setShowConnections: (value) => {
-    try {
-      localStorage.setItem(KEY, String(value));
-    } catch {
-      /* storage blocked: keep it for this session */
-    }
+    write(KEY, value);
     set({ showConnections: value });
+  },
+  pinnedOnly: read(PINNED_ONLY_KEY),
+  setPinnedOnly: (value) => {
+    write(PINNED_ONLY_KEY, value);
+    set({ pinnedOnly: value });
   },
 }));

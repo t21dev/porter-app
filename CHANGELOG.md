@@ -7,6 +7,11 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Added
+- **Only show pinned ports** in settings, off by default. Hides Other ports for
+  a cleaner view; search and the Free, Occupied and System counts then cover
+  pinned ports only.
+
 ## [0.4.0] - 2026-10-04
 
 ### Added

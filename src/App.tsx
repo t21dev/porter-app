@@ -20,6 +20,7 @@ import { Toaster } from './components/ui/toaster';
 import { useToast } from './hooks/use-toast';
 import { installScaleShortcuts } from './store/uiScaleStore';
 import { MAX_PINNED_PORTS, usePinStore } from './store/pinStore';
+import { useScanStore } from './store/scanStore';
 import { ToastAction } from './components/ui/toast';
 
 const queryClient = new QueryClient();
@@ -45,6 +46,7 @@ function AppContent() {
   // Pinned ports come from one shared store, so a pin made from a row and one
   // made in settings show up in both places at once.
   const pins = usePinStore((s) => s.pins);
+  const pinnedOnly = useScanStore((s) => s.pinnedOnly);
   const pinnedPortNumbers = useMemo(() => new Set(pins), [pins]);
 
   // Pin or unpin from a row. Unpinning a port that is not running makes it
@@ -101,15 +103,18 @@ function AppContent() {
     // Sort pinned ports by port number
     pinned.sort((a, b) => a.port - b.port);
 
-    // Add remaining ports to other list
-    allPorts.forEach(port => {
-      if (!pinnedPortNumbers.has(port.port)) {
-        other.push(port);
-      }
-    });
+    // Add remaining ports to other list, unless only pinned ports are shown;
+    // then search and the counts cover pinned ports alone.
+    if (!pinnedOnly) {
+      allPorts.forEach(port => {
+        if (!pinnedPortNumbers.has(port.port)) {
+          other.push(port);
+        }
+      });
+    }
 
     return { pinnedPortsList: pinned, otherPortsList: other };
-  }, [allPorts, pinnedPortNumbers]);
+  }, [allPorts, pinnedPortNumbers, pinnedOnly]);
 
   const isLoading = isLoadingAll;
   const isRefetching = isRefetchingAll;

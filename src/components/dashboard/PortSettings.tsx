@@ -41,7 +41,7 @@ export function PortSettings() {
   const full = pinnedPorts.length >= MAX_PINNED_PORTS;
   const { scale, setScale } = useUiScaleStore();
   const activeScale = UI_SCALES.find((s) => s.value === scale) ?? UI_SCALES[1];
-  const { showConnections, setShowConnections } = useScanStore();
+  const { showConnections, setShowConnections, pinnedOnly, setPinnedOnly } = useScanStore();
 
   return (
     <DropdownMenu open={isOpen} onOpenChange={setIsOpen}>
@@ -105,6 +105,21 @@ export function PortSettings() {
 
         <div className="flex items-start justify-between gap-4 px-4 py-3.5">
           <div>
+            <h3 id="pinned-only-label" className="text-[13px] font-semibold text-foreground">
+              Only show pinned ports
+            </h3>
+            <p className="mt-0.5 text-[12px] text-muted-foreground">
+              Hide Other ports for a cleaner, shorter view. Search and the counts cover your pinned
+              ports only.
+            </p>
+          </div>
+          <Switch on={pinnedOnly} labelledBy="pinned-only-label" onToggle={() => setPinnedOnly(!pinnedOnly)} />
+        </div>
+
+        <div className="border-t border-border" />
+
+        <div className="flex items-start justify-between gap-4 px-4 py-3.5">
+          <div>
             <h3 id="show-connections-label" className="text-[13px] font-semibold text-foreground">
               Show outgoing connections
             </h3>
@@ -113,25 +128,11 @@ export function PortSettings() {
               listening ports. A much longer list, and more work each refresh.
             </p>
           </div>
-          <button
-            type="button"
-            role="switch"
-            aria-checked={showConnections}
-            aria-labelledby="show-connections-label"
-            onClick={() => setShowConnections(!showConnections)}
-            className={cn(
-              'relative mt-0.5 h-5 w-9 shrink-0 rounded-full border transition-colors duration-200 ease-out',
-              'focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring/50',
-              showConnections ? 'border-foreground/60 bg-foreground/80' : 'border-border bg-elevated'
-            )}
-          >
-            <span
-              className={cn(
-                'absolute left-0.5 top-1/2 h-3.5 w-3.5 -translate-y-1/2 rounded-full transition-transform duration-200 ease-out',
-                showConnections ? 'translate-x-4 bg-background' : 'translate-x-0 bg-muted-foreground'
-              )}
-            />
-          </button>
+          <Switch
+            on={showConnections}
+            labelledBy="show-connections-label"
+            onToggle={() => setShowConnections(!showConnections)}
+          />
         </div>
 
         <div className="border-t border-border" />
@@ -220,5 +221,30 @@ export function PortSettings() {
         </div>
       </DropdownMenuContent>
     </DropdownMenu>
+  );
+}
+
+/** An on/off switch for a setting whose heading has the id `labelledBy`. */
+function Switch({ on, labelledBy, onToggle }: { on: boolean; labelledBy: string; onToggle: () => void }) {
+  return (
+    <button
+      type="button"
+      role="switch"
+      aria-checked={on}
+      aria-labelledby={labelledBy}
+      onClick={onToggle}
+      className={cn(
+        'relative mt-0.5 h-5 w-9 shrink-0 rounded-full border transition-colors duration-200 ease-out',
+        'focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring/50',
+        on ? 'border-foreground/60 bg-foreground/80' : 'border-border bg-elevated'
+      )}
+    >
+      <span
+        className={cn(
+          'absolute left-0.5 top-1/2 h-3.5 w-3.5 -translate-y-1/2 rounded-full transition-transform duration-200 ease-out',
+          on ? 'translate-x-4 bg-background' : 'translate-x-0 bg-muted-foreground'
+        )}
+      />
+    </button>
   );
 }
