@@ -29,14 +29,14 @@ export function StatusFilter({ selectedStatuses, onStatusToggle }: StatusFilterP
             onClick={() => onStatusToggle(status.value)}
             className={cn(
               'flex h-full items-center gap-1.5 rounded-md px-2.5 text-[12px] font-medium',
-              'transition-[background-color,color,transform] duration-200 ease-out active:scale-[0.96]',
-              'focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring/50',
+              'transition-[background-color,color,scale] duration-200 ease-out active:scale-[0.96]',
+              'focus-visible:outline-hidden focus-visible:ring-2 focus-visible:ring-ring/50',
               active ? 'bg-elevated text-foreground' : 'text-subtle hover:text-muted-foreground'
             )}
           >
             <span
               className={cn(
-                'h-1.5 w-1.5 rounded-full border transition-[background-color,transform] duration-200 ease-out',
+                'h-1.5 w-1.5 rounded-full border transition-[background-color,scale] duration-200 ease-out',
                 status.ring,
                 active ? cn(status.dot, 'scale-100') : 'scale-90 bg-transparent'
               )}

@@ -220,7 +220,7 @@ export function OtherPortsList({ ports, onKill, onTogglePin }: OtherPortsListPro
                   onClick={() => setPrefs((p) => ({ ...p, groupBy: option.value }))}
                   className={cn(
                     'h-full rounded-[5px] px-2.5 text-[11.5px] font-medium transition-[background-color,color] duration-150 ease-out',
-                    'focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring/50',
+                    'focus-visible:outline-hidden focus-visible:ring-2 focus-visible:ring-ring/50',
                     active
                       ? 'bg-elevated text-foreground'
                       : 'text-subtle hover:text-muted-foreground',
@@ -296,7 +296,7 @@ export function OtherPortsList({ ports, onKill, onTogglePin }: OtherPortsListPro
                   type="button"
                   onClick={() => toggleGroup(name)}
                   aria-expanded={!isCollapsed}
-                  className="flex h-10 w-full items-center gap-2 px-3.5 text-left transition-colors duration-150 hover:bg-accent focus-visible:outline-none focus-visible:bg-accent"
+                  className="flex h-10 w-full items-center gap-2 px-3.5 text-left transition-colors duration-150 hover:bg-accent focus-visible:outline-hidden focus-visible:bg-accent"
                 >
                   <ChevronRight
                     className={cn(
@@ -362,7 +362,7 @@ function SortHeader({
       title={`Sort by ${label.toLowerCase()}`}
       className={cn(
         'group flex shrink-0 items-center gap-1 text-[11px] font-medium transition-colors duration-150',
-        'focus-visible:outline-none focus-visible:text-foreground',
+        'focus-visible:outline-hidden focus-visible:text-foreground',
         active ? 'text-foreground' : 'text-subtle hover:text-muted-foreground',
         className,
       )}

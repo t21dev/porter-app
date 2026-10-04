@@ -83,8 +83,8 @@ export function PortSettings() {
                   onClick={() => setScale(option.value)}
                   className={cn(
                     'flex h-8 items-center justify-center rounded-md font-medium leading-none',
-                    'transition-[background-color,color,transform] duration-200 ease-out active:scale-[0.95]',
-                    'focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring/50',
+                    'transition-[background-color,color,scale] duration-200 ease-out active:scale-[0.95]',
+                    'focus-visible:outline-hidden focus-visible:ring-2 focus-visible:ring-ring/50',
                     active ? 'bg-elevated text-foreground' : 'text-subtle hover:text-muted-foreground'
                   )}
                   style={{ fontSize: `${11 + i * 2.5}px` }}
@@ -235,7 +235,7 @@ function Switch({ on, labelledBy, onToggle }: { on: boolean; labelledBy: string;
       onClick={onToggle}
       className={cn(
         'relative mt-0.5 h-5 w-9 shrink-0 rounded-full border transition-colors duration-200 ease-out',
-        'focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring/50',
+        'focus-visible:outline-hidden focus-visible:ring-2 focus-visible:ring-ring/50',
         on ? 'border-foreground/60 bg-foreground/80' : 'border-border bg-elevated'
       )}
     >

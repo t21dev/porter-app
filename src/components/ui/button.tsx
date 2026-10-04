@@ -12,9 +12,9 @@ const Button = React.forwardRef<HTMLButtonElement, ButtonProps>(
       <button
         className={cn(
           'inline-flex select-none items-center justify-center gap-1.5 rounded-md font-medium',
-          'transition-[background-color,color,border-color,transform,opacity] duration-150 ease-out',
+          'transition-[background-color,color,border-color,scale,opacity] duration-150 ease-out',
           'active:scale-[0.97]',
-          'focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring/60 focus-visible:ring-offset-0',
+          'focus-visible:outline-hidden focus-visible:ring-2 focus-visible:ring-ring/60 focus-visible:ring-offset-0',
           'disabled:pointer-events-none disabled:opacity-40',
           {
             'bg-primary text-primary-foreground hover:bg-primary/85': variant === 'default',

@@ -15,7 +15,7 @@ export function PortScanLoader() {
           <span className="h-3 w-20 rounded bg-elevated/70" />
           <span className="h-3 flex-1 rounded bg-elevated/50" style={{ maxWidth: `${120 + ((i * 53) % 140)}px` }} />
           <span
-            className="pointer-events-none absolute inset-0 bg-gradient-to-r from-transparent via-foreground/[0.035] to-transparent"
+            className="pointer-events-none absolute inset-0 bg-linear-to-r/srgb from-transparent via-foreground/[0.035] to-transparent"
             style={{ animation: `shimmer 1.6s var(--ease-in-out) ${i * 80}ms infinite` }}
           />
         </div>

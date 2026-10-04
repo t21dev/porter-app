@@ -30,7 +30,7 @@ export function AdminWarning() {
   return (
     <div
       role="status"
-      className="reveal flex items-center gap-3 rounded-lg border border-occupied/20 bg-occupied/[0.06] py-2.5 pl-3 pr-2"
+      className="reveal flex items-center gap-3 rounded-lg border border-occupied/20 bg-occupied/6 py-2.5 pl-3 pr-2"
     >
       <ShieldAlert className="h-4 w-4 shrink-0 text-occupied" strokeWidth={1.75} />
       <p className="flex-1 text-[12.5px] leading-snug text-muted-foreground">
@@ -50,7 +50,7 @@ export function AdminWarning() {
         <button
           type="button"
           onClick={handleRestartAsAdmin}
-          className="group inline-flex h-7 shrink-0 items-center gap-1 rounded-md px-2.5 text-[12px] font-medium text-occupied transition-colors duration-150 ease-out hover:bg-occupied/10 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-occupied/40 active:scale-[0.97]"
+          className="group inline-flex h-7 shrink-0 items-center gap-1 rounded-md px-2.5 text-[12px] font-medium text-occupied transition-colors duration-150 ease-out hover:bg-occupied/10 focus-visible:outline-hidden focus-visible:ring-2 focus-visible:ring-occupied/40 active:scale-[0.97]"
         >
           Restart as admin
           <ArrowUpRight className="h-3.5 w-3.5 transition-transform duration-200 ease-out group-hover:-translate-y-px group-hover:translate-x-px" />

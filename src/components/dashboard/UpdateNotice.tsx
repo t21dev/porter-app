@@ -27,7 +27,7 @@ export function UpdateNotice() {
       <button
         type="button"
         onClick={() => setOpen(true)}
-        className="mr-1 inline-flex h-7 items-center gap-1.5 rounded-full border border-free/25 bg-free/10 pl-2 pr-2.5 text-[11.5px] font-medium text-free transition-[background-color,transform] duration-150 ease-out hover:bg-free/15 active:scale-[0.97] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-free/40 animate-in fade-in slide-in-from-right-2 duration-500"
+        className="mr-1 inline-flex h-7 items-center gap-1.5 rounded-full border border-free/25 bg-free/10 pl-2 pr-2.5 text-[11.5px] font-medium text-free transition-[background-color,scale] duration-150 ease-out hover:bg-free/15 active:scale-[0.97] focus-visible:outline-hidden focus-visible:ring-2 focus-visible:ring-free/40 animate-in fade-in slide-in-from-right-2 duration-500"
         title={`Porter ${data.latest} is available`}
       >
         <ArrowDown className="h-3 w-3" strokeWidth={2.25} />
@@ -96,7 +96,7 @@ export function UpdateDialog({ info, open, onOpenChange, onLater }: UpdateDialog
 /** Renders a GitHub release body; see `parseReleaseNotes` for what it keeps. */
 function ReleaseNotes({ blocks }: { blocks: NoteBlock[] }) {
   return (
-    <div className="space-y-1.5 break-words text-[12.5px] leading-relaxed text-muted-foreground [overflow-wrap:anywhere]">
+    <div className="space-y-1.5 text-[12.5px] leading-relaxed text-muted-foreground wrap-anywhere">
       {blocks.map((block, i) => {
         switch (block.type) {
           case 'heading':
@@ -116,7 +116,7 @@ function ReleaseNotes({ blocks }: { blocks: NoteBlock[] }) {
             return (
               <pre
                 key={i}
-                className="whitespace-pre-wrap rounded-md border border-border bg-card px-2.5 py-2 font-mono text-[11px] leading-relaxed text-muted-foreground [overflow-wrap:anywhere]"
+                className="whitespace-pre-wrap rounded-md border border-border bg-card px-2.5 py-2 font-mono text-[11px] leading-relaxed text-muted-foreground wrap-anywhere"
               >
                 {block.text}
               </pre>

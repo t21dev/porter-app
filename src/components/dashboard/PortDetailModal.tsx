@@ -14,7 +14,7 @@ export function PortDetailModal({ port, onClose, onKill }: PortDetailModalProps)
   if (!port) return null;
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 backdrop-blur-sm">
+    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 backdrop-blur-xs">
       <Card className="w-full max-w-2xl mx-4 max-h-[80vh] overflow-y-auto">
         <CardHeader className="flex flex-row items-center justify-between">
           <CardTitle>Port {port.port} Details</CardTitle>

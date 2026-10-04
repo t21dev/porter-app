@@ -2,12 +2,124 @@
  * paper: #0d0d0d (dark) / near-white (light) · accent: none — status hues only as signals
  * type: Geist + Geist Mono · motion: transform/opacity only, ease-out-expo
  */
-@import '@fontsource-variable/geist';
-@import '@fontsource-variable/geist-mono';
+@import '@fontsource-variable/geist' layer(base);
+@import '@fontsource-variable/geist-mono' layer(base);
 
-@tailwind base;
-@tailwind components;
-@tailwind utilities;
+/* Scan src only, as the v3 config did; docs and Markdown hold class names too. */
+@import 'tailwindcss' source('../src');
+@import 'tw-animate-css';
+
+/* Dark mode is class based: `.dark` on <html>, set by src/store/themeStore.ts. */
+@custom-variant dark (&:is(.dark *));
+
+/* Keep v3's plain :hover. v4 wraps hover in @media (hover: hover), which some
+   Linux WebKitGTK builds do not report, so hover styles could go missing. */
+@custom-variant hover (&:hover);
+
+/* Utility names for the design tokens. The values live in :root and .dark
+   below as HSL triplets; `inline` makes utilities read them directly, so
+   opacity modifiers (bg-free/10) and theme switching keep working. */
+@theme inline {
+  --color-border: hsl(var(--border));
+  --color-input: hsl(var(--input));
+  --color-ring: hsl(var(--ring));
+  --color-background: hsl(var(--background));
+  --color-foreground: hsl(var(--foreground));
+  --color-elevated: hsl(var(--elevated));
+  --color-subtle: hsl(var(--subtle));
+  --color-free: hsl(var(--free));
+  --color-occupied: hsl(var(--occupied));
+  --color-system: hsl(var(--system));
+  --color-primary: hsl(var(--primary));
+  --color-primary-foreground: hsl(var(--primary-foreground));
+  --color-secondary: hsl(var(--secondary));
+  --color-secondary-foreground: hsl(var(--secondary-foreground));
+  --color-destructive: hsl(var(--destructive));
+  --color-destructive-foreground: hsl(var(--destructive-foreground));
+  --color-muted: hsl(var(--muted));
+  --color-muted-foreground: hsl(var(--muted-foreground));
+  --color-accent: hsl(var(--accent));
+  --color-accent-foreground: hsl(var(--accent-foreground));
+  --color-popover: hsl(var(--popover));
+  --color-popover-foreground: hsl(var(--popover-foreground));
+  --color-card: hsl(var(--card));
+  --color-card-foreground: hsl(var(--card-foreground));
+
+  --radius-xl: calc(var(--radius) + 4px);
+  --radius-lg: var(--radius);
+  --radius-md: calc(var(--radius) - 2px);
+  --radius-sm: calc(var(--radius) - 4px);
+}
+
+@theme static {
+  /* Motion curves. `static` always emits them, since plain CSS and inline
+     styles use var(--ease-*) as well as the ease-* utilities. */
+  --ease-out: cubic-bezier(0.16, 1, 0.3, 1);
+  --ease-in: cubic-bezier(0.7, 0, 0.84, 0);
+  --ease-in-out: cubic-bezier(0.65, 0, 0.35, 1);
+}
+
+@theme {
+  --font-sans: 'Geist Variable', ui-sans-serif, system-ui, sans-serif;
+  --font-mono: 'Geist Mono Variable', ui-monospace, SFMono-Regular, monospace;
+
+  --shadow-float:
+    0 1px 0 0 hsl(0 0% 100% / 0.03) inset, 0 12px 32px -8px rgb(0 0 0 / 0.45),
+    0 2px 6px -2px rgb(0 0 0 / 0.3);
+
+  /* v3's default for a ring with no colour class (only ToastClose has one). */
+  --default-ring-color: rgb(59 130 246 / 0.5);
+}
+
+/* v4 draws divide lines on the bottom (or right) of every item but the last;
+   v3 drew them on the top (or left) of every item after the first. Rows and
+   stat cells have fixed sizes and centre their content inside the border, so
+   keep v3's side or everything shifts by half a pixel. */
+@utility divide-y {
+  & > :not(:last-child) {
+    border-bottom-width: 0;
+  }
+  & > :not(:first-child) {
+    border-top-width: 1px;
+  }
+}
+
+@utility divide-x {
+  & > :not(:last-child) {
+    border-inline-end-width: 0;
+  }
+  & > :not(:first-child) {
+    border-inline-start-width: 1px;
+  }
+}
+
+@utility tabular {
+  font-variant-numeric: tabular-nums;
+}
+
+@utility reveal {
+  /* Staggered entrance. Set --i inline; capped by the caller. */
+  animation: reveal 420ms var(--ease-out) both;
+  animation-delay: calc(var(--i, 0) * 28ms);
+}
+
+@utility collapse-grid {
+  /* Expanding region without animating height. */
+  display: grid;
+  grid-template-rows: 0fr;
+  opacity: 0;
+  transition:
+    grid-template-rows 320ms var(--ease-in-out),
+    opacity 220ms var(--ease-out);
+  &[data-open='true'] {
+    grid-template-rows: 1fr;
+    opacity: 1;
+  }
+  & > * {
+    min-height: 0;
+    overflow: hidden;
+  }
+}
 
 @layer base {
   :root {
@@ -36,10 +148,6 @@
     --occupied: 32 92% 44%;
     --system: 215 78% 50%;
     --radius: 0.625rem;
-
-    --ease-out: cubic-bezier(0.16, 1, 0.3, 1);
-    --ease-in: cubic-bezier(0.7, 0, 0.84, 0);
-    --ease-in-out: cubic-bezier(0.65, 0, 0.35, 1);
   }
 
   .dark {
@@ -71,8 +179,18 @@
 }
 
 @layer base {
-  * {
+  /* v4 defaults borders to currentColor; every border uses the token instead. */
+  *,
+  ::after,
+  ::before,
+  ::backdrop,
+  ::file-selector-button {
     @apply border-border;
+  }
+  /* v3 gave buttons a pointer cursor; v4 leaves the default arrow. */
+  button:not(:disabled),
+  [role="button"]:not(:disabled) {
+    cursor: pointer;
   }
   html,
   body {
@@ -91,36 +209,6 @@
   }
   ::selection {
     background: hsl(var(--foreground) / 0.18);
-  }
-}
-
-@layer utilities {
-  .tabular {
-    font-variant-numeric: tabular-nums;
-  }
-
-  /* Staggered entrance. Set --i inline; capped by the caller. */
-  .reveal {
-    animation: reveal 420ms var(--ease-out) both;
-    animation-delay: calc(var(--i, 0) * 28ms);
-  }
-
-  /* Expanding region without animating height. */
-  .collapse-grid {
-    display: grid;
-    grid-template-rows: 0fr;
-    opacity: 0;
-    transition:
-      grid-template-rows 320ms var(--ease-in-out),
-      opacity 220ms var(--ease-out);
-  }
-  .collapse-grid[data-open='true'] {
-    grid-template-rows: 1fr;
-    opacity: 1;
-  }
-  .collapse-grid > * {
-    min-height: 0;
-    overflow: hidden;
   }
 }
 

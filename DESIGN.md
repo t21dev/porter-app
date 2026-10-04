@@ -16,7 +16,7 @@ These are inferred from consistent patterns across the code, not aspirations.
 
 ## Colour tokens
 
-Tokens are HSL triplets (no `hsl()` wrapper) defined in `src/index.css`, light in `:root` (lines 13-43) and dark in `.dark` (lines 45-70). Tailwind exposes them as `hsl(var(--token))` in `tailwind.config.js:16-55`, so opacity modifiers work (`bg-free/10`, `border-border/70`). Hex values below are conversions for reference only; never paste them into components.
+Tokens are HSL triplets (no `hsl()` wrapper) defined in `src/index.css`, light in `:root` (lines 125-151) and dark in `.dark` (lines 153-178). Tailwind CSS v4 exposes them as `hsl(var(--token))` in the `@theme inline` block (`index.css:22-46`), so opacity modifiers work (`bg-free/10`, `border-border/70`). Hex values below are conversions for reference only; never paste them into components.
 
 ### Light theme (`:root`)
 
@@ -34,7 +34,7 @@ Tokens are HSL triplets (no `hsl()` wrapper) defined in `src/index.css`, light i
 | `--subtle` | 0 0% 58% | #949494 | Tertiary text: counts, PIDs, icons at rest, placeholders |
 | `--accent` | 0 0% 95.5% | #f4f4f4 | Hover background for rows and ghost buttons |
 | `--destructive` | 0 72% 50% | #db2424 | Kill, remove, error toasts |
-| `--border` | 0 0% 90% | #e6e6e6 | All borders and dividers (applied globally, `index.css:74-76`) |
+| `--border` | 0 0% 90% | #e6e6e6 | All borders and dividers (applied globally, `index.css:183-189`) |
 | `--input` | 0 0% 88% | #e0e0e0 | Hover border on inputs and outline buttons |
 | `--ring` | 0 0% 45% | #737373 | Focus rings, used at /50 or /60 |
 | `--free` | 152 62% 36% | #239560 | Status: free |
@@ -66,7 +66,7 @@ Tokens are HSL triplets (no `hsl()` wrapper) defined in `src/index.css`, light i
 
 Note the surface ladder in dark mode: background 5.1% < card 7.3% < popover 8.6% < accent 10.5% < elevated 12% < border 12.5%. Layering is done by lightness steps, not shadows. In light mode `muted-foreground` and `subtle` swap values with dark mode (40% and 58%).
 
-Other non-colour tokens in `:root`: `--radius: 0.625rem` and the three easing curves (see Motion).
+Other non-colour tokens: `--radius: 0.625rem` in `:root`, and the three easing curves in a `@theme static` block (see Motion).
 
 ## Status colours and their meaning
 
@@ -87,8 +87,8 @@ Status colours carry secondary meanings: `occupied` is the warning colour (admin
 
 ## Typography
 
-- **Families** (`tailwind.config.js:12-15`): `font-sans` is Geist Variable, `font-mono` is Geist Mono Variable, both bundled via `@fontsource-variable` (`index.css:5-6`). No web font requests.
-- **Body** (`index.css:81-88`): `antialiased`, `font-feature-settings: "rlig" 1, "calt" 1, "ss01" 1`, `user-select: none` on the body (inputs re-enable it).
+- **Families** (`@theme`, `index.css:63-64`): `font-sans` is Geist Variable, `font-mono` is Geist Mono Variable, both bundled via `@fontsource-variable` (`index.css:5-6`). No web font requests.
+- **Body** (`index.css:199-206`): `antialiased`, `font-feature-settings: "rlig" 1, "calt" 1, "ss01" 1`, `user-select: none` on the body (inputs re-enable it).
 - **Sizes** are arbitrary pixel values, not the Tailwind scale. The set in use:
 
 | Size | Weight | Where |
@@ -106,7 +106,7 @@ Status colours carry secondary meanings: `occupied` is the warning colour (admin
 | 10px mono | regular | `kbd` hint (`SearchBar.tsx:64`) |
 
 - Weights: 400, 500 (`font-medium`, the default for labels and controls), 600 (`font-semibold`, headings only). No bold.
-- Numbers: always `font-mono tabular` (`.tabular` utility, `index.css:98-100`). Inputs that take numbers use `font-mono tabular placeholder:font-sans` (`SearchBar.tsx:48`, `PortSettings.tsx:166`).
+- Numbers: always `font-mono tabular` (`tabular` utility, `index.css:96-98`). Inputs that take numbers use `font-mono tabular placeholder:font-sans` (`SearchBar.tsx:48`, `PortSettings.tsx:166`).
 - Headings and labels are sentence case ("Only show pinned ports", "Kill process?"). No uppercase labels in current UI.
 
 ## Spacing and layout
@@ -119,14 +119,14 @@ Status colours carry secondary meanings: `occupied` is the warning colour (admin
 - Control heights: 36px (`h-9`) for primary inputs and the status filter; 32px (`h-8`) for icon buttons, small buttons and the settings input; 28px (`h-7`) for inline row actions and small pills; 20px (`h-5`) for the clear button and the switch.
 - Panel padding: dialogs `p-6`; settings sections `px-4 py-3.5`; stat cells `px-4 py-3.5`.
 - Section label to list: `mb-2`; between sections: `mt-5`.
-- Scrolling uses SimpleBar with a 4px thumb at 14% foreground opacity, 26% on track hover (`index.css:175-194`). Use it for any new scroll region in the main view.
+- Scrolling uses SimpleBar with a 4px thumb at 14% foreground opacity, 26% on track hover (`index.css:262-282`). Use it for any new scroll region in the main view.
 
 ## Shape and borders
 
-- `--radius` is 10px. Tailwind maps `rounded-xl` 14px, `rounded-lg` 10px, `rounded-md` 8px, `rounded-sm` 6px (`tailwind.config.js:56-61`).
+- `--radius` is 10px. Tailwind maps `rounded-xl` 14px, `rounded-lg` 10px, `rounded-md` 8px, `rounded-sm` 6px (`@theme inline`, `index.css:48-51`).
 - `rounded-xl`: list surfaces, stats panel, dialogs, dropdowns, toasts, empty states. `rounded-lg`: inputs, segmented control containers, banners, inset wells. `rounded-md`: buttons, segments, chips. `rounded-full`: dots, pills, switches. `rounded` (4px): `kbd` and the tiny clear button. `rounded-[5px]`: segments inside the 28px toggle (`OtherPortsList.tsx:222`).
-- Borders are always 1px `border-border`. Lists divide rows with `divide-y divide-border` (`App.tsx:362`). The title bar uses `border-border/70`. Empty states use `border-dashed`.
-- Shadows: only `shadow-float` on floating layers (dialogs, dropdowns, toasts) (`tailwind.config.js:67-69`). In-flow surfaces have no shadow.
+- Borders are always 1px `border-border`. Lists divide rows with `divide-y divide-border` (`App.tsx:362`). `divide-y` and `divide-x` are redefined (`index.css:74-94`) to draw the line on the top or left of each item after the first, as Tailwind v3 did, because rows and stat cells centre their content inside that border. The title bar uses `border-border/70`. Empty states use `border-dashed`.
+- Shadows: only `shadow-float` on floating layers (dialogs, dropdowns, toasts) (`@theme`, `index.css:66-68`). In-flow surfaces have no shadow.
 - Backdrops: title bar `bg-background/80 backdrop-blur-md`; modal overlay `bg-black/55 backdrop-blur-[2px]`.
 
 ## Iconography
@@ -138,15 +138,15 @@ Status colours carry secondary meanings: `occupied` is the warning colour (admin
 
 ## Motion
 
-- Easing tokens (`index.css:40-42`, exposed as `ease-out`, `ease-in`, `ease-in-out` in `tailwind.config.js:62-66`): out `cubic-bezier(0.16, 1, 0.3, 1)` (expo), in `cubic-bezier(0.7, 0, 0.84, 0)`, in-out `cubic-bezier(0.65, 0, 0.35, 1)`. The `ease-out` class resolves to the token, not Tailwind's default curve.
+- Easing tokens (`@theme static`, `index.css:54-60`, which also exposes them as the `ease-out`, `ease-in`, `ease-in-out` utilities; `static` keeps them on `:root` for plain CSS and inline styles): out `cubic-bezier(0.16, 1, 0.3, 1)` (expo), in `cubic-bezier(0.7, 0, 0.84, 0)`, in-out `cubic-bezier(0.65, 0, 0.35, 1)`. The `ease-out` class resolves to the token, not Tailwind's default curve.
 - Durations: 150ms for hover colour changes; 200ms for toggles and switches; 300ms for icon swaps, chevrons and toasts; 420ms for entrances; 600ms for the counter; 900ms for one-shot pulses.
-- Entrance: `.reveal` fades in and rises 6px over 420ms, staggered 28ms per `--i` set inline and capped (rows cap at 14, `PortListItem.tsx:48`) (`index.css:103-106`).
-- Expand and collapse: `.collapse-grid` with `data-open`, animating `grid-template-rows` rather than height (`index.css:109-124`, used at `App.tsx:323-326`).
+- Entrance: `.reveal` fades in and rises 6px over 420ms, staggered 28ms per `--i` set inline and capped (rows cap at 14, `PortListItem.tsx:48`) (`index.css:100-104`).
+- Expand and collapse: `.collapse-grid` with `data-open`, animating `grid-template-rows` rather than height (`index.css:106-122`, used at `App.tsx:323-326`).
 - Press feedback: `active:scale-[0.97]` on buttons, `active:scale-90` on icon-only row actions, `active:scale-[0.96]` on filter segments.
 - Live signals: `ping-once` on the Live dot each time data lands (`TitleBar.tsx:41-45`); `grow-x` on the distribution bar; `shimmer` on skeleton rows (`PortScanLoader.tsx:17-20`); stat numbers ease with a quartic curve (`src/hooks/useCountUp.ts`).
-- Theme change crossfades via the View Transitions API at 260ms (`index.css:168-172`, `themeStore.ts:27-37`); the sun and moon icons rotate and scale (`Header.tsx:46-57`).
-- Popovers use `tailwindcss-animate`: fade plus `zoom-in-[0.97]`.
-- Reduced motion: all animations and transitions clamp to 150ms with no delay and `.reveal` becomes a fade (`index.css:196-211`); the theme transition and counters skip animation entirely.
+- Theme change crossfades via the View Transitions API at 260ms (`index.css:255-260`, `themeStore.ts:27-37`); the sun and moon icons rotate and scale (`Header.tsx:46-57`).
+- Popovers use `tw-animate-css` (`index.css:10`): fade plus `zoom-in-[0.97]`. Dialogs and alert dialogs also rise 1% as they open (`slide-in-from-bottom-[1%]`). Dialogs, alert dialogs and toasts keep their enter and exit at 150ms with `animation-duration-150`; their `duration-*` class only times transitions.
+- Reduced motion: all animations and transitions clamp to 150ms with no delay and `.reveal` becomes a fade (`index.css:284-300`); the theme transition and counters skip animation entirely.
 
 ## Components
 
@@ -164,9 +164,9 @@ Reuse these class patterns. Copy from the referenced line rather than retyping.
 - **Disclosure divider** (Other ports, `App.tsx:302-321`): label, count, a `h-px flex-1 bg-border` rule, and a rotating `ChevronDown`.
 - **Sortable table header** (`OtherPortsList.tsx:252`, `OtherPortsList.tsx:342-379`): `h-9 rounded-t-xl border bg-card`, sticky on a `bg-background` wrapper; header text `text-[11px] font-medium`, active `text-foreground`, arrow hidden until hover.
 - **Stats panel** (`StatsCard.tsx:42-77`): one `rounded-xl border bg-card` surface, `grid-cols-3 divide-x`, each cell a dot, a label and a 26px mono number, with a 3px distribution bar at the bottom.
-- **Banner** (`AdminWarning.tsx:31-58`): `rounded-lg border border-occupied/20 bg-occupied/[0.06]`, icon `text-occupied`, lead phrase `font-medium text-foreground`, action `text-occupied hover:bg-occupied/10`.
+- **Banner** (`AdminWarning.tsx:31-58`): `rounded-lg border border-occupied/20 bg-occupied/6`, icon `text-occupied`, lead phrase `font-medium text-foreground`, action `text-occupied hover:bg-occupied/10`.
 - **Status pill button** (`UpdateNotice.tsx:30`): `h-7 rounded-full border border-free/25 bg-free/10 text-[11.5px] font-medium text-free`.
-- **Release notes panel** (`UpdateNotice.tsx:73-81`, parsed by `src/lib/releaseNotes.ts`): an inset well `min-w-0 overflow-hidden rounded-lg border bg-background` around a SimpleBar capped at 256px, content `px-4 py-3` at 12.5px muted. Text breaks anywhere (`[overflow-wrap:anywhere]`) and code blocks use `whitespace-pre-wrap`, so the panel never scrolls sideways. Hard-wrapped Markdown lines join their paragraph or bullet, and the SHA-256 checksums section is left out.
+- **Release notes panel** (`UpdateNotice.tsx:73-81`, parsed by `src/lib/releaseNotes.ts`): an inset well `min-w-0 overflow-hidden rounded-lg border bg-background` around a SimpleBar capped at 256px, content `px-4 py-3` at 12.5px muted. Text breaks anywhere (`wrap-anywhere`) and code blocks use `whitespace-pre-wrap`, so the panel never scrolls sideways. Hard-wrapped Markdown lines join their paragraph or bullet, and the SHA-256 checksums section is left out.
 - **Chip** (`PortSettings.tsx:191-201`): `h-7 rounded-md border border-border bg-background font-mono text-[12px]` with an `h-5 w-5` remove button that turns `hover:bg-destructive/10 hover:text-destructive`.
 - **Empty state** (`App.tsx:368-375`): `rounded-xl border border-dashed px-6 py-10 text-center`, title 13px medium, body 12px muted.
 - **Skeleton** (`PortScanLoader.tsx:4-25`): mirrors row geometry with `bg-elevated` bars at 100, 70 and 50% opacity and a `via-foreground/[0.035]` shimmer.
@@ -178,15 +178,16 @@ Reuse these class patterns. Copy from the referenced line rather than retyping.
 
 1. Every colour goes through a token: `bg-card`, `text-subtle`, `border-border`, `bg-free/10`. No hex, `rgb()`, or Tailwind palette classes (`text-green-500`, `bg-gray-*`) in components.
 2. Use opacity modifiers on tokens for tints (`/10` fill, `/20` or `/25` border, `/40` or `/50` focus ring) instead of new tokens.
-3. A new semantic colour needs a value in both `:root` and `.dark` in `src/index.css` and an entry in `tailwind.config.js`. Keep greys at hue 0, saturation 0.
-4. Dark mode is class based (`darkMode: ["class"]`), toggled on `<html>` by `src/store/themeStore.ts`. Do not use `prefers-color-scheme` media queries or `dark:` overrides for colours a token already covers.
-5. Check every new screen in both themes. `screenshot.png` (dark) and `screenshot-light.png` (light) show the reference look.
+3. A new semantic colour needs a value in both `:root` and `.dark` in `src/index.css` and an entry in its `@theme inline` block. Keep greys at hue 0, saturation 0.
+4. Dark mode is class based (`@custom-variant dark`, `index.css:13`), toggled on `<html>` by `src/store/themeStore.ts`. Do not use `prefers-color-scheme` media queries or `dark:` overrides for colours a token already covers.
+5. `hover:` is plain `:hover` (`index.css:17`), as in Tailwind v3, not v4's `@media (hover: hover)`, which some Linux WebKitGTK builds do not report.
+6. Check every new screen in both themes. `screenshot.png` (dark) and `screenshot-light.png` (light) show the reference look.
 
 Known exceptions in the code today: the Windows close button uses the system red `#e81123` / `#c50f1f` with `text-white` (`TitleBar.tsx:110`), modal overlays use `bg-black/55` (`dialog.tsx:22`, `alert-dialog.tsx:17`), and the launch path repeats the two canvas colours as hex because it runs before `index.css` loads: `index.html` (an inline style plus a script that reads the saved `porter-theme` before first paint), `src/lib/window.ts` (the native window background, kept in step with the theme), and `backgroundColor` in `src-tauri/tauri.conf.json`. The window starts hidden and is shown after React's first paint, or by Rust after 3 seconds if that never happens. If `--background` changes, change all three. Treat these as deliberate; do not copy the pattern elsewhere.
 
 ## Accessibility
 
-- Focus: `focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring/50` (`/60` on Button). Destructive and status controls tint the ring (`ring-destructive/40`, `ring-occupied/40`, `ring-free/40`). Never remove focus styling without a replacement.
+- Focus: `focus-visible:outline-hidden focus-visible:ring-2 focus-visible:ring-ring/50` (`/60` on Button). Destructive and status controls tint the ring (`ring-destructive/40`, `ring-occupied/40`, `ring-free/40`). Never remove focus styling without a replacement.
 - Icon-only buttons have an `aria-label` and a `title`. Toggles expose state with `aria-pressed`, `aria-checked`, `aria-expanded` or `aria-sort`.
 - Hover-only actions must also appear on keyboard focus (`focus-visible:opacity-100`).
 - Status is never colour alone: rows carry a text pill and stats a text label beside every dot.
@@ -205,7 +206,7 @@ Do:
 
 Don't:
 - Add an accent or brand colour, gradients, or coloured surfaces beyond `/10` status tints.
-- Add shadows to in-flow surfaces (`shadow-sm` in `ui/card.tsx` is legacy).
+- Add shadows to in-flow surfaces (`shadow-xs` in `ui/card.tsx` is legacy).
 - Use Tailwind's text size scale (`text-sm`, `text-xs`) in new UI; use the pixel sizes under Typography.
 - Animate `height`, `width` or other layout properties; use transform, opacity or `.collapse-grid`.
 - Colour service icons by framework.

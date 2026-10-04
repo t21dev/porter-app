@@ -144,7 +144,7 @@ function UpdateRow() {
           <button
             type="button"
             onClick={() => setNotesOpen(true)}
-            className="inline-flex h-7 shrink-0 items-center gap-1.5 rounded-md bg-primary px-2.5 text-[12px] font-medium text-primary-foreground transition-[background-color,transform] duration-150 ease-out hover:bg-primary/85 active:scale-[0.97]"
+            className="inline-flex h-7 shrink-0 items-center gap-1.5 rounded-md bg-primary px-2.5 text-[12px] font-medium text-primary-foreground transition-[background-color,scale] duration-150 ease-out hover:bg-primary/85 active:scale-[0.97]"
           >
             <ArrowDown className="h-3.5 w-3.5" />
             View update

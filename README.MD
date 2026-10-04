@@ -42,7 +42,7 @@ A sleek, fast, and secure desktop port monitoring application built with Tauri, 
 ### Frontend
 - **React 19** - UI framework
 - **TypeScript** - Type safety
-- **Tailwind CSS v3** - Styling
+- **Tailwind CSS v4** - Styling
 - **shadcn/ui** - UI components
 - **TanStack Query** - Data fetching and caching
 - **Zustand** - State management

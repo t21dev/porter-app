@@ -35,7 +35,7 @@ All builds can be found in `src-tauri/target/release/bundle/`
 - ⚙️ Settings panel for port configuration
 
 ### Technical Stack
-- **Frontend**: React 19, TypeScript, Tailwind CSS v3
+- **Frontend**: React 19, TypeScript, Tailwind CSS v4
 - **Backend**: Rust, Tauri 2.0
 - **Platform Support**: Windows (macOS & Linux coming soon)
 

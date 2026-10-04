@@ -109,9 +109,9 @@ export const PortListItem = memo(function PortListItem({ port, onKill, isPinned 
           title={isPinned ? 'Unpin' : 'Pin to the top'}
           className={cn(
             'flex h-7 w-7 shrink-0 items-center justify-center rounded-md text-subtle',
-            'opacity-0 transition-[opacity,background-color,color,transform] duration-150 ease-out',
+            'opacity-0 transition-[opacity,background-color,color,scale] duration-150 ease-out',
             'group-hover:opacity-100 focus-visible:opacity-100 hover:bg-accent hover:text-foreground',
-            'focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring/50 active:scale-90'
+            'focus-visible:outline-hidden focus-visible:ring-2 focus-visible:ring-ring/50 active:scale-90'
           )}
         >
           {isPinned ? (
@@ -131,7 +131,7 @@ export const PortListItem = memo(function PortListItem({ port, onKill, isPinned 
                 type="button"
                 aria-label={`Kill ${port.process.name} on port ${port.port}`}
                 title="Kill process"
-                className="flex h-7 w-7 items-center justify-center rounded-md text-subtle transition-[background-color,color,transform] duration-150 ease-out hover:bg-destructive/10 hover:text-destructive focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-destructive/40 active:scale-90"
+                className="flex h-7 w-7 items-center justify-center rounded-md text-subtle transition-[background-color,color,scale] duration-150 ease-out hover:bg-destructive/10 hover:text-destructive focus-visible:outline-hidden focus-visible:ring-2 focus-visible:ring-destructive/40 active:scale-90"
               >
                 <X className="h-3.5 w-3.5" strokeWidth={2} />
               </button>

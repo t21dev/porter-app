@@ -303,7 +303,7 @@ function AppContent() {
                         type="button"
                         onClick={() => setShowAllPorts(!showAllPorts)}
                         aria-expanded={showAllPorts}
-                        className="group flex w-full items-center gap-3 rounded-lg py-1.5 text-left focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring/50"
+                        className="group flex w-full items-center gap-3 rounded-lg py-1.5 text-left focus-visible:outline-hidden focus-visible:ring-2 focus-visible:ring-ring/50"
                       >
                         <span className="text-[12px] font-medium text-muted-foreground transition-colors duration-150 group-hover:text-foreground">
                           {showAllPorts ? 'Hide other ports' : 'Other ports'}
