@@ -16,6 +16,11 @@ import { UpdateDialog } from './UpdateNotice';
 import { cn } from '@/lib/utils';
 import { useToast } from '@/hooks/use-toast';
 
+// The licence year starts the range; the current year closes it, so it never goes stale.
+const firstYear = aboutConfig.license.year;
+const thisYear = new Date().getFullYear();
+const copyrightYears = thisYear > firstYear ? `${firstYear}-${thisYear}` : `${firstYear}`;
+
 export function AboutDialog() {
   return (
     <Dialog>
@@ -25,15 +30,19 @@ export function AboutDialog() {
         </Button>
       </DialogTrigger>
       <DialogContent className="max-w-sm gap-0 p-0">
-        <DialogHeader className="items-start space-y-0 px-6 pb-5 pt-6">
-          <PorterMark className="mb-4 h-9 w-9" />
-          <DialogTitle className="text-[17px]">{aboutConfig.app.name}</DialogTitle>
-          <DialogDescription className="pt-1.5 text-[13px] leading-relaxed">
+        <DialogHeader className="space-y-0 px-6 pb-5 pt-6">
+          <div className="flex items-center gap-3.5">
+            <PorterMark className="h-10 w-10 shrink-0" />
+            <div className="min-w-0">
+              <DialogTitle className="text-[17px] leading-tight">{aboutConfig.app.name}</DialogTitle>
+              <p className="mt-0.5 text-[12px] text-muted-foreground">
+                Version <span className="font-mono tabular">{aboutConfig.app.version}</span>
+              </p>
+            </div>
+          </div>
+          <DialogDescription className="pt-4 text-[13px] leading-relaxed">
             {aboutConfig.app.description}
           </DialogDescription>
-          <span className="mt-3 inline-flex rounded-full border border-border px-2 py-0.5 font-mono text-[11px] text-muted-foreground tabular">
-            v{aboutConfig.app.version}
-          </span>
           {aboutConfig.showTechStack && (
             <p className="pt-2 text-[12px] text-muted-foreground">{aboutConfig.techStack}</p>
           )}
@@ -70,7 +79,7 @@ export function AboutDialog() {
 
         <div className="border-t border-border px-6 py-3">
           <p className="text-[11px] text-subtle">
-            © {aboutConfig.license.year} {aboutConfig.license.holder} · {aboutConfig.license.type}
+            © {copyrightYears} {aboutConfig.license.holder} · {aboutConfig.license.type}
           </p>
         </div>
       </DialogContent>

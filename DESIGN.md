@@ -83,7 +83,7 @@ How status colour is applied, from `PortListItem.tsx:30-34` and `StatusFilter.ts
 - Filter dot (inactive): `border-{status} bg-transparent scale-90`.
 - Distribution bar: segments `bg-{status} opacity-80` on a `bg-border/60` 3px track (`StatsCard.tsx:60-75`).
 
-Status colours carry secondary meanings: `occupied` is the warning colour (admin banner `AdminWarning.tsx:33`, pinned-ports capacity full `PortSettings.tsx:213`); `free` is the positive colour (Live dot `TitleBar.tsx:43-46`, update available `UpdateNotice.tsx:30`, "up to date" check `AboutDialog.tsx:124`). Do not introduce new hues for success or warning; reuse these. `destructive` is reserved for kill and remove actions and error toasts, never for a port status.
+Status colours carry secondary meanings: `occupied` is the warning colour (admin banner `AdminWarning.tsx:33`, pinned-ports capacity full `PortSettings.tsx:213`); `free` is the positive colour (Live dot `TitleBar.tsx:43-46`, update available `UpdateNotice.tsx:30`, "up to date" check `AboutDialog.tsx:133`). Do not introduce new hues for success or warning; reuse these. `destructive` is reserved for kill and remove actions and error toasts, never for a port status.
 
 ## Typography
 
@@ -94,7 +94,7 @@ Status colours carry secondary meanings: `occupied` is the warning colour (admin
 | Size | Weight | Where |
 |---|---|---|
 | 26px mono, `leading-none tracking-[-0.03em]` | medium | Stat counters (`StatsCard.tsx:28`) |
-| 17px | semibold | About dialog title (`AboutDialog.tsx:30`) |
+| 17px | semibold | About dialog title (`AboutDialog.tsx:37`) |
 | 15px, `tracking-[-0.01em]` | semibold | Dialog titles (`dialog.tsx:89`, `alert-dialog.tsx:78`) |
 | 14px mono, `tracking-[-0.02em]` | medium | Port number in rows (`PortListItem.tsx:59`) |
 | 13px | semibold / medium / regular | Settings headings, wordmark, button text, input text, dialog body |

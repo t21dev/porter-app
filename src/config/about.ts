@@ -4,7 +4,7 @@ export const aboutConfig = {
   app: {
     name: 'Porter',
     version: pkg.version,
-    description: 'A sleek, fast, and secure desktop port monitoring application',
+    description: 'A sleek, fast, and secure desktop port monitoring application.',
   },
   organization: {
     name: 't21.dev',
