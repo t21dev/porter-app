@@ -110,3 +110,32 @@ jobs:
           # Straight to the release by id: a draft has no public tag to look up.
           gh api -X POST "https://uploads.github.com/repos/${{ github.repository }}/releases/${{ needs.create-release.outputs.release_id }}/assets?name=$zip" `
             -H "Content-Type: application/zip" --input $zip --jq .name
+
+  # Once every build has uploaded, list the SHA-256 of each download: as
+  # SHA256SUMS.txt beside them, and at the end of the release notes.
+  checksums:
+    needs: [create-release, release]
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+    steps:
+      - name: SHA-256 of every download
+        shell: bash
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          REPO: ${{ github.repository }}
+          ID: ${{ needs.create-release.outputs.release_id }}
+        run: |
+          mkdir dl
+          gh api "repos/$REPO/releases/$ID/assets" --paginate --jq '.[] | "\(.id)\t\(.name)"' |
+            while IFS=$'\t' read -r asset name; do
+              [ "$name" = "SHA256SUMS.txt" ] && continue
+              gh api -H "Accept: application/octet-stream" "repos/$REPO/releases/assets/$asset" > "dl/$name"
+            done
+          (cd dl && sha256sum -- * | sort -k2) > SHA256SUMS.txt
+          cat SHA256SUMS.txt
+          gh api -X POST "https://uploads.github.com/repos/$REPO/releases/$ID/assets?name=SHA256SUMS.txt" \
+            -H "Content-Type: text/plain" --input SHA256SUMS.txt --jq .name
+          gh api "repos/$REPO/releases/$ID" --jq .body > body.md
+          printf '\n## SHA-256 checksums\n\n```\n%s\n```\n' "$(cat SHA256SUMS.txt)" >> body.md
+          gh api -X PATCH "repos/$REPO/releases/$ID" -F body=@body.md --jq .html_url

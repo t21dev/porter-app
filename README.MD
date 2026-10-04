@@ -231,6 +231,31 @@ Contributions are welcome! Please follow these steps:
 4. Push to the branch (`git push origin feature/amazing-feature`)
 5. Open a Pull Request
 
+## 🔏 Code signing policy
+
+Windows releases are being set up for free code signing through
+[SignPath.io](https://signpath.io), with a certificate from the
+[SignPath Foundation](https://signpath.org). Once that is in place, signed
+releases will say so here: "Free code signing provided by SignPath.io,
+certificate by SignPath Foundation". Until then the Windows builds are
+unsigned, and SmartScreen shows "Windows protected your PC" on first run: click
+More info, then Run anyway. Every release lists the SHA-256 checksum of each
+download in `SHA256SUMS.txt`, so you can check what you installed.
+
+Every release is built by GitHub Actions from the tagged source in this
+repository, and signed only after it is approved by hand.
+
+| Role | People |
+| --- | --- |
+| Committers and reviewers | [TriptoAfsin](https://github.com/TriptoAfsin) |
+| Approvers | [TriptoAfsin](https://github.com/TriptoAfsin) |
+
+### Privacy
+
+Porter reads your computer's port table locally and has no account, no
+analytics and no telemetry. It connects to one other system: GitHub, to check
+for a new release.
+
 ## 📝 License
 
 This project is licensed under the MIT License - see the [LICENSE](LICENSE) file for details.
