@@ -7,6 +7,21 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [0.6.0] - 2026-10-04
+
+### Changed
+- The About dialog puts the version beside the name, read from the app, and
+  the footer year stays current.
+- The update dialog's release notes read as written: wrapped lines stay in
+  their bullet or paragraph, nothing scrolls sideways, and the checksum list
+  is left to the release page.
+
+### Fixed
+- The Linux AppImage no longer aborts at launch with "Could not create default
+  EGL display: EGL_BAD_PARAMETER" on newer distributions such as Arch (#2). It
+  was built with an older bundler that packed an old Wayland client library.
+- Releases keep their tag when the checksums are added to the notes.
+
 ## [0.5.1] - 2026-10-04
 
 ### Added
