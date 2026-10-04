@@ -1,9 +1,12 @@
-import { clsx, type ClassValue } from "clsx"
-import { twMerge } from "tailwind-merge"
-
-export function cn(...inputs: ClassValue[]) {
-  return twMerge(clsx(inputs))
-}
+/**
+ * clsx-style joining plus Tailwind conflict resolution, from the `cn` package.
+ * Token colours (`text-subtle`, `bg-free/10`) and arbitrary sizes need no
+ * config. The default tables read `shadow-float` as a shadow colour, so it
+ * would not replace `shadow-xs` in a merge. Nothing merges shadows today; if
+ * that changes, use createCn from "cn/config" with
+ * { extend: { theme: { shadow: ["float"] } } } (about 15 KB more).
+ */
+export { cn } from "cn"
 
 export function formatBytes(bytes: number): string {
   if (bytes === 0) return '0 Bytes';
