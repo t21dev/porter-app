@@ -83,7 +83,7 @@ How status colour is applied, from `PortListItem.tsx:30-34` and `StatusFilter.ts
 - Filter dot (inactive): `border-{status} bg-transparent scale-90`.
 - Distribution bar: segments `bg-{status} opacity-80` on a `bg-border/60` 3px track (`StatsCard.tsx:60-75`).
 
-Status colours carry secondary meanings: `occupied` is the warning colour (admin banner `AdminWarning.tsx:33`, pinned-ports capacity full `PortSettings.tsx:213`); `free` is the positive colour (Live dot `TitleBar.tsx:43-46`, update available `UpdateNotice.tsx:28`, "up to date" check `AboutDialog.tsx:124`). Do not introduce new hues for success or warning; reuse these. `destructive` is reserved for kill and remove actions and error toasts, never for a port status.
+Status colours carry secondary meanings: `occupied` is the warning colour (admin banner `AdminWarning.tsx:33`, pinned-ports capacity full `PortSettings.tsx:213`); `free` is the positive colour (Live dot `TitleBar.tsx:43-46`, update available `UpdateNotice.tsx:30`, "up to date" check `AboutDialog.tsx:124`). Do not introduce new hues for success or warning; reuse these. `destructive` is reserved for kill and remove actions and error toasts, never for a port status.
 
 ## Typography
 
@@ -165,7 +165,8 @@ Reuse these class patterns. Copy from the referenced line rather than retyping.
 - **Sortable table header** (`OtherPortsList.tsx:252`, `OtherPortsList.tsx:342-379`): `h-9 rounded-t-xl border bg-card`, sticky on a `bg-background` wrapper; header text `text-[11px] font-medium`, active `text-foreground`, arrow hidden until hover.
 - **Stats panel** (`StatsCard.tsx:42-77`): one `rounded-xl border bg-card` surface, `grid-cols-3 divide-x`, each cell a dot, a label and a 26px mono number, with a 3px distribution bar at the bottom.
 - **Banner** (`AdminWarning.tsx:31-58`): `rounded-lg border border-occupied/20 bg-occupied/[0.06]`, icon `text-occupied`, lead phrase `font-medium text-foreground`, action `text-occupied hover:bg-occupied/10`.
-- **Status pill button** (`UpdateNotice.tsx:28`): `h-7 rounded-full border border-free/25 bg-free/10 text-[11.5px] font-medium text-free`.
+- **Status pill button** (`UpdateNotice.tsx:30`): `h-7 rounded-full border border-free/25 bg-free/10 text-[11.5px] font-medium text-free`.
+- **Release notes panel** (`UpdateNotice.tsx:73-81`, parsed by `src/lib/releaseNotes.ts`): an inset well `min-w-0 overflow-hidden rounded-lg border bg-background` around a SimpleBar capped at 256px, content `px-4 py-3` at 12.5px muted. Text breaks anywhere (`[overflow-wrap:anywhere]`) and code blocks use `whitespace-pre-wrap`, so the panel never scrolls sideways. Hard-wrapped Markdown lines join their paragraph or bullet, and the SHA-256 checksums section is left out.
 - **Chip** (`PortSettings.tsx:191-201`): `h-7 rounded-md border border-border bg-background font-mono text-[12px]` with an `h-5 w-5` remove button that turns `hover:bg-destructive/10 hover:text-destructive`.
 - **Empty state** (`App.tsx:368-375`): `rounded-xl border border-dashed px-6 py-10 text-center`, title 13px medium, body 12px muted.
 - **Skeleton** (`PortScanLoader.tsx:4-25`): mirrors row geometry with `bg-elevated` bars at 100, 70 and 50% opacity and a `via-foreground/[0.035]` shimmer.

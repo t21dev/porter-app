@@ -1,4 +1,5 @@
-import { useState } from 'react';
+import { useMemo, useState } from 'react';
+import SimpleBar from 'simplebar-react';
 import { ArrowDown } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import {
@@ -10,6 +11,7 @@ import {
   DialogTitle,
 } from '@/components/ui/dialog';
 import { useUpdateCheck } from '@/hooks/useUpdateCheck';
+import { parseReleaseNotes, type NoteBlock } from '@/lib/releaseNotes';
 import { dismissVersion, getDismissedVersion, openReleasePage, type UpdateInfo } from '@/lib/updates';
 
 /** Title-bar pill shown when a newer release exists on GitHub. */
@@ -54,6 +56,8 @@ interface UpdateDialogProps {
 }
 
 export function UpdateDialog({ info, open, onOpenChange, onLater }: UpdateDialogProps) {
+  const notes = useMemo(() => parseReleaseNotes(info.notes), [info.notes]);
+
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent className="max-w-md">
@@ -65,9 +69,13 @@ export function UpdateDialog({ info, open, onOpenChange, onLater }: UpdateDialog
           </DialogDescription>
         </DialogHeader>
 
-        {info.notes.trim() && (
-          <div className="max-h-64 overflow-y-auto rounded-lg border border-border bg-background px-4 py-3">
-            <ReleaseNotes markdown={info.notes} />
+        {notes.length > 0 && (
+          <div className="min-w-0 overflow-hidden rounded-lg border border-border bg-background">
+            <SimpleBar style={{ maxHeight: 256 }}>
+              <div className="px-4 py-3">
+                <ReleaseNotes blocks={notes} />
+              </div>
+            </SimpleBar>
           </div>
         )}
 
@@ -85,33 +93,37 @@ export function UpdateDialog({ info, open, onOpenChange, onLater }: UpdateDialog
   );
 }
 
-/** Minimal renderer for GitHub release bodies: headings, bullets, paragraphs. */
-function ReleaseNotes({ markdown }: { markdown: string }) {
-  const clean = (s: string) => s.replace(/\*\*(.+?)\*\*/g, '$1').replace(/`([^`]+)`/g, '$1');
-  const lines = markdown.split(/\r?\n/).map((l) => l.trimEnd());
-
+/** Renders a GitHub release body; see `parseReleaseNotes` for what it keeps. */
+function ReleaseNotes({ blocks }: { blocks: NoteBlock[] }) {
   return (
-    <div className="space-y-1.5 text-[12.5px] leading-relaxed text-muted-foreground">
-      {lines.map((line, i) => {
-        if (!line.trim()) return null;
-        const heading = line.match(/^#{1,6}\s+(.*)/);
-        if (heading) {
-          return (
-            <p key={i} className="pt-1.5 text-[12px] font-semibold text-foreground first:pt-0">
-              {clean(heading[1])}
-            </p>
-          );
+    <div className="space-y-1.5 break-words text-[12.5px] leading-relaxed text-muted-foreground [overflow-wrap:anywhere]">
+      {blocks.map((block, i) => {
+        switch (block.type) {
+          case 'heading':
+            return (
+              <p key={i} className="pt-1.5 text-[12px] font-semibold text-foreground first:pt-0">
+                {block.text}
+              </p>
+            );
+          case 'bullet':
+            return (
+              <p key={i} className="flex gap-2">
+                <span className="mt-[9px] h-1 w-1 shrink-0 rounded-full bg-subtle" />
+                <span className="min-w-0">{block.text}</span>
+              </p>
+            );
+          case 'code':
+            return (
+              <pre
+                key={i}
+                className="whitespace-pre-wrap rounded-md border border-border bg-card px-2.5 py-2 font-mono text-[11px] leading-relaxed text-muted-foreground [overflow-wrap:anywhere]"
+              >
+                {block.text}
+              </pre>
+            );
+          default:
+            return <p key={i}>{block.text}</p>;
         }
-        const bullet = line.match(/^\s*[-*]\s+(.*)/);
-        if (bullet) {
-          return (
-            <p key={i} className="flex gap-2">
-              <span className="mt-[9px] h-1 w-1 shrink-0 rounded-full bg-subtle" />
-              <span>{clean(bullet[1])}</span>
-            </p>
-          );
-        }
-        return <p key={i}>{clean(line)}</p>;
       })}
     </div>
   );
