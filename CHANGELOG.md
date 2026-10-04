@@ -7,9 +7,16 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [0.5.1] - 2026-10-04
+
 ### Added
 - Every release carries `SHA256SUMS.txt`, the SHA-256 checksum of each
   download, and lists them at the end of the release notes.
+
+### Fixed
+- No more white flash when Porter opens. The window stays hidden on the
+  theme's own background until the interface has drawn, and the light or dark
+  theme is applied before the first frame.
 
 ## [0.5.0] - 2026-10-04
 
