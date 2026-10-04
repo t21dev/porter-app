@@ -23,7 +23,9 @@
         "resizable": true,
         "decorations": false,
         "shadow": true,
-        "center": true
+        "center": true,
+        "visible": false,
+        "backgroundColor": "#0d0d0d"
       }
     ],
     "security": {

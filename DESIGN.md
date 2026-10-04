@@ -181,7 +181,7 @@ Reuse these class patterns. Copy from the referenced line rather than retyping.
 4. Dark mode is class based (`darkMode: ["class"]`), toggled on `<html>` by `src/store/themeStore.ts`. Do not use `prefers-color-scheme` media queries or `dark:` overrides for colours a token already covers.
 5. Check every new screen in both themes. `screenshot.png` (dark) and `screenshot-light.png` (light) show the reference look.
 
-Known exceptions in the code today: the Windows close button uses the system red `#e81123` / `#c50f1f` with `text-white` (`TitleBar.tsx:110`), modal overlays use `bg-black/55` (`dialog.tsx:22`, `alert-dialog.tsx:17`), and `index.html:2` hardcodes `class="dark"` and `background:#0d0d0d` to avoid a flash before the theme store loads. Treat these as deliberate; do not copy the pattern elsewhere.
+Known exceptions in the code today: the Windows close button uses the system red `#e81123` / `#c50f1f` with `text-white` (`TitleBar.tsx:110`), modal overlays use `bg-black/55` (`dialog.tsx:22`, `alert-dialog.tsx:17`), and the launch path repeats the two canvas colours as hex because it runs before `index.css` loads: `index.html` (an inline style plus a script that reads the saved `porter-theme` before first paint), `src/lib/window.ts` (the native window background, kept in step with the theme), and `backgroundColor` in `src-tauri/tauri.conf.json`. The window starts hidden and is shown after React's first paint, or by Rust after 3 seconds if that never happens. If `--background` changes, change all three. Treat these as deliberate; do not copy the pattern elsewhere.
 
 ## Accessibility
 

@@ -16,6 +16,9 @@
     "core:window:allow-set-size",
     "core:window:allow-set-min-size",
     "core:window:allow-set-max-size",
+    "core:window:allow-show",
+    "core:window:allow-set-focus",
+    "core:window:allow-set-background-color",
     "core:webview:allow-set-webview-zoom",
     "shell:default"
   ]

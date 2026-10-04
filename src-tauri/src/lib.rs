@@ -35,7 +35,18 @@ pub fn run() {
                 std::fs::create_dir_all(&dir)?;
                 builder = builder.data_directory(dir);
             }
-            builder.build()?;
+            let window = builder.build()?;
+
+            // The window starts hidden (see tauri.conf.json) and the frontend
+            // shows it once React has painted, so launch never flashes an empty
+            // frame. If the frontend never gets that far, show it anyway.
+            std::thread::spawn(move || {
+                std::thread::sleep(std::time::Duration::from_secs(3));
+                if !window.is_visible().unwrap_or(true) {
+                    let _ = window.show();
+                    let _ = window.set_focus();
+                }
+            });
             Ok(())
         })
         .invoke_handler(tauri::generate_handler![

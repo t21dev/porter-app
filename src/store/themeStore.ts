@@ -1,5 +1,6 @@
 import { create } from 'zustand';
 import { persist } from 'zustand/middleware';
+import { syncWindowBackground } from '@/lib/window';
 
 type Theme = 'light' | 'dark';
 
@@ -23,6 +24,7 @@ export const useThemeStore = create<ThemeStore>()(
       setTheme: (theme) => {
         set({ theme });
         document.documentElement.classList.toggle('dark', theme === 'dark');
+        void syncWindowBackground(theme);
       },
       toggleTheme: () => {
         const newTheme = get().theme === 'dark' ? 'light' : 'dark';

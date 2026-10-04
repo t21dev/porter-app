@@ -1,10 +1,45 @@
 <!doctype html>
-<html lang="en" class="dark" style="background:#0d0d0d">
+<html lang="en" class="dark">
   <head>
     <meta charset="UTF-8" />
     <link rel="icon" type="image/svg+xml" href="/vite.svg" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>Porter</title>
+
+    <!--
+      Paint the canvas colour before the stylesheet arrives. These two values
+      mirror --background in src/index.css (light 98.4%, dark 5.1%), and the
+      native window background in tauri.conf.json matches the dark one.
+    -->
+    <style>
+      html,
+      body {
+        background: #0d0d0d;
+        color-scheme: dark;
+      }
+      html:not(.dark),
+      html:not(.dark) body {
+        background: #fbfbfb;
+        color-scheme: light;
+      }
+    </style>
+    <script>
+      // Mirrors themeStore.ts: the saved 'porter-theme' choice, else the
+      // system preference. Runs before any CSS loads, so a light-theme user
+      // never sees a dark first frame.
+      (function () {
+        try {
+          var raw = localStorage.getItem('porter-theme');
+          var saved = raw ? JSON.parse(raw).state.theme : null;
+          var dark =
+            saved === 'dark' ||
+            (saved !== 'light' && window.matchMedia('(prefers-color-scheme: dark)').matches);
+          document.documentElement.classList.toggle('dark', dark);
+        } catch (e) {
+          /* storage blocked or unreadable: the dark default stands */
+        }
+      })();
+    </script>
   </head>
 
   <body>
