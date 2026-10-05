@@ -254,7 +254,7 @@ repository, and signed only after it is approved by hand.
 
 Porter reads your computer's port table locally and has no account, no
 analytics and no telemetry. It connects to one other system: GitHub, to check
-for a new release.
+for a new release. The full policy is in [PRIVACY.md](PRIVACY.md).
 
 ## 📝 License
 
