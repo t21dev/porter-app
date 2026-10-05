@@ -7,6 +7,12 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [0.6.1] - 2026-10-05
+
+### Added
+- A privacy policy, [PRIVACY.md](PRIVACY.md): what Porter reads, what it
+  keeps, and its one trip online, the update check.
+
 ## [0.6.0] - 2026-10-04
 
 ### Changed
