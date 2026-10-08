@@ -7,6 +7,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [0.7.0] - 2026-10-08
+
 ### Added
 - A Flatpak for Linux, `Porter_x.x.x_x86_64.flatpak`, on every release.
   The sandbox hides other processes, so inside it Porter finds the owner of
