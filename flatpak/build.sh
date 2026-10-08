@@ -11,6 +11,12 @@
 # `flatpak install` fetches that too.
 set -euo pipefail
 
+# org.flatpak.Builder installs the SDK over the session bus, which a CI runner
+# doesn't have; start one for this script.
+if [ -z "${DBUS_SESSION_BUS_ADDRESS:-}" ]; then
+  exec dbus-run-session -- bash "$0" "$@"
+fi
+
 DEB=$(realpath "$1")
 OUT=$(realpath -m "$2")
 HERE=$(cd "$(dirname "$0")" && pwd)
