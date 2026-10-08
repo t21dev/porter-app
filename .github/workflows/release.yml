@@ -124,7 +124,7 @@ jobs:
         env:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: |
-          sudo apt-get install -y flatpak flatpak-builder
+          sudo apt-get install -y flatpak
           FILE="Porter_${GITHUB_REF_NAME#v}_x86_64.flatpak"
           bash flatpak/build.sh src-tauri/target/release/bundle/deb/*.deb "$FILE"
           gh api -X POST "https://uploads.github.com/repos/${{ github.repository }}/releases/${{ needs.create-release.outputs.release_id }}/assets?name=$FILE" \

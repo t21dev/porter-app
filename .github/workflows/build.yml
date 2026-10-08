@@ -51,7 +51,7 @@ jobs:
       - name: Build Flatpak (Ubuntu only)
         if: matrix.platform == 'ubuntu-22.04'
         run: |
-          sudo apt-get install -y flatpak flatpak-builder
+          sudo apt-get install -y flatpak
           bash flatpak/build.sh src-tauri/target/release/bundle/deb/*.deb Porter_x86_64.flatpak
 
       - name: Upload Flatpak (Ubuntu only)
