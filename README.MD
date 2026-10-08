@@ -67,7 +67,29 @@ Download the latest release for your platform from the [Releases page](https://g
 |----------|------|
 | Windows | `Porter_x.x.x_x64-setup.exe` or `.msi`, or `Porter_x.x.x_x64_portable.zip` to run without installing |
 | macOS | `Porter_x.x.x_aarch64.dmg` (Apple Silicon) or `Porter_x.x.x_x64.dmg` (Intel) |
-| Linux | `.deb` or `.AppImage` |
+| Linux | `.deb`, `.AppImage`, or `Porter_x.x.x_x86_64.flatpak` |
+
+#### Flatpak (Linux)
+
+```bash
+flatpak install --user Porter_x.x.x_x86_64.flatpak
+flatpak run com.triptoafsin.porter
+```
+
+The bundle fetches the GNOME runtime it needs from Flathub on first install.
+A sandboxed app can't see or stop processes outside its sandbox, so the
+Flatpak has permission to run commands on the host
+(`--talk-name=org.freedesktop.Flatpak`): Porter uses it to run `ss`, `kill`
+and `pkexec` there, and nothing else. The host needs `ss` (iproute2, present
+on nearly every distribution), and `pkexec` for killing other users'
+processes. The bundle doesn't update itself: Porter tells you when a new
+release is out, and you install the new file the same way.
+
+To build it yourself from a `.deb` made by `npm run tauri build`:
+
+```bash
+flatpak/build.sh src-tauri/target/release/bundle/deb/Porter_x.x.x_amd64.deb Porter.flatpak
+```
 
 #### Portable version (Windows)
 

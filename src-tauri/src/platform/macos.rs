@@ -49,6 +49,7 @@ pub fn get_network_connections(include_connections: bool) -> Result<Vec<NetworkC
                         .get(9)
                         .map(|s| s.trim_matches(|c| c == '(' || c == ')').to_string())
                         .unwrap_or_default(),
+                    process_name: None,
                 });
             }
         }

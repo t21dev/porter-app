@@ -38,10 +38,18 @@ impl PortMonitor {
             if ports.contains_key(&conn.local_port) {
                 continue;
             }
+            // A name that came with the socket wins: inside Flatpak the PID is
+            // the host's, and the sandbox may have its own process by that PID.
             let process = (conn.pid > 0)
-                .then(|| system.process(Pid::from_u32(conn.pid)))
+                .then(|| {
+                    conn.process_name.clone().or_else(|| {
+                        system
+                            .process(Pid::from_u32(conn.pid))
+                            .map(|p| p.name().to_string_lossy().into_owned())
+                    })
+                })
                 .flatten()
-                .map(|p| Process::named(conn.pid, p.name().to_string_lossy().into_owned()));
+                .map(|name| Process::named(conn.pid, name));
             ports.insert(conn.local_port, Port::from_connection(conn, process));
         }
         Ok(ports.into_values().collect())
@@ -56,6 +64,13 @@ impl PortMonitor {
         else {
             return Ok(None);
         };
+        #[cfg(target_os = "linux")]
+        if platform::flatpak::is_sandboxed() {
+            let process = (conn.pid > 0)
+                .then(|| platform::flatpak::process_details(conn.pid))
+                .flatten();
+            return Ok(Some(Port::from_connection(conn, process)));
+        }
         let pid = Pid::from_u32(conn.pid);
         let mut system = System::new();
         system.refresh_processes_specifics(

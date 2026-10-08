@@ -36,6 +36,7 @@ pub fn get_network_connections(include_connections: bool) -> Result<Vec<NetworkC
                     protocol: Protocol::TCP,
                     pid: entry.dwOwningPid,
                     state: format_tcp_state(entry.dwState),
+                    process_name: None,
                 });
             }
         }
@@ -53,6 +54,7 @@ pub fn get_network_connections(include_connections: bool) -> Result<Vec<NetworkC
                     protocol: Protocol::TCP,
                     pid: entry.dwOwningPid,
                     state: format_tcp_state(entry.dwState),
+                    process_name: None,
                 });
             }
         }

@@ -29,6 +29,11 @@ impl ProcessManager {
 
     /// Kill a process by PID
     pub fn kill_process(&mut self, pid: u32) -> Result<bool> {
+        #[cfg(target_os = "linux")]
+        if platform::flatpak::is_sandboxed() {
+            return kill_host_process(pid);
+        }
+
         let pid_obj = Pid::from_u32(pid);
         // Only the process being killed, not every process on the machine.
         self.system
@@ -173,5 +178,41 @@ impl ProcessManager {
         }
 
         Err(anyhow!("Port {} is not in use", port))
+    }
+}
+
+/// Inside Flatpak, the same steps as below (SIGTERM, then SIGKILL, then
+/// pkexec), each run on the host, where the process lives.
+#[cfg(target_os = "linux")]
+fn kill_host_process(pid: u32) -> Result<bool> {
+    use platform::flatpak::{is_running, kill_elevated, signal};
+    use std::time::Duration;
+
+    if !is_running(pid) {
+        return Err(anyhow!("Process not found: PID {}", pid));
+    }
+    if signal(pid, "-TERM") {
+        std::thread::sleep(Duration::from_millis(500));
+        if !is_running(pid) || signal(pid, "-KILL") {
+            return Ok(true);
+        }
+    }
+
+    let result = kill_elevated(pid).map_err(|e| anyhow!("Failed to request elevation: {}", e))?;
+    if result.status.success() {
+        std::thread::sleep(Duration::from_millis(300));
+        if !is_running(pid) {
+            return Ok(true);
+        }
+        return Err(anyhow!("Process {} did not terminate after elevated kill attempt.", pid));
+    }
+    let stderr = String::from_utf8_lossy(&result.stderr);
+    if stderr.contains("dismissed") || stderr.contains("Not authorized") {
+        Err(anyhow!("Authentication was canceled or denied."))
+    } else {
+        Err(anyhow!(
+            "Failed to kill process (PID: {}). Please install PolicyKit (pkexec) on the host.",
+            pid
+        ))
     }
 }

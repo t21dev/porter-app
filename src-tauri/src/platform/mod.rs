@@ -12,8 +12,11 @@ pub use macos::*;
 mod linux;
 #[cfg(target_os = "linux")]
 pub use linux::*;
+#[cfg(target_os = "linux")]
+pub mod flatpak;
 
 use crate::models::Protocol;
+use std::collections::HashMap;
 
 #[derive(Debug, Clone)]
 pub struct NetworkConnection {
@@ -24,6 +27,9 @@ pub struct NetworkConnection {
     pub protocol: Protocol,
     pub pid: u32,
     pub state: String,
+    /// The owner's name, where the platform learns it along with the socket
+    /// (inside Flatpak, from the host's `ss`). Otherwise it comes from the PID.
+    pub process_name: Option<String>,
 }
 
 /// One listening socket read from /proc/net/tcp or /proc/net/tcp6.
@@ -80,6 +86,28 @@ fn parse_proc_address(hex: &str) -> Option<String> {
     }
 }
 
+/// The owner of each socket in the output of `ss -Htanpe`, by inode: the PID
+/// and name of the first process listed, as in
+/// `users:(("node",pid=4242,fd=21)) uid:1000 ino:41234 sk:1 <->`.
+/// Sockets with no owner shown (another user's, or none left) are skipped.
+#[cfg_attr(not(target_os = "linux"), allow(dead_code))]
+pub(crate) fn parse_ss_owners(output: &str) -> HashMap<u64, (u32, String)> {
+    output
+        .lines()
+        .filter_map(|line| {
+            let inode: u64 = line
+                .split_whitespace()
+                .find_map(|field| field.strip_prefix("ino:"))?
+                .parse()
+                .ok()?;
+            let users = &line[line.find("users:((\"")? + 9..];
+            let (name, rest) = users.split_once("\",pid=")?;
+            let pid = rest.split(|c: char| !c.is_ascii_digit()).next()?.parse().ok()?;
+            (inode != 0).then(|| (inode, (pid, name.to_string())))
+        })
+        .collect()
+}
+
 /// The inode in a /proc/<pid>/fd link such as "socket:[12345]".
 #[cfg_attr(not(target_os = "linux"), allow(dead_code))]
 pub(crate) fn socket_inode(link: &str) -> Option<u64> {
@@ -127,6 +155,18 @@ mod tests {
                 listening: true
             }]
         );
+    }
+
+    #[test]
+    fn ss_lines_give_the_owner_of_each_inode() {
+        let ss = r#"LISTEN 0      511          127.0.0.1:5173      0.0.0.0:*     users:(("node",pid=4242,fd=21)) uid:1000 ino:41234 sk:1 cgroup:/user.slice <->
+LISTEN 0      4096           0.0.0.0:22        0.0.0.0:*     ino:1999 sk:2 cgroup:/system.slice/ssh.service <->
+ESTAB  0      0            127.0.0.1:40000   127.0.0.1:5173  users:(("my app",pid=77,fd=3),("my app",pid=78,fd=3)) timer:(keepalive,1min,0) uid:1000 ino:41299 sk:3 <->
+TIME-WAIT 0   0            127.0.0.1:40002   127.0.0.1:5173  timer:(timewait,30sec,0) ino:0 sk:4"#;
+        let owners = parse_ss_owners(ss);
+        assert_eq!(owners.len(), 2);
+        assert_eq!(owners[&41234], (4242, "node".to_string()));
+        assert_eq!(owners[&41299], (77, "my app".to_string()));
     }
 
     #[test]

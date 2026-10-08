@@ -29,8 +29,17 @@ pub fn get_network_connections(include_connections: bool) -> Result<Vec<NetworkC
         .map(|l| (l.inode, 0))
         .collect();
     let mut left = owners.len();
+    let mut names: HashMap<u32, String> = HashMap::new();
 
-    if left > 0 {
+    if left > 0 && super::flatpak::is_sandboxed() {
+        // The sandbox's /proc holds only Porter's own processes; ask the host.
+        for (inode, (pid, name)) in super::flatpak::socket_owners() {
+            if let Some(owner) = owners.get_mut(&inode) {
+                *owner = pid;
+                names.insert(pid, name);
+            }
+        }
+    } else if left > 0 {
         if let Ok(procs) = fs::read_dir("/proc") {
             'procs: for entry in procs.flatten() {
                 let Ok(pid) = entry.file_name().to_string_lossy().parse::<u32>() else {
@@ -58,14 +67,18 @@ pub fn get_network_connections(include_connections: bool) -> Result<Vec<NetworkC
 
     Ok(listeners
         .into_iter()
-        .map(|l| NetworkConnection {
-            pid: owners.get(&l.inode).copied().unwrap_or(0),
-            local_address: l.address,
-            local_port: l.port,
-            remote_address: String::new(),
-            remote_port: 0,
-            protocol: Protocol::TCP,
-            state: if l.listening { "LISTEN" } else { "CONNECTED" }.to_string(),
+        .map(|l| {
+            let pid = owners.get(&l.inode).copied().unwrap_or(0);
+            NetworkConnection {
+                pid,
+                process_name: names.get(&pid).cloned(),
+                local_address: l.address,
+                local_port: l.port,
+                remote_address: String::new(),
+                remote_port: 0,
+                protocol: Protocol::TCP,
+                state: if l.listening { "LISTEN" } else { "CONNECTED" }.to_string(),
+            }
         })
         .collect())
 }

@@ -117,6 +117,19 @@ jobs:
           gh api -X POST "https://uploads.github.com/repos/${{ github.repository }}/releases/${{ needs.create-release.outputs.release_id }}/assets?name=$zip" `
             -H "Content-Type: application/zip" --input $zip --jq .name
 
+      # The Flatpak, repackaged from the .deb that tauri-action just built.
+      - name: Flatpak bundle (Linux)
+        if: matrix.platform == 'ubuntu-22.04'
+        shell: bash
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          sudo apt-get install -y flatpak flatpak-builder
+          FILE="Porter_${GITHUB_REF_NAME#v}_x86_64.flatpak"
+          bash flatpak/build.sh src-tauri/target/release/bundle/deb/*.deb "$FILE"
+          gh api -X POST "https://uploads.github.com/repos/${{ github.repository }}/releases/${{ needs.create-release.outputs.release_id }}/assets?name=$FILE" \
+            -H "Content-Type: application/octet-stream" --input "$FILE" --jq .name
+
   # Once every build has uploaded, list the SHA-256 of each download: as
   # SHA256SUMS.txt beside them, and at the end of the release notes.
   checksums:

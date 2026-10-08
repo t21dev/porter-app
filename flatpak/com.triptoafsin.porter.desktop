@@ -1,0 +1,10 @@
+[Desktop Entry]
+Type=Application
+Name=Porter
+Comment=See which process holds each port, and free it
+Exec=porter-app
+Icon=com.triptoafsin.porter
+Terminal=false
+Categories=Development;Network;System;
+Keywords=port;process;kill;network;localhost;
+StartupWMClass=porter-app

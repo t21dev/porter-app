@@ -1,0 +1,42 @@
+# Porter as a Flatpak, repackaged from the .deb that `tauri build` makes.
+# flatpak/build.sh builds it; see that script for how.
+id: com.triptoafsin.porter
+runtime: org.gnome.Platform
+runtime-version: '51'
+sdk: org.gnome.Sdk
+command: porter-app
+finish-args:
+  - --socket=wayland
+  - --socket=fallback-x11
+  - --share=ipc
+  - --device=dri
+  # The host's network, so /proc/net/tcp lists the host's sockets. Also the
+  # update check.
+  - --share=network
+  # The sandbox can't see host processes, so Porter runs ss, kill and pkexec
+  # on the host with flatpak-spawn --host (src-tauri/src/platform/flatpak.rs).
+  - --talk-name=org.freedesktop.Flatpak
+modules:
+  - name: porter
+    buildsystem: simple
+    sources:
+      - type: file
+        path: porter.deb
+      - type: file
+        path: com.triptoafsin.porter.desktop
+      - type: file
+        path: com.triptoafsin.porter.metainfo.xml
+    build-commands:
+      - ar -x porter.deb
+      - tar -xf data.tar.*
+      - install -Dm755 usr/bin/porter-app -t /app/bin
+      - install -Dm644 com.triptoafsin.porter.desktop -t /app/share/applications
+      - install -Dm644 com.triptoafsin.porter.metainfo.xml -t /app/share/metainfo
+      # The icons, renamed after the app ID as Flatpak requires. Tauri puts
+      # the 256 px one in 256x256@2, which Flatpak doesn't accept.
+      - |
+        for icon in usr/share/icons/hicolor/*/apps/porter-app.png; do
+          size=${icon#usr/share/icons/hicolor/}
+          size=${size%%[@/]*}
+          install -Dm644 "$icon" "/app/share/icons/hicolor/$size/apps/com.triptoafsin.porter.png"
+        done

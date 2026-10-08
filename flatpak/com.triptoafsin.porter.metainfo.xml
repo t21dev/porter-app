@@ -1,0 +1,52 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<component type="desktop-application">
+  <id>com.triptoafsin.porter</id>
+  <name>Porter</name>
+  <summary>See which process holds each port, and free it</summary>
+  <developer id="dev.t21">
+    <name>t21.dev</name>
+  </developer>
+  <metadata_license>CC0-1.0</metadata_license>
+  <project_license>MIT</project_license>
+  <url type="homepage">https://github.com/t21dev/porter-app</url>
+  <url type="bugtracker">https://github.com/t21dev/porter-app/issues</url>
+  <launchable type="desktop-id">com.triptoafsin.porter.desktop</launchable>
+  <description>
+    <p>
+      Porter lists the ports in use on your computer and the process behind
+      each one, refreshed every few seconds. Kill the process holding a port
+      with one click, pin the ports you care about, and search by port number
+      or process name.
+    </p>
+    <p>
+      To see and stop processes outside its sandbox, Porter runs ss, kill and
+      pkexec on the host through flatpak-spawn.
+    </p>
+  </description>
+  <screenshots>
+    <screenshot type="default">
+      <caption>Porter in dark mode</caption>
+      <image>https://raw.githubusercontent.com/t21dev/porter-app/main/screenshot.png</image>
+    </screenshot>
+    <screenshot>
+      <caption>Porter in light mode</caption>
+      <image>https://raw.githubusercontent.com/t21dev/porter-app/main/screenshot-light.png</image>
+    </screenshot>
+  </screenshots>
+  <branding>
+    <color type="primary" scheme_preference="light">#f5f5f5</color>
+    <color type="primary" scheme_preference="dark">#0d0d0d</color>
+  </branding>
+  <content_rating type="oars-1.1"/>
+  <supports>
+    <control>pointing</control>
+    <control>keyboard</control>
+  </supports>
+  <releases>
+    <release version="0.7.0" date="2026-10-08">
+      <description>
+        <p>The first Flatpak release.</p>
+      </description>
+    </release>
+  </releases>
+</component>

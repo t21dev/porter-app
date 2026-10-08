@@ -7,6 +7,12 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Added
+- A Flatpak for Linux, `Porter_x.x.x_x86_64.flatpak`, on every release.
+  The sandbox hides other processes, so inside it Porter finds the owner of
+  each port with the host's `ss`, and reads process details and kills
+  processes on the host too, through `flatpak-spawn --host`.
+
 ## [0.6.1] - 2026-10-05
 
 ### Added
