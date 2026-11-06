@@ -1,5 +1,5 @@
 import { useCallback, useEffect, useRef, useState } from "react";
-import { DEMO, DEFAULT_PORTS, FEATURES, RELEASE, SITE, installerMB, mb, type Asset, type DemoPort } from "./content";
+import { DEMO, DEFAULT_PORTS, FEATURES, RELEASE, SITE, installerMB, mb, type Asset, type DemoPort, PACKAGES } from "./content";
 import { Pulse, GitHub, ArrowRight, Download, Copy, Check, Search, X } from "./components/Icons";
 
 type OS = "windows" | "mac" | "linux" | null;
@@ -498,6 +498,28 @@ function DlLink({ a, label }: { a?: Asset; label: string }) {
   );
 }
 
+function Packages() {
+  const live = PACKAGES.filter((p) => p.live);
+  if (!live.length) return null;
+  return (
+    <div className="pkgs rise">
+      <h3>Or use a package manager</h3>
+      <div className="pkg-grid">
+        {live.map((p) => (
+          <div className="pkg" key={p.name}>
+            <p className="label">
+              {p.name} · {p.os}
+            </p>
+            {p.commands.map((c) => (
+              <CopyLine key={c} text={c} />
+            ))}
+          </div>
+        ))}
+      </div>
+    </div>
+  );
+}
+
 function Downloads() {
   const a = RELEASE.assets;
   const date = new Date(RELEASE.date + "T00:00:00Z").toLocaleDateString("en-GB", {
@@ -546,6 +568,7 @@ function Downloads() {
           </p>
         </div>
       </div>
+      <Packages />
       {a.checksums && (
         <p className="checksums">
           Check what you installed against the SHA-256 of every file in <a href={a.checksums.url}>SHA256SUMS.txt</a>.

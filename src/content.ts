@@ -50,7 +50,19 @@ export const DEFAULT_PORTS: [string, string][] = [
   ["27017", "MongoDB"],
 ];
 
-export const FEATURES: { title: string; body: string }[] = [
+// Package managers. Flip `live` once a package installs for real; only live ones render.
+export const PACKAGES: { name: string; os: string; live: boolean; commands: string[] }[] = [
+  {
+    name: "Scoop",
+    os: "Windows",
+    live: true,
+    commands: ["scoop bucket add t21dev https://github.com/t21dev/scoop-bucket", "scoop install t21dev/porter"],
+  },
+  { name: "winget", os: "Windows", live: false, commands: ["winget install t21dev.Porter"] },
+  { name: "Homebrew", os: "macOS", live: false, commands: ["brew install --cask t21dev/tap/porter"] },
+];
+
+export const FEATURES:{ title: string; body: string }[] = [
   {
     title: "Pin the ports you use",
     body: "Hover a row and click the pin to keep that port on top, running or not. Up to 50, saved automatically. Unpin with Undo.",
