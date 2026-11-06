@@ -1,0 +1,52 @@
+{
+  "version": "0.7.0",
+  "date": "2026-10-08",
+  "page": "https://github.com/t21dev/porter-app/releases/tag/v0.7.0",
+  "assets": {
+    "windows": {
+      "name": "Porter_0.7.0_x64-setup.exe",
+      "url": "https://github.com/t21dev/porter-app/releases/download/v0.7.0/Porter_0.7.0_x64-setup.exe",
+      "size": 2803499
+    },
+    "windowsMsi": {
+      "name": "Porter_0.7.0_x64_en-US.msi",
+      "url": "https://github.com/t21dev/porter-app/releases/download/v0.7.0/Porter_0.7.0_x64_en-US.msi",
+      "size": 4063232
+    },
+    "windowsPortable": {
+      "name": "Porter_0.7.0_x64_portable.zip",
+      "url": "https://github.com/t21dev/porter-app/releases/download/v0.7.0/Porter_0.7.0_x64_portable.zip",
+      "size": 3931647
+    },
+    "macArm": {
+      "name": "Porter_0.7.0_aarch64.dmg",
+      "url": "https://github.com/t21dev/porter-app/releases/download/v0.7.0/Porter_0.7.0_aarch64.dmg",
+      "size": 4267770
+    },
+    "appimage": {
+      "name": "Porter_0.7.0_amd64.AppImage",
+      "url": "https://github.com/t21dev/porter-app/releases/download/v0.7.0/Porter_0.7.0_amd64.AppImage",
+      "size": 82610680
+    },
+    "deb": {
+      "name": "Porter_0.7.0_amd64.deb",
+      "url": "https://github.com/t21dev/porter-app/releases/download/v0.7.0/Porter_0.7.0_amd64.deb",
+      "size": 4352034
+    },
+    "rpm": {
+      "name": "Porter-0.7.0-1.x86_64.rpm",
+      "url": "https://github.com/t21dev/porter-app/releases/download/v0.7.0/Porter-0.7.0-1.x86_64.rpm",
+      "size": 4353053
+    },
+    "flatpak": {
+      "name": "Porter_0.7.0_x86_64.flatpak",
+      "url": "https://github.com/t21dev/porter-app/releases/download/v0.7.0/Porter_0.7.0_x86_64.flatpak",
+      "size": 2724952
+    },
+    "checksums": {
+      "name": "SHA256SUMS.txt",
+      "url": "https://github.com/t21dev/porter-app/releases/download/v0.7.0/SHA256SUMS.txt",
+      "size": 834
+    }
+  }
+}
