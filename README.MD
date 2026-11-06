@@ -69,6 +69,22 @@ Download the latest release for your platform from the [Releases page](https://g
 | macOS | `Porter_x.x.x_aarch64.dmg` (Apple Silicon) or `Porter_x.x.x_x64.dmg` (Intel) |
 | Linux | `.deb`, `.AppImage`, or `Porter_x.x.x_x86_64.flatpak` |
 
+### Package managers
+
+```bash
+# macOS (Apple Silicon), Homebrew
+brew install --cask t21dev/tap/porter-app
+
+# Windows, Scoop
+scoop bucket add t21dev https://github.com/t21dev/scoop-bucket
+scoop install t21dev/porter
+```
+
+The cask clears the quarantine flag, so macOS opens Porter without the
+"damaged" error below. Scoop installs the portable build and keeps its `data`
+folder (settings and pinned ports) across updates. `brew upgrade` and
+`scoop update` pick up new releases within a few hours of each one.
+
 #### Flatpak (Linux)
 
 ```bash
