@@ -59,7 +59,7 @@ export const PACKAGES: { name: string; os: string; live: boolean; commands: stri
     commands: ["scoop bucket add t21dev https://github.com/t21dev/scoop-bucket", "scoop install t21dev/porter"],
   },
   { name: "winget", os: "Windows", live: false, commands: ["winget install t21dev.Porter"] },
-  { name: "Homebrew", os: "macOS", live: false, commands: ["brew install --cask t21dev/tap/porter"] },
+  { name: "Homebrew", os: "macOS", live: true, commands: ["brew install --cask t21dev/tap/porter-app"] },
 ];
 
 export const FEATURES:{ title: string; body: string }[] = [
