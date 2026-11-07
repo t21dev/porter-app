@@ -95,6 +95,9 @@ jobs:
         uses: tauri-apps/tauri-action@v0.5
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          # Link the Visual C++ runtime into Porter.exe. Without it the exe needs
+          # VCRUNTIME140.dll, which a clean Windows install doesn't have.
+          STATIC_VCRUNTIME: "true"
         with:
           releaseId: ${{ needs.create-release.outputs.release_id }}
 
