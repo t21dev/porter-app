@@ -7,6 +7,13 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [0.7.1] - 2026-11-07
+
+### Fixed
+- Porter starts on Windows installs without the Visual C++ runtime. 0.7.0
+  needed `VCRUNTIME140.dll` and quit at once where it was missing; the
+  runtime is now built into `Porter.exe`.
+
 ## [0.7.0] - 2026-10-08
 
 ### Added
