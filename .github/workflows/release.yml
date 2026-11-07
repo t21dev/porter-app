@@ -163,5 +163,7 @@ jobs:
           # Only a pointer in the notes: older Porter versions show the notes in
           # their update dialog, and a block of hashes scrolls sideways there.
           printf '\n## SHA-256 checksums\nThe checksum of every file is in SHA256SUMS.txt, attached below.\n' >> body.md
-          # The tag goes with the edit: without it a draft loses its tag.
-          gh api -X PATCH "repos/$REPO/releases/$ID" -f tag_name="$TAG" -F body=@body.md --jq .html_url
+          # The tag goes with the edit: without it a draft loses its tag. Every
+          # build and the checksums are uploaded by now, so publish it as latest.
+          gh api -X PATCH "repos/$REPO/releases/$ID" -f tag_name="$TAG" -F body=@body.md \
+            -F draft=false -f make_latest=true --jq .html_url
