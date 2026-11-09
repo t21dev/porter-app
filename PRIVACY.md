@@ -28,6 +28,9 @@ It asks for the latest Porter release when it opens and every six hours after.
 GitHub sees your IP address; the request carries nothing about you or your
 ports. Links in the app, such as the release page, open in your own browser.
 
+Porter from the Microsoft Store skips this check, because the Store delivers
+its updates, so it doesn't go online at all.
+
 ## Downloads
 
 Release files are hosted on GitHub. Each release has a `SHA256SUMS.txt` so you
