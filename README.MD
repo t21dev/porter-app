@@ -14,6 +14,8 @@ A sleek, fast, and secure desktop port monitoring application built with Tauri, 
 
 **[Download Latest Release](https://github.com/t21dev/porter-app/releases)** | An Opensource Project of [t21.dev](https://t21.dev)
 
+<a href="https://apps.microsoft.com/detail/9N1Q6KGF676M"><img src="https://get.microsoft.com/images/en-us%20dark.svg" width="200" alt="Get it from Microsoft" /></a>
+
 </div>
 
 ## 🚀 Features
@@ -59,9 +61,20 @@ A sleek, fast, and secure desktop port monitoring application built with Tauri, 
 
 ## 📦 Installation
 
+### Microsoft Store (Windows)
+
+**Windows:** the easiest way is the [Microsoft Store](https://apps.microsoft.com/detail/9N1Q6KGF676M). The Store build is signed, so SmartScreen doesn't warn, and the Store keeps it up to date.
+
+<a href="https://apps.microsoft.com/detail/9N1Q6KGF676M"><img src="https://get.microsoft.com/images/en-us%20dark.svg" width="200" alt="Get it from Microsoft" /></a>
+
+```bash
+# Or with winget (installs the Microsoft Store build)
+winget install 9N1Q6KGF676M -s msstore
+```
+
 ### Download Pre-built Release
 
-Download the latest release for your platform from the [Releases page](https://github.com/t21dev/porter-app/releases).
+For every other system, or to install without the Store, download the latest release for your platform from the [Releases page](https://github.com/t21dev/porter-app/releases).
 
 | Platform | File |
 |----------|------|
