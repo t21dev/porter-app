@@ -303,3 +303,7 @@ For support, please open an issue on GitHub or contact us at support@t21.dev
 Made with ❤️ by the [t21.dev](https://t21.dev) team
 
 </div>
+
+## Support
+
+This project is free and open source. If it saves you time, you can support [Team 21](https://t21.dev) on [Patreon](https://www.patreon.com/triptex). It pays for code signing, app store fees and servers.
