@@ -167,3 +167,52 @@ jobs:
           # build and the checksums are uploaded by now, so publish it as latest.
           gh api -X PATCH "repos/$REPO/releases/$ID" -f tag_name="$TAG" -F body=@body.md \
             -F draft=false -f make_latest=true --jq .html_url
+
+  # The Homebrew cask (t21dev/homebrew-tap) follows the release at once, so
+  # `brew upgrade` sees it within minutes instead of waiting for the tap's
+  # six-hourly autobump PR. HOMEBREW_TAP_TOKEN: a token that can push to the
+  # tap (classic, public_repo scope).
+  homebrew:
+    needs: [checksums]
+    if: github.event_name == 'push' && !contains(github.ref_name, '-')
+    runs-on: ubuntu-latest
+    steps:
+      - name: Update the cask
+        shell: bash
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          TAP_TOKEN: ${{ secrets.HOMEBREW_TAP_TOKEN }}
+          REPO: ${{ github.repository }}
+          TAG: ${{ github.ref_name }}
+        run: |
+          set -euo pipefail
+          if [ -z "$TAP_TOKEN" ]; then
+            echo "::warning::HOMEBREW_TAP_TOKEN isn't set; the tap's autobump will catch up instead"
+            exit 0
+          fi
+          # A secret pasted with a trailing newline breaks the clone URL.
+          TAP_TOKEN=$(printf '%s' "$TAP_TOKEN" | tr -d '[:space:]')
+          VERSION="${TAG#v}"
+          gh release download "$TAG" -R "$REPO" -p SHA256SUMS.txt
+          ARM=$(awk -v f="Porter_${VERSION}_aarch64.dmg" '$2 == f || $2 == "*" f { print $1 }' SHA256SUMS.txt)
+          if [ ${#ARM} -ne 64 ]; then
+            echo "::warning::The macOS disk image is missing from the release; the cask is left as it is"
+            exit 0
+          fi
+          git clone --depth 1 "https://x-access-token:${TAP_TOKEN}@github.com/t21dev/homebrew-tap.git" tap
+          cd tap
+          sed -E -i \
+            -e "s/^(  version \")[^\"]+\"/\1${VERSION}\"/" \
+            -e "s/^(  sha256 \")[0-9a-f]{64}\"/\1${ARM}\"/" \
+            Casks/porter-app.rb
+          grep -q "version \"${VERSION}\"" Casks/porter-app.rb
+          grep -q "$ARM" Casks/porter-app.rb
+          if git diff --quiet; then
+            echo "The cask already has $VERSION"
+            exit 0
+          fi
+          git diff
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git commit -am "porter-app ${VERSION}"
+          git push origin HEAD
