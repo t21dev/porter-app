@@ -1,24 +1,7 @@
 import { useCallback, useEffect, useRef, useState } from "react";
 import { DEMO, DEFAULT_PORTS, FEATURES, RELEASE, SITE, installerMB, mb, type Asset, type DemoPort, PACKAGES } from "./content";
 import { Pulse, GitHub, ArrowRight, Download, Copy, Check, Search, X } from "./components/Icons";
-
-type OS = "windows" | "mac" | "linux" | null;
-function detectOS(): OS {
-  const ua = navigator.userAgent;
-  if (/Windows/i.test(ua)) return "windows";
-  if (/Mac OS X|Macintosh/i.test(ua) && !/iPhone|iPad/i.test(ua)) return "mac";
-  if (/Linux/i.test(ua) && !/Android/i.test(ua)) return "linux";
-  return null;
-}
-function useDownload() {
-  const [os, setOS] = useState<OS>(null);
-  useEffect(() => setOS(detectOS()), []);
-  const a = RELEASE.assets;
-  if (os === "windows" && a.windows) return { href: a.windows.url, label: "Download for Windows", size: mb(a.windows.size) };
-  if (os === "mac" && a.macArm) return { href: a.macArm.url, label: "Download for macOS", size: mb(a.macArm.size) };
-  if (os === "linux") return { href: "#download", label: "Download for Linux", size: null };
-  return { href: "#download", label: "Download", size: null };
-}
+import { useDownload, useSystem } from "./download";
 
 function Nav() {
   const [scrolled, setScrolled] = useState(false);
@@ -261,6 +244,11 @@ function Hero() {
             <GitHub /> View on GitHub
           </a>
         </div>
+        {dl.href !== "#download" && (
+          <p className="cta-note">
+            Not your system? <a href="#download">All downloads</a>
+          </p>
+        )}
         <LiveBoard onPort={onPort} />
       </div>
       <figure className="hero-shot">
@@ -522,6 +510,8 @@ function Packages() {
 
 function Downloads() {
   const a = RELEASE.assets;
+  const sys = useSystem();
+  const yours = (os: string) => (sys?.os === os ? { "data-yours": "" } : {});
   const date = new Date(RELEASE.date + "T00:00:00Z").toLocaleDateString("en-GB", {
     day: "numeric",
     month: "long",
@@ -538,8 +528,11 @@ function Downloads() {
         </p>
       </div>
       <div className="dl-grid">
-        <div className="dl-col rise">
-          <h3>Windows</h3>
+        <div className="dl-col rise" {...yours("windows")}>
+          <h3>
+            Windows
+            {sys?.os === "windows" && <span className="yours-tag">Your system</span>}
+          </h3>
           <DlLink a={a.windows} label="Installer (.exe)" />
           <DlLink a={a.windowsMsi} label="Installer (.msi)" />
           <DlLink a={a.windowsPortable} label="Portable (.zip)" />
@@ -548,8 +541,11 @@ function Downloads() {
             Run anyway.
           </p>
         </div>
-        <div className="dl-col rise">
-          <h3>macOS</h3>
+        <div className="dl-col rise" {...yours("mac")}>
+          <h3>
+            macOS
+            {sys?.os === "mac" && <span className="yours-tag">Your system</span>}
+          </h3>
           <DlLink a={a.macArm} label="Apple silicon (.dmg)" />
           <DlLink a={a.macIntel} label="Intel (.dmg)" />
           <p className="dl-note">
@@ -557,8 +553,11 @@ function Downloads() {
             right-click it and choose Open.
           </p>
         </div>
-        <div className="dl-col rise">
-          <h3>Linux</h3>
+        <div className="dl-col rise" {...yours("linux")}>
+          <h3>
+            Linux
+            {sys?.os === "linux" && <span className="yours-tag">Your system</span>}
+          </h3>
           <DlLink a={a.appimage} label="AppImage" />
           <DlLink a={a.deb} label="Debian, Ubuntu (.deb)" />
           <DlLink a={a.rpm} label="Fedora (.rpm)" />
