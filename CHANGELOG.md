@@ -7,6 +7,11 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Added
+- A macOS build for Intel Macs, `Porter_x.x.x_x64.dmg`, on every release.
+  The Homebrew cask (`brew install --cask t21dev/tap/porter-app`) now
+  installs on Intel Macs too, and follows each release within minutes.
+
 ## [0.7.1] - 2026-11-07
 
 ### Fixed

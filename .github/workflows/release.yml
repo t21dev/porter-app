@@ -46,6 +46,10 @@ jobs:
           the \`_portable.zip\` runs without installing and keeps its data
           next to the exe.
 
+          Or with a package manager: \`brew install --cask t21dev/tap/porter-app\`
+          on macOS; \`scoop bucket add t21dev https://github.com/t21dev/scoop-bucket\`
+          and then \`scoop install t21dev/porter\` on Windows.
+
           ## 🚀 Installation
           Installation guide: https://github.com/t21dev/porter-app#installation
           EOF
@@ -61,7 +65,9 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        platform: [macos-latest, ubuntu-22.04, windows-latest]
+        # macos-latest builds the Apple silicon dmg, macos-15-intel the Intel one
+        # (Porter_x.y.z_x64.dmg); the Homebrew cask needs both.
+        platform: [macos-latest, macos-15-intel, ubuntu-22.04, windows-latest]
 
     runs-on: ${{ matrix.platform }}
 
@@ -194,19 +200,36 @@ jobs:
           TAP_TOKEN=$(printf '%s' "$TAP_TOKEN" | tr -d '[:space:]')
           VERSION="${TAG#v}"
           gh release download "$TAG" -R "$REPO" -p SHA256SUMS.txt
-          ARM=$(awk -v f="Porter_${VERSION}_aarch64.dmg" '$2 == f || $2 == "*" f { print $1 }' SHA256SUMS.txt)
-          if [ ${#ARM} -ne 64 ]; then
-            echo "::warning::The macOS disk image is missing from the release; the cask is left as it is"
+          sum() { awk -v f="$1" '$2 == f || $2 == "*" f { print $1 }' SHA256SUMS.txt; }
+          ARM=$(sum "Porter_${VERSION}_aarch64.dmg")
+          INTEL=$(sum "Porter_${VERSION}_x64.dmg")
+          if [ ${#ARM} -ne 64 ] || [ ${#INTEL} -ne 64 ]; then
+            echo "::warning::A macOS disk image is missing from the release; the cask is left as it is"
             exit 0
           fi
           git clone --depth 1 "https://x-access-token:${TAP_TOKEN}@github.com/t21dev/homebrew-tap.git" tap
           cd tap
+          CASK=Casks/porter-app.rb
+          # Once: the cask from before Intel builds (one Apple silicon dmg)
+          # becomes a cask with one dmg per arch, filled in below.
+          if ! grep -q '^  arch arm:' "$CASK"; then
+            Z=$(printf '0%.0s' $(seq 64))
+            perl -0pi -e '
+              s/^  version "[^"]+"\n  sha256 "[0-9a-f]{64}"\n/  arch arm: "aarch64", intel: "x64"\n\n  version "0"\n  sha256 arm:   "'"$Z"'",\n         intel: "'"$Z"'"\n/m;
+              s/_aarch64\.dmg"/_#{arch}.dmg"/;
+              s/^  # Releases ship an Apple silicon build only\..*\n//m;
+              s/^  depends_on arch: :arm64\n//m;
+            ' "$CASK"
+          fi
           sed -E -i \
             -e "s/^(  version \")[^\"]+\"/\1${VERSION}\"/" \
-            -e "s/^(  sha256 \")[0-9a-f]{64}\"/\1${ARM}\"/" \
-            Casks/porter-app.rb
-          grep -q "version \"${VERSION}\"" Casks/porter-app.rb
-          grep -q "$ARM" Casks/porter-app.rb
+            -e "s/(arm: +\")[0-9a-f]{64}\"/\1${ARM}\"/" \
+            -e "s/(intel: +\")[0-9a-f]{64}\"/\1${INTEL}\"/" \
+            "$CASK"
+          grep -q "version \"${VERSION}\"" "$CASK"
+          grep -q "$ARM" "$CASK"
+          grep -q "$INTEL" "$CASK"
+          grep -q '_#{arch}.dmg"' "$CASK"
           if git diff --quiet; then
             echo "The cask already has $VERSION"
             exit 0
