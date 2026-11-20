@@ -11,7 +11,8 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        platform: [macos-latest, ubuntu-22.04, windows-latest]
+        # macos-15-intel: the Intel Mac build the release ships (and the cask needs).
+        platform: [macos-latest, macos-15-intel, ubuntu-22.04, windows-latest]
 
     runs-on: ${{ matrix.platform }}
 
