@@ -1,0 +1,34 @@
+name: Feature request
+description: An idea that would make Porter better.
+labels: [enhancement]
+body:
+  - type: dropdown
+    id: area
+    attributes:
+      label: Area
+      description: Which part of Porter is it about?
+      options:
+        - Port list / scanning
+        - Stopping processes / admin rights
+        - Filters and search
+        - Settings, theme, window
+        - Install / updates
+        - Speed / memory
+        - Something else
+    validations:
+      required: true
+  - type: textarea
+    id: problem
+    attributes:
+      label: What are you trying to do?
+      description: The situation or annoyance, not the solution yet.
+      placeholder: I restart the same dev servers every day and look up their ports by hand.
+    validations:
+      required: true
+  - type: textarea
+    id: idea
+    attributes:
+      label: Your idea
+      placeholder: Pin a group of ports and stop them all with one click.
+    validations:
+      required: true

@@ -1,0 +1,37 @@
+# Turns the "Area" answer of an issue form into an area:* label.
+# Runs on new and edited issues; changing the answer swaps the label.
+name: Issue labels
+
+on:
+  issues:
+    types: [opened, edited]
+
+permissions:
+  issues: write
+
+jobs:
+  area:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/github-script@v9
+        with:
+          script: |
+            const AREAS = {
+              'Port list / scanning': 'area:ports',
+              'Stopping processes / admin rights': 'area:kill',
+              'Filters and search': 'area:search',
+              'Settings, theme, window': 'area:ui',
+              'Install / updates': 'area:install',
+              'Speed / memory': 'area:perf',
+            };
+            const issue = context.payload.issue;
+            const answer = (issue.body || '').match(/### Area\s+([^\n]+)/)?.[1]?.trim();
+            const want = AREAS[answer];
+            const have = issue.labels.map(l => l.name).filter(n => n.startsWith('area:'));
+            const req = { owner: context.repo.owner, repo: context.repo.repo, issue_number: issue.number };
+            for (const name of have) {
+              if (name !== want) await github.rest.issues.removeLabel({ ...req, name });
+            }
+            if (want && !have.includes(want)) {
+              await github.rest.issues.addLabels({ ...req, labels: [want] });
+            }

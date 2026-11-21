@@ -1,0 +1,80 @@
+name: Bug report
+description: Something in Porter doesn't work the way it should.
+labels: [bug]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Thanks for taking the time. The README may already answer it, including the macOS "damaged" and Windows SmartScreen notes: https://github.com/t21dev/porter-app#readme
+  - type: dropdown
+    id: area
+    attributes:
+      label: Area
+      description: Which part of Porter is it about?
+      options:
+        - Port list / scanning
+        - Stopping processes / admin rights
+        - Filters and search
+        - Settings, theme, window
+        - Install / updates
+        - Speed / memory
+        - Something else
+    validations:
+      required: true
+  - type: input
+    id: version
+    attributes:
+      label: Porter version
+      description: The About button (ⓘ) in the title bar shows it.
+      placeholder: "0.7.1"
+    validations:
+      required: true
+  - type: dropdown
+    id: os
+    attributes:
+      label: Operating system
+      options:
+        - Windows
+        - macOS (Apple silicon)
+        - macOS (Intel)
+        - Linux
+    validations:
+      required: true
+  - type: dropdown
+    id: install
+    attributes:
+      label: How you installed Porter
+      options:
+        - Microsoft Store / winget
+        - Installer (.exe / .msi)
+        - Portable zip (Windows)
+        - dmg (macOS)
+        - Homebrew
+        - Scoop
+        - .deb
+        - AppImage
+        - Flatpak
+        - Built from source
+    validations:
+      required: true
+  - type: textarea
+    id: steps
+    attributes:
+      label: What happened, step by step
+      placeholder: |
+        1. Turn on "Show all ports"
+        2. Click Kill on a process using port 3000
+        3. The row stays and no error shows
+    validations:
+      required: true
+  - type: textarea
+    id: expected
+    attributes:
+      label: What you expected instead
+    validations:
+      required: true
+  - type: textarea
+    id: extra
+    attributes:
+      label: Screenshot or error text (optional)
+      description: Drag a screenshot in. Hide process names or paths you don't want public.

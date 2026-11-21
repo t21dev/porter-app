@@ -1,0 +1,5 @@
+blank_issues_enabled: false
+contact_links:
+  - name: Install notes and common fixes
+    url: https://github.com/t21dev/porter-app#readme
+    about: Install options, the macOS "damaged" error, Windows SmartScreen and more.
