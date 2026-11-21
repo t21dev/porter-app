@@ -66,6 +66,22 @@ git push origin v0.2.0
 - Add screenshots if needed
 - Click "Publish release"
 
+### 6. Microsoft Store
+
+The Release workflow also builds `Porter_<version>_x64.msix` and keeps it as the
+`porter-msix` artifact of the run (it isn't attached to the GitHub release).
+
+- Download `porter-msix` from the workflow run
+- Partner Center → Porter App → Start submission (or update the last one)
+- Packages: upload the `.msix`, unsigned. The Store signs it
+- Submit for certification. It usually takes a few business days
+
+Build one locally with `pwsh scripts/build-msix.ps1` after
+`npm run tauri build -- --no-bundle` (needs `winget install microsoft.winappcli`).
+The package identity in `msix/Package.appxmanifest` must match Partner Center's
+Product identity page. Store installs hide the GitHub update check, since the
+Store delivers their updates.
+
 ## ✅ Pre-Release Checklist
 
 Before tagging:

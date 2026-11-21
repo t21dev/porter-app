@@ -126,6 +126,22 @@ jobs:
           gh api -X POST "https://uploads.github.com/repos/${{ github.repository }}/releases/${{ needs.create-release.outputs.release_id }}/assets?name=$zip" `
             -H "Content-Type: application/zip" --input $zip --jq .name
 
+      # The Microsoft Store package. Unsigned on purpose: the Store signs it, and
+      # Partner Center takes it as an upload, so it isn't in the GitHub release.
+      - name: MSIX for the Microsoft Store (Windows)
+        if: matrix.platform == 'windows-latest'
+        shell: pwsh
+        run: |
+          npm install -g @microsoft/winappcli@0.8.0
+          ./scripts/build-msix.ps1
+
+      - name: Keep the MSIX as a workflow artifact (Windows)
+        if: matrix.platform == 'windows-latest'
+        uses: actions/upload-artifact@v4
+        with:
+          name: porter-msix
+          path: src-tauri/target/msix/*.msix
+
       # The Flatpak, repackaged from the .deb that tauri-action just built.
       - name: Flatpak bundle (Linux)
         if: matrix.platform == 'ubuntu-22.04'
