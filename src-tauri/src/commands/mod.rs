@@ -84,6 +84,12 @@ pub async fn is_elevated() -> Result<bool, String> {
     Ok(admin::is_elevated())
 }
 
+/// True when installed from the Microsoft Store, which delivers the updates.
+#[tauri::command]
+pub fn is_store_package() -> bool {
+    admin::package_family_name().is_some()
+}
+
 #[tauri::command]
 pub async fn request_elevation() -> Result<(), String> {
     admin::request_elevation().map_err(|e| e.to_string())

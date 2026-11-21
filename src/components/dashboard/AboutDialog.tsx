@@ -12,6 +12,7 @@ import {
 import { aboutConfig } from '@/config/about';
 import { PorterMark } from '@/components/TitleBar';
 import { useUpdateCheck } from '@/hooks/useUpdateCheck';
+import { useIsStorePackage } from '@/hooks/useIsStorePackage';
 import { UpdateDialog } from './UpdateNotice';
 import { cn } from '@/lib/utils';
 import { useToast } from '@/hooks/use-toast';
@@ -88,6 +89,19 @@ export function AboutDialog() {
 }
 
 function UpdateRow() {
+  const { data: isStorePackage } = useIsStorePackage();
+  if (isStorePackage === undefined) return null;
+  if (isStorePackage) {
+    return (
+      <div className="border-t border-border px-6 py-3">
+        <p className="text-[13px] text-muted-foreground">Updates arrive through the Microsoft Store.</p>
+      </div>
+    );
+  }
+  return <GitHubUpdateRow />;
+}
+
+function GitHubUpdateRow() {
   const { data, isFetching: isBackgroundFetching, isError, refetch } = useUpdateCheck();
   const [notesOpen, setNotesOpen] = useState(false);
   const [isChecking, setIsChecking] = useState(false);

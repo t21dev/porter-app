@@ -35,6 +35,34 @@ pub fn is_elevated() -> bool {
     }
 }
 
+/// The package family name when Porter runs from its MSIX (the Microsoft
+/// Store install), or `None` for the installer, portable and dev builds.
+pub fn package_family_name() -> Option<String> {
+    #[cfg(target_os = "windows")]
+    {
+        #[link(name = "kernel32")]
+        extern "system" {
+            fn GetCurrentPackageFamilyName(length: *mut u32, name: *mut u16) -> i32;
+        }
+        const ERROR_SUCCESS: i32 = 0;
+
+        // A family name is at most 64 characters plus the terminating null.
+        let mut buf = [0u16; 128];
+        let mut len = buf.len() as u32;
+        // Unpackaged processes get APPMODEL_ERROR_NO_PACKAGE instead.
+        if unsafe { GetCurrentPackageFamilyName(&mut len, buf.as_mut_ptr()) } != ERROR_SUCCESS {
+            return None;
+        }
+        let end = buf.iter().position(|&c| c == 0).unwrap_or(buf.len());
+        Some(String::from_utf16_lossy(&buf[..end]))
+    }
+
+    #[cfg(not(target_os = "windows"))]
+    {
+        None
+    }
+}
+
 /// Request elevated privileges (restart the app with admin rights)
 pub fn request_elevation() -> Result<()> {
     #[cfg(target_os = "windows")]
@@ -42,17 +70,19 @@ pub fn request_elevation() -> Result<()> {
         use std::os::windows::process::CommandExt;
         use std::process::Command;
 
-        let exe_path = std::env::current_exe()?;
+        // A Store install relaunches through its app entry: started from its
+        // exe path inside WindowsApps it would run without package identity.
+        let target = match package_family_name() {
+            Some(family) => format!("shell:AppsFolder\\{family}!Porter"),
+            None => std::env::current_exe()?.display().to_string(),
+        };
 
         // Use Windows ShellExecute with "runas" verb to request UAC elevation
         Command::new("powershell")
             .args(&[
                 "-WindowStyle", "Hidden",
                 "-Command",
-                &format!(
-                    "Start-Process -FilePath '{}' -Verb RunAs",
-                    exe_path.display()
-                ),
+                &format!("Start-Process -FilePath '{}' -Verb RunAs", target),
             ])
             .creation_flags(0x08000000) // CREATE_NO_WINDOW
             .spawn()?;
