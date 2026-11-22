@@ -2,7 +2,7 @@ import { useEffect, useMemo, useRef, useState, type ReactNode } from 'react';
 import { ArrowDown, ArrowUp, ChevronRight, Pause } from 'lucide-react';
 import { Port } from '@/types/api';
 import { getPortTypeInfo } from '@/lib/portTypes';
-import { cn } from '@/lib/utils';
+import { cn, portKey } from '@/lib/utils';
 import { PortListItem } from './PortListItem';
 
 type SortKey = 'port' | 'service' | 'process' | 'status';
@@ -29,12 +29,14 @@ function loadPrefs(): ViewPrefs {
 
 const STATUS_RANK: Record<Port['status'], number> = { occupied: 0, system: 1, free: 2 };
 
-const processName = (p: Port) => (p.status !== 'free' && p.process?.name) || '';
+// A container names a port better than the process forwarding to it.
+const processName = (p: Port) => p.container?.name || (p.status !== 'free' && p.process?.name) || '';
+const serviceName = (p: Port) => p.advice?.service ?? getPortTypeInfo(p.port).label;
 
 function comparePorts(a: Port, b: Port, key: SortKey): number {
   switch (key) {
     case 'service':
-      return getPortTypeInfo(a.port).label.localeCompare(getPortTypeInfo(b.port).label);
+      return serviceName(a).localeCompare(serviceName(b));
     case 'process': {
       const an = processName(a).toLowerCase();
       const bn = processName(b).toLowerCase();
@@ -76,7 +78,7 @@ export function OtherPortsList({ ports, onKill, onTogglePin }: OtherPortsListPro
   // Groups start collapsed, like Task Manager; this tracks the open ones.
   const [expanded, setExpanded] = useState<Set<string>>(new Set());
   const [killed, setKilled] = useState<Set<number>>(new Set());
-  const frozen = useRef<{ order: number[]; snapshot: Map<number, Port> } | null>(null);
+  const frozen = useRef<{ order: string[]; snapshot: Map<string, Port> } | null>(null);
   const resumeTimer = useRef<number | undefined>(undefined);
 
   useEffect(() => {
@@ -94,8 +96,8 @@ export function OtherPortsList({ ports, onKill, onTogglePin }: OtherPortsListPro
 
   const freeze = (rows: Port[]) => {
     frozen.current = {
-      order: rows.map((p) => p.port),
-      snapshot: new Map(rows.map((p) => [p.port, p])),
+      order: rows.map(portKey),
+      snapshot: new Map(rows.map((p) => [portKey(p), p])),
     };
   };
 
@@ -116,13 +118,13 @@ export function OtherPortsList({ ports, onKill, onTogglePin }: OtherPortsListPro
     if (!paused || !frozen.current) {
       return { rows: sorted.filter((p) => !killed.has(p.process?.pid ?? -1)), pendingChanges: 0 };
     }
-    const latest = new Map(ports.map((p) => [p.port, p]));
+    const latest = new Map(ports.map((p) => [portKey(p), p]));
     const { order, snapshot } = frozen.current;
     const frozenSet = new Set(order);
     const visible = order
       .map((n) => latest.get(n) ?? snapshot.get(n)!)
       .filter((p) => !killed.has(p.process?.pid ?? -1));
-    const added = ports.filter((p) => !frozenSet.has(p.port)).length;
+    const added = ports.filter((p) => !frozenSet.has(portKey(p))).length;
     const removed = order.filter((n) => !latest.has(n)).length;
     return { rows: visible, pendingChanges: added + removed };
   }, [paused, sorted, ports, killed]);
@@ -312,7 +314,7 @@ export function OtherPortsList({ ports, onKill, onTogglePin }: OtherPortsListPro
                 {!isCollapsed && (
                   <Rows>
                     {items.map((port, i) => (
-                      <PortListItem key={port.port} port={port} index={i} onKill={handleKill} onTogglePin={onTogglePin} />
+                      <PortListItem key={portKey(port)} port={port} index={i} onKill={handleKill} onTogglePin={onTogglePin} />
                     ))}
                   </Rows>
                 )}
@@ -322,7 +324,7 @@ export function OtherPortsList({ ports, onKill, onTogglePin }: OtherPortsListPro
         ) : (
           <Rows>
             {rows.map((port, i) => (
-              <PortListItem key={port.port} port={port} index={i} onKill={handleKill} onTogglePin={onTogglePin} />
+              <PortListItem key={portKey(port)} port={port} index={i} onKill={handleKill} onTogglePin={onTogglePin} />
             ))}
           </Rows>
         )}

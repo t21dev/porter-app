@@ -7,6 +7,35 @@ export interface Port {
   protocol: Protocol;
   process?: Process;
   ip_address: string;
+  /** The Docker or Podman container that publishes this port. */
+  container?: Container;
+  /** Porter's advice: why the port is open, how far it reaches, what to do.
+      Every port from get_active_ports has it; placeholders for pinned ports
+      that aren't running don't. */
+  advice?: Advice;
+}
+
+export interface Container {
+  runtime: 'docker' | 'podman' | string;
+  id: string;
+  name: string;
+  image: string;
+  /** The port inside the container that this host port forwards to. */
+  container_port: number;
+}
+
+/** How far a socket reaches, from its bind address. */
+export type Exposure = 'local' | 'private' | 'public' | 'all';
+export type Risk = 'ok' | 'low' | 'medium' | 'high';
+
+export interface Advice {
+  service: string | null;
+  kind: string;
+  purpose: string;
+  exposure: Exposure;
+  risk: Risk;
+  recommendation: string;
+  notes: string[];
 }
 
 /** The port list carries only pid and name. The rest comes from

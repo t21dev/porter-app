@@ -47,12 +47,25 @@ pub(crate) struct ProcListener {
 /// Lives here rather than in linux.rs so it is compiled and tested everywhere.
 #[cfg_attr(not(target_os = "linux"), allow(dead_code))]
 pub(crate) fn parse_proc_net_tcp(content: &str, include_connections: bool) -> Vec<ProcListener> {
+    parse_proc_net(content, "0A", include_connections)
+}
+
+/// The same for /proc/net/udp and udp6. UDP has no listen state: a socket
+/// that is bound but not connected (state 07, TCP_CLOSE in the kernel's
+/// shared numbering) is the one that takes packets from anyone.
+#[cfg_attr(not(target_os = "linux"), allow(dead_code))]
+pub(crate) fn parse_proc_net_udp(content: &str, include_connections: bool) -> Vec<ProcListener> {
+    parse_proc_net(content, "07", include_connections)
+}
+
+#[cfg_attr(not(target_os = "linux"), allow(dead_code))]
+fn parse_proc_net(content: &str, listen_state: &str, include_connections: bool) -> Vec<ProcListener> {
     content
         .lines()
         .skip(1)
         .filter_map(|line| {
             let parts: Vec<&str> = line.split_whitespace().collect();
-            let listening = parts.get(3) == Some(&"0A");
+            let listening = parts.get(3) == Some(&listen_state);
             if parts.len() < 10 || !(listening || include_connections) {
                 return None;
             }
@@ -155,6 +168,16 @@ mod tests {
                 listening: true
             }]
         );
+    }
+
+    #[test]
+    fn udp_keeps_bound_unconnected_sockets() {
+        let udp = "   sl  local_address rem_address   st tx_queue rx_queue tr tm->when retrnsmt   uid  timeout inode ref pointer drops
+  512: 00000000:0035 00000000:0000 07 00000000:00000000 00:00000000 00000000     0        0 3311 2 0000000000000000 0
+  700: 0100007F:A1B2 0100007F:0035 01 00000000:00000000 00:00000000 00000000  1000        0 3312 2 0000000000000000 0";
+        let bound = parse_proc_net_udp(udp, false);
+        assert_eq!(bound, vec![ProcListener { address: "0.0.0.0".into(), port: 53, inode: 3311, listening: true }]);
+        assert_eq!(parse_proc_net_udp(udp, true).len(), 2);
     }
 
     #[test]

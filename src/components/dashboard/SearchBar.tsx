@@ -8,7 +8,7 @@ interface SearchBarProps {
   placeholder?: string;
 }
 
-export function SearchBar({ value, onChange, placeholder = 'Search by port number' }: SearchBarProps) {
+export function SearchBar({ value, onChange, placeholder = 'Search by port, process or container' }: SearchBarProps) {
   const inputRef = useRef<HTMLInputElement>(null);
 
   // "/" focuses search from anywhere; Escape clears it.

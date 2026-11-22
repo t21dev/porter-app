@@ -1,8 +1,11 @@
 import { memo, type CSSProperties } from 'react';
-import { Pin, PinOff, X } from 'lucide-react';
+import { ChevronRight, Pin, PinOff, X } from 'lucide-react';
 import { Port } from '@/types/api';
 import { getPortTypeInfo } from '@/lib/portTypes';
-import { cn } from '@/lib/utils';
+import { cn, portKey } from '@/lib/utils';
+import { useAdviceStore } from '@/store/adviceStore';
+import { AdvicePanel } from './AdvicePanel';
+import { RiskChip, reachLabel } from './RiskChip';
 import {
   AlertDialog,
   AlertDialogAction,
@@ -41,20 +44,19 @@ export const PortListItem = memo(function PortListItem({ port, onKill, isPinned 
   const PortIcon = portType.icon;
   const s = statusStyles[port.status];
   const hasProcess = port.process && port.status !== 'free';
+  const advice = port.advice;
+  const container = port.container;
+  const key = portKey(port);
+  // Each row subscribes to its own open state, so a toggle re-renders two rows.
+  const open = useAdviceStore((st) => st.open === key);
+  const toggle = useAdviceStore((st) => st.toggle);
+  const panelId = `advice-${port.port}-${port.protocol}`;
+  const flagged = advice && (advice.risk === 'high' || advice.risk === 'medium');
+  // The advisor knows containers and processes; the static table knows only numbers.
+  const service = advice?.service ?? portType.label;
 
-  return (
-    <div
-      className="reveal group relative flex h-12 items-center gap-3 px-3.5 transition-colors duration-150 ease-out hover:bg-accent"
-      style={{ '--i': Math.min(index, 14) } as CSSProperties}
-    >
-      {/* Status dot */}
-      <span className="relative flex h-2 w-2 shrink-0 items-center justify-center">
-        {isOccupied && (
-          <span className={cn('absolute inset-0 rounded-full opacity-40 blur-[3px]', s.dot)} />
-        )}
-        <span className={cn('relative h-1.5 w-1.5 rounded-full', s.dot)} />
-      </span>
-
+  const main = (
+    <>
       {/* Port number */}
       <span className="w-[52px] shrink-0 font-mono text-[14px] font-medium tracking-[-0.02em] text-foreground tabular">
         {port.port}
@@ -63,7 +65,8 @@ export const PortListItem = memo(function PortListItem({ port, onKill, isPinned 
       {/* Service */}
       <div className="flex w-[118px] shrink-0 items-center gap-1.5 text-muted-foreground">
         <PortIcon className="h-3.5 w-3.5 shrink-0 text-subtle" strokeWidth={1.75} />
-        <span className="truncate text-[12.5px]">{portType.label}</span>
+        {port.protocol === 'UDP' && <span className="shrink-0 font-mono text-[10.5px] text-subtle">UDP</span>}
+        <span className="truncate text-[12.5px]">{service}</span>
         {isPinned && showPin && (
           <Pin
             className="h-3 w-3 shrink-0 rotate-45 fill-current text-subtle"
@@ -72,9 +75,15 @@ export const PortListItem = memo(function PortListItem({ port, onKill, isPinned 
         )}
       </div>
 
-      {/* Process */}
+      {/* Process, or the container that publishes the port */}
       <div className="flex min-w-0 flex-1 items-center gap-2">
-        {hasProcess ? (
+        {container ? (
+          <>
+            {/* The name is what you recognise; the image gives way first. */}
+            <span className="max-w-[65%] shrink-0 truncate text-[12.5px] font-medium text-foreground">{container.name}</span>
+            <span className="min-w-0 truncate text-[11.5px] text-subtle">{container.image}</span>
+          </>
+        ) : hasProcess ? (
           <>
             <span className="truncate text-[12.5px] font-medium text-foreground">
               {port.process!.name}
@@ -86,7 +95,58 @@ export const PortListItem = memo(function PortListItem({ port, onKill, isPinned 
         ) : (
           <span className="text-[12.5px] text-subtle">—</span>
         )}
+        {advice && (
+          <ChevronRight
+            aria-hidden
+            className={cn(
+              'ml-auto h-3.5 w-3.5 shrink-0 text-subtle transition-[transform,opacity] duration-200 ease-out',
+              open ? 'rotate-90 opacity-100' : 'opacity-0 group-hover:opacity-100 group-focus-within:opacity-100'
+            )}
+          />
+        )}
       </div>
+    </>
+  );
+
+  return (
+    <div className="reveal" style={{ '--i': Math.min(index, 14) } as CSSProperties}>
+    <div
+      className={cn(
+        'group relative flex h-12 items-center gap-3 px-3.5 transition-colors duration-150 ease-out hover:bg-accent',
+        open && 'bg-accent'
+      )}
+    >
+      {/* Status dot */}
+      <span className="relative flex h-2 w-2 shrink-0 items-center justify-center">
+        {isOccupied && (
+          <span className={cn('absolute inset-0 rounded-full opacity-40 blur-[3px]', s.dot)} />
+        )}
+        <span className={cn('relative h-1.5 w-1.5 rounded-full', s.dot)} />
+      </span>
+
+      {advice ? (
+        <button
+          type="button"
+          onClick={() => toggle(key)}
+          aria-expanded={open}
+          aria-controls={panelId}
+          title={open ? 'Hide advice' : 'Why is this open?'}
+          className="flex h-full min-w-0 flex-1 items-center gap-3 text-left focus-visible:outline-hidden focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-ring/50 rounded-md"
+        >
+          {main}
+        </button>
+      ) : (
+        <div className="flex min-w-0 flex-1 items-center gap-3">{main}</div>
+      )}
+
+      {/* Risk when it needs attention; otherwise how far the port reaches */}
+      {advice && port.status !== 'free' && (
+        flagged ? (
+          <RiskChip risk={advice.risk} />
+        ) : (
+          <span className="shrink-0 whitespace-nowrap text-[11.5px] text-subtle">{reachLabel[advice.exposure]}</span>
+        )
+      )}
 
       {/* Status */}
       <span
@@ -166,6 +226,8 @@ export const PortListItem = memo(function PortListItem({ port, onKill, isPinned 
           </AlertDialog>
         )}
       </div>
+    </div>
+    {advice && <AdvicePanel port={port} open={open} id={panelId} />}
     </div>
   );
 });

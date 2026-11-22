@@ -58,6 +58,38 @@ pub fn get_network_connections(include_connections: bool) -> Result<Vec<NetworkC
     Ok(connections)
 }
 
+/// UDP sockets from lsof: bound but unconnected ones, or connected ones too
+/// with `include_connections` (their name reads `local->remote`).
+pub fn get_udp_sockets(include_connections: bool) -> Result<Vec<NetworkConnection>> {
+    let output = Command::new("lsof").args(["-iUDP", "-P", "-n"]).output()?;
+    let stdout = String::from_utf8_lossy(&output.stdout);
+    let mut sockets = Vec::new();
+    for line in stdout.lines().skip(1) {
+        let parts: Vec<&str> = line.split_whitespace().collect();
+        if parts.len() < 9 {
+            continue;
+        }
+        let connected = parts[8].contains("->");
+        if connected && !include_connections {
+            continue;
+        }
+        let name = parts[8].split("->").next().unwrap_or(parts[8]);
+        let Some((addr, port)) = name.rsplit_once(':') else { continue };
+        let Ok(port) = port.parse::<u16>() else { continue };
+        sockets.push(NetworkConnection {
+            local_address: addr.trim_start_matches('[').trim_end_matches(']').to_string(),
+            local_port: port,
+            remote_address: String::new(),
+            remote_port: 0,
+            protocol: Protocol::UDP,
+            pid: parts[1].parse().unwrap_or(0),
+            state: if connected { "CONNECTED" } else { "LISTEN" }.to_string(),
+            process_name: None,
+        });
+    }
+    Ok(sockets)
+}
+
 pub fn is_system_process(pid: u32) -> bool {
     // macOS system processes typically have PID < 500
     pid < 500

@@ -12,9 +12,12 @@ import { PortListItem } from './components/dashboard/PortListItem';
 import { StatusFilter } from './components/dashboard/StatusFilter';
 import { OtherPortsList } from './components/dashboard/OtherPortsList';
 import { PortScanLoader } from './components/dashboard/PortScanLoader';
+import { ExposureBanner, flaggedPorts } from './components/dashboard/ExposureBanner';
+import { ExposedView } from './components/dashboard/ExposedView';
+import { useAdviceStore, type View } from './store/adviceStore';
 import { useAllPorts, useRefreshPorts } from './hooks/usePorts';
 import { killProcess, isElevated } from './lib/tauri';
-import { cn } from './lib/utils';
+import { cn, portKey } from './lib/utils';
 import { Port } from './types/api';
 import { Toaster } from './components/ui/toaster';
 import { useToast } from './hooks/use-toast';
@@ -47,6 +50,15 @@ function AppContent() {
   // made in settings show up in both places at once.
   const pins = usePinStore((s) => s.pins);
   const pinnedOnly = useScanStore((s) => s.pinnedOnly);
+  const showUdp = useScanStore((s) => s.showUdp);
+  const view = useAdviceStore((s) => s.view);
+  const setView = useAdviceStore((s) => s.setView);
+  // The Exposed view and the banner always count UDP; the lists only when asked.
+  const listPorts = useMemo(
+    () => (showUdp ? allPorts : allPorts.filter((p) => p.protocol === 'TCP')),
+    [allPorts, showUdp]
+  );
+  const flagged = useMemo(() => flaggedPorts(allPorts), [allPorts]);
   const pinnedPortNumbers = useMemo(() => new Set(pins), [pins]);
 
   // Pin or unpin from a row. Unpinning a port that is not running makes it
@@ -81,7 +93,8 @@ function AppContent() {
   const { pinnedPortsList, otherPortsList } = useMemo(() => {
     const pinned: Port[] = [];
     const other: Port[] = [];
-    const allPortsMap = new Map(allPorts.map(p => [p.port, p]));
+    // Pins are TCP ports; a UDP socket on a pinned number stays in Other ports.
+    const allPortsMap = new Map(listPorts.filter(p => p.protocol === 'TCP').map(p => [p.port, p]));
 
     // Add all pinned ports (create placeholder for non-running ones)
     pinnedPortNumbers.forEach(portNum => {
@@ -106,15 +119,15 @@ function AppContent() {
     // Add remaining ports to other list, unless only pinned ports are shown;
     // then search and the counts cover pinned ports alone.
     if (!pinnedOnly) {
-      allPorts.forEach(port => {
-        if (!pinnedPortNumbers.has(port.port)) {
+      listPorts.forEach(port => {
+        if (!(port.protocol === 'TCP' && pinnedPortNumbers.has(port.port))) {
           other.push(port);
         }
       });
     }
 
     return { pinnedPortsList: pinned, otherPortsList: other };
-  }, [allPorts, pinnedPortNumbers, pinnedOnly]);
+  }, [listPorts, pinnedPortNumbers, pinnedOnly]);
 
   const isLoading = isLoadingAll;
   const isRefetching = isRefetchingAll;
@@ -168,10 +181,14 @@ function AppContent() {
       // Port number, or the name of the process holding it, as the README says.
       if (searchQuery) {
         const q = searchQuery.trim().toLowerCase();
+        // Also the container, its image and the service the advisor names.
         filtered = filtered.filter(
           (port) =>
             port.port.toString().includes(q) ||
-            (port.status !== 'free' && !!port.process?.name.toLowerCase().includes(q))
+            (port.status !== 'free' && !!port.process?.name.toLowerCase().includes(q)) ||
+            !!port.container?.name.toLowerCase().includes(q) ||
+            !!port.container?.image.toLowerCase().includes(q) ||
+            !!port.advice?.service?.toLowerCase().includes(q)
         );
       }
 
@@ -229,10 +246,16 @@ function AppContent() {
 
           <StatsOverview free={stats.free} occupied={stats.occupied} system={stats.system} />
 
-          <div className="reveal flex items-center gap-2" style={{ '--i': 2 } as CSSProperties}>
-            <SearchBar value={searchQuery} onChange={setSearchQuery} />
-            <StatusFilter selectedStatuses={selectedStatuses} onStatusToggle={handleStatusToggle} />
-          </div>
+          {view === 'ports' && <ExposureBanner ports={allPorts} onReview={() => setView('exposed')} />}
+
+          <ViewSwitcher view={view} onChange={setView} flagged={flagged.length} high={flagged.some((p) => p.advice?.risk === 'high')} />
+
+          {view === 'ports' && (
+            <div className="reveal flex items-center gap-2" style={{ '--i': 2 } as CSSProperties}>
+              <SearchBar value={searchQuery} onChange={setSearchQuery} />
+              <StatusFilter selectedStatuses={selectedStatuses} onStatusToggle={handleStatusToggle} />
+            </div>
+          )}
         </div>
 
         {/* Scrollable port list */}
@@ -241,6 +264,8 @@ function AppContent() {
             <div className="px-5 pb-8">
               {isLoading ? (
                 <PortScanLoader />
+              ) : view === 'exposed' ? (
+                <ExposedView ports={allPorts} />
               ) : searchQuery ? (
                 <>
                   <SectionLabel
@@ -252,7 +277,7 @@ function AppContent() {
                     <ListSurface>
                       {searchResults.map((port, i) => (
                         <PortListItem
-                          key={port.port}
+                          key={portKey(port)}
                           port={port}
                           index={i}
                           onKill={handleKillProcess}
@@ -276,7 +301,7 @@ function AppContent() {
                     <ListSurface>
                       {filteredPinnedPorts.map((port, i) => (
                         <PortListItem
-                          key={port.port}
+                          key={portKey(port)}
                           port={port}
                           index={i}
                           onKill={handleKillProcess}
@@ -343,6 +368,51 @@ function AppContent() {
           </SimpleBar>
         </div>
       </main>
+    </div>
+  );
+}
+
+/** Ports | Exposed, above the search row (DESIGN.md, View switcher). */
+function ViewSwitcher({ view, onChange, flagged, high }: { view: View; onChange: (v: View) => void; flagged: number; high: boolean }) {
+  const options: { value: View; label: string }[] = [
+    { value: 'ports', label: 'Ports' },
+    { value: 'exposed', label: 'Exposed' },
+  ];
+  return (
+    <div
+      role="radiogroup"
+      aria-label="View"
+      className="reveal flex h-8 w-fit items-center gap-0.5 rounded-lg border border-border bg-card p-[3px]"
+      style={{ '--i': 2 } as CSSProperties}
+    >
+      {options.map((o) => {
+        const active = view === o.value;
+        return (
+          <button
+            key={o.value}
+            type="button"
+            role="radio"
+            aria-checked={active}
+            onClick={() => onChange(o.value)}
+            className={cn(
+              'flex h-full items-center gap-1.5 rounded-md px-2.5 text-[12px] font-medium',
+              'transition-[background-color,color,scale] duration-200 ease-out active:scale-[0.96]',
+              'focus-visible:outline-hidden focus-visible:ring-2 focus-visible:ring-ring/50',
+              active ? 'bg-elevated text-foreground' : 'text-subtle hover:text-muted-foreground'
+            )}
+          >
+            {o.label}
+            {o.value === 'exposed' && flagged > 0 && (
+              <span
+                className={cn('font-mono text-[11px] tabular', high ? 'text-destructive' : 'text-occupied')}
+                aria-label={`${flagged} need a look`}
+              >
+                {flagged}
+              </span>
+            )}
+          </button>
+        );
+      })}
     </div>
   );
 }

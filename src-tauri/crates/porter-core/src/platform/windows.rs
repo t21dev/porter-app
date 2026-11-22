@@ -62,6 +62,62 @@ pub fn get_network_connections(include_connections: bool) -> Result<Vec<NetworkC
     Ok(connections)
 }
 
+/// Bound UDP endpoints, IPv4 and IPv6. Windows keeps no connected state for
+/// UDP in this table, so every bound socket is listed: servers and the
+/// sockets programs bind for their own outgoing traffic alike.
+#[cfg(target_os = "windows")]
+pub fn get_udp_sockets(_include_connections: bool) -> Result<Vec<NetworkConnection>> {
+    let mut sockets = Vec::new();
+    let udp = |pid, local_address: String, port: u32| NetworkConnection {
+        local_address,
+        local_port: u16::from_be(port as u16),
+        remote_address: String::new(),
+        remote_port: 0,
+        protocol: Protocol::UDP,
+        pid,
+        state: "LISTEN".to_string(),
+        process_name: None,
+    };
+    unsafe {
+        if let Some(buffer) = udp_table(AF_INET.0 as u32) {
+            let table = &*(buffer.as_ptr() as *const MIB_UDPTABLE_OWNER_PID);
+            let entries = std::slice::from_raw_parts(table.table.as_ptr(), table.dwNumEntries as usize);
+            for e in entries {
+                let ip = std::net::Ipv4Addr::from(u32::from_be(e.dwLocalAddr));
+                sockets.push(udp(e.dwOwningPid, ip.to_string(), e.dwLocalPort));
+            }
+        }
+        if let Some(buffer) = udp_table(AF_INET6.0 as u32) {
+            let table = &*(buffer.as_ptr() as *const MIB_UDP6TABLE_OWNER_PID);
+            let entries = std::slice::from_raw_parts(table.table.as_ptr(), table.dwNumEntries as usize);
+            for e in entries {
+                let ip = std::net::Ipv6Addr::from(e.ucLocalAddr);
+                sockets.push(udp(e.dwOwningPid, ip.to_string(), e.dwLocalPort));
+            }
+        }
+    }
+    Ok(sockets)
+}
+
+/// The UDP table for one address family, retried like `tcp_table`.
+#[cfg(target_os = "windows")]
+unsafe fn udp_table(family: u32) -> Option<Vec<u32>> {
+    let mut size: u32 = 0;
+    let _ = GetExtendedUdpTable(None, &mut size, false, family, UDP_TABLE_OWNER_PID, 0);
+    for _ in 0..4 {
+        if size == 0 {
+            return None;
+        }
+        let mut buffer = vec![0u32; (size as usize).div_ceil(4)];
+        match GetExtendedUdpTable(Some(buffer.as_mut_ptr() as *mut _), &mut size, false, family, UDP_TABLE_OWNER_PID, 0) {
+            0 => return Some(buffer),
+            122 => continue,
+            _ => return None,
+        }
+    }
+    None
+}
+
 /// One TCP table for one address family, or None if it cannot be read.
 /// Retries if the table grows between the size query and the read.
 #[cfg(target_os = "windows")]
@@ -120,6 +176,11 @@ pub fn is_system_process(pid: u32) -> bool {
 
 #[cfg(not(target_os = "windows"))]
 pub fn get_network_connections(_include_connections: bool) -> Result<Vec<NetworkConnection>> {
+    Ok(Vec::new())
+}
+
+#[cfg(not(target_os = "windows"))]
+pub fn get_udp_sockets(_include_connections: bool) -> Result<Vec<NetworkConnection>> {
     Ok(Vec::new())
 }
 

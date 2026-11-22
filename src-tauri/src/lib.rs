@@ -1,7 +1,4 @@
 mod commands;
-mod models;
-mod platform;
-mod services;
 
 use commands::AppState;
 use std::path::PathBuf;

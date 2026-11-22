@@ -61,3 +61,35 @@ jobs:
         with:
           name: Porter-flatpak
           path: Porter_x86_64.flatpak
+
+  # The scanner and the terminal version on their own: no WebView or Node
+  # needed, so it runs in a minute and reports test failures plainly.
+  cli:
+    strategy:
+      fail-fast: false
+      matrix:
+        platform: [macos-latest, ubuntu-22.04, windows-latest]
+
+    runs-on: ${{ matrix.platform }}
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Install Rust stable
+        uses: dtolnay/rust-toolchain@stable
+
+      - name: Rust cache
+        uses: swatinem/rust-cache@v2
+        with:
+          workspaces: './src-tauri -> target'
+          key: cli
+
+      - name: Test porter-core and porter-cli
+        run: cargo test --locked -p porter-core -p porter-cli --manifest-path src-tauri/Cargo.toml
+
+      - name: Smoke test
+        shell: bash
+        run: |
+          cargo run --quiet --locked -p porter-cli --manifest-path src-tauri/Cargo.toml -- list
+          cargo run --quiet --locked -p porter-cli --manifest-path src-tauri/Cargo.toml -- audit --json > /dev/null

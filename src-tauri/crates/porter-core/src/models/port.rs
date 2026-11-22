@@ -1,7 +1,9 @@
 use serde::{Deserialize, Serialize};
 use chrono::{DateTime, Utc};
 
-#[derive(Debug, Clone, Serialize, Deserialize)]
+pub use crate::containers::Container;
+
+#[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
 #[serde(rename_all = "lowercase")]
 pub enum PortStatus {
     Free,
@@ -9,7 +11,7 @@ pub enum PortStatus {
     System,
 }
 
-#[derive(Debug, Clone, Serialize, Deserialize)]
+#[derive(Debug, Clone, PartialEq, Eq, Hash, Serialize, Deserialize)]
 pub enum Protocol {
     TCP,
     UDP,
@@ -22,6 +24,10 @@ pub struct Port {
     pub protocol: Protocol,
     pub process: Option<Process>,
     pub ip_address: String,
+    /// The Docker or Podman container that publishes this port. Filled in only
+    /// by the container-aware scan the CLI uses; the desktop app leaves it out.
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub container: Option<Container>,
 }
 
 /// The process behind a port. The list only needs the name and PID, so the

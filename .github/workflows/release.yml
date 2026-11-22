@@ -50,6 +50,10 @@ jobs:
           on macOS; \`scoop bucket add t21dev https://github.com/t21dev/scoop-bucket\`
           and then \`scoop install t21dev/porter\` on Windows.
 
+          On a server or in a terminal, \`porter-cli_*\` holds \`porter\`, the
+          terminal version: one file with no dependencies. Run \`sudo porter\`
+          for the live view or \`porter audit\` for a report.
+
           ## 🚀 Installation
           Installation guide: https://github.com/t21dev/porter-app#installation
           EOF
@@ -155,10 +159,72 @@ jobs:
           gh api -X POST "https://uploads.github.com/repos/${{ github.repository }}/releases/${{ needs.create-release.outputs.release_id }}/assets?name=$FILE" \
             -H "Content-Type: application/octet-stream" --input "$FILE" --jq .name
 
+  # `porter`, the terminal version, as one self-contained file per platform.
+  # Static on Linux (musl), so the same file runs on any distribution, on a
+  # bare VPS and in containers.
+  cli:
+    needs: create-release
+    permissions:
+      contents: write
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - { os: ubuntu-latest, target: x86_64-unknown-linux-musl }
+          - { os: ubuntu-24.04-arm, target: aarch64-unknown-linux-musl }
+          - { os: macos-latest, target: aarch64-apple-darwin }
+          - { os: macos-latest, target: x86_64-apple-darwin }
+          - { os: windows-latest, target: x86_64-pc-windows-msvc }
+
+    runs-on: ${{ matrix.os }}
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Install musl (Linux)
+        if: contains(matrix.target, 'musl')
+        run: sudo apt-get update && sudo apt-get install -y musl-tools
+
+      - name: Install Rust stable
+        uses: dtolnay/rust-toolchain@stable
+        with:
+          targets: ${{ matrix.target }}
+
+      - name: Rust cache
+        uses: swatinem/rust-cache@v2
+        with:
+          workspaces: './src-tauri -> target'
+          key: cli-${{ matrix.target }}
+
+      - name: Build porter
+        shell: bash
+        run: |
+          # The Visual C++ runtime linked in, as for the app (see above).
+          if [[ "${{ matrix.target }}" == *windows* ]]; then export RUSTFLAGS="-C target-feature=+crt-static"; fi
+          cargo build --release --locked -p porter-cli --target ${{ matrix.target }} --manifest-path src-tauri/Cargo.toml
+
+      - name: Upload to the release
+        shell: bash
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          DIR="src-tauri/target/${{ matrix.target }}/release"
+          # No version in the name, so releases/latest/download/<file> always works.
+          NAME="porter-cli_${{ matrix.target }}"
+          if [[ "${{ matrix.target }}" == *windows* ]]; then
+            FILE="$NAME.zip"
+            7z a -tzip "$FILE" "./$DIR/porter.exe" > /dev/null
+          else
+            FILE="$NAME.tar.gz"
+            tar -czf "$FILE" -C "$DIR" porter
+          fi
+          gh api -X POST "https://uploads.github.com/repos/${{ github.repository }}/releases/${{ needs.create-release.outputs.release_id }}/assets?name=$FILE"             -H "Content-Type: application/octet-stream" --input "$FILE" --jq .name
+
   # Once every build has uploaded, list the SHA-256 of each download: as
   # SHA256SUMS.txt beside them, and at the end of the release notes.
   checksums:
-    needs: [create-release, release]
+    needs: [create-release, release, cli]
     runs-on: ubuntu-latest
     permissions:
       contents: write

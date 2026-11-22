@@ -41,7 +41,7 @@ export function PortSettings() {
   const full = pinnedPorts.length >= MAX_PINNED_PORTS;
   const { scale, setScale } = useUiScaleStore();
   const activeScale = UI_SCALES.find((s) => s.value === scale) ?? UI_SCALES[1];
-  const { showConnections, setShowConnections, pinnedOnly, setPinnedOnly } = useScanStore();
+  const { showConnections, setShowConnections, pinnedOnly, setPinnedOnly, showUdp, setShowUdp } = useScanStore();
 
   return (
     <DropdownMenu open={isOpen} onOpenChange={setIsOpen}>
@@ -133,6 +133,21 @@ export function PortSettings() {
             labelledBy="show-connections-label"
             onToggle={() => setShowConnections(!showConnections)}
           />
+        </div>
+
+        <div className="border-t border-border" />
+
+        <div className="flex items-start justify-between gap-4 px-4 py-3.5">
+          <div>
+            <h3 id="show-udp-label" className="text-[13px] font-semibold text-foreground">
+              Show UDP ports
+            </h3>
+            <p className="mt-0.5 text-[12px] text-muted-foreground">
+              List UDP sockets too, such as DNS and VPNs. Most on a desktop are apps' own
+              outgoing sockets. The Exposed view always includes them.
+            </p>
+          </div>
+          <Switch on={showUdp} labelledBy="show-udp-label" onToggle={() => setShowUdp(!showUdp)} />
         </div>
 
         <div className="border-t border-border" />

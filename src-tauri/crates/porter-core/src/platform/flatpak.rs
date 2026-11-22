@@ -30,11 +30,11 @@ fn host(args: &[&str]) -> std::io::Result<Output> {
         .output()
 }
 
-/// The PID and name behind each socket inode, from the host's `ss`. Empty if
-/// `ss` is missing or the host can't be reached; the ports still show, without
-/// their owners.
-pub fn socket_owners() -> HashMap<u64, (u32, String)> {
-    match host(&["ss", "-Htanpe"]) {
+/// The PID and name behind each TCP (or with `udp`, UDP) socket inode, from
+/// the host's `ss`. Empty if `ss` is missing or the host can't be reached; the
+/// ports still show, without their owners.
+pub fn socket_owners(udp: bool) -> HashMap<u64, (u32, String)> {
+    match host(&["ss", if udp { "-Huanpe" } else { "-Htanpe" }]) {
         Ok(out) if out.status.success() => parse_ss_owners(&String::from_utf8_lossy(&out.stdout)),
         _ => HashMap::new(),
     }

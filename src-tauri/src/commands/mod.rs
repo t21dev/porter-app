@@ -1,5 +1,7 @@
-use crate::models::{Port, SystemInfo};
-use crate::services::{PortMonitor, ProcessManager, admin};
+use porter_core::advisor::{advise, Advice};
+use porter_core::models::{Port, SystemInfo};
+use porter_core::services::{admin, PortMonitor, ProcessManager, ScanOptions};
+use serde::Serialize;
 use std::sync::Mutex;
 use tauri::State;
 
@@ -26,12 +28,32 @@ async fn blocking<T: Send + 'static>(
         .map_err(|e| e.to_string())
 }
 
-/// Listening ports, and with `include_connections` also the local end of every
-/// connection (the "Show outgoing connections" setting, off by default).
+/// A port with Porter's advice on it: why it's open, how far it reaches and
+/// whether it should be.
+#[derive(Serialize)]
+pub struct PortView {
+    #[serde(flatten)]
+    port: Port,
+    advice: Advice,
+}
+
+/// Listening ports, TCP and UDP, each with its container and advice. With
+/// `include_connections`, also the local end of every connection (the "Show
+/// outgoing connections" setting, off by default). UDP always comes back: the
+/// Exposed view and the banner need it, and the list hides it unless the
+/// "Show UDP ports" setting is on.
 #[tauri::command]
-pub async fn get_active_ports(include_connections: Option<bool>) -> Result<Vec<Port>, String> {
-    let include = include_connections.unwrap_or(false);
-    blocking(move || PortMonitor::new().get_active_ports(include)).await
+pub async fn get_active_ports(include_connections: Option<bool>) -> Result<Vec<PortView>, String> {
+    let opts = ScanOptions {
+        connections: include_connections.unwrap_or(false),
+        udp: true,
+        containers: true,
+    };
+    blocking(move || {
+        let ports = PortMonitor::new().get_ports(opts)?;
+        Ok(ports.into_iter().map(|port| PortView { advice: advise(&port), port }).collect())
+    })
+    .await
 }
 
 #[tauri::command]

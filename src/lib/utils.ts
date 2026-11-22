@@ -30,3 +30,8 @@ export function formatUptime(timestamp: number | string): string {
   if (minutes > 0) return `${minutes}m ${seconds % 60}s`;
   return `${seconds}s`;
 }
+
+/** What identifies a port row: TCP and UDP can share a number (DNS on 53). */
+export function portKey(p: { port: number; protocol: string }): string {
+  return `${p.port}/${p.protocol}`;
+}

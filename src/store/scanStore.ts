@@ -2,6 +2,7 @@ import { create } from 'zustand';
 
 const KEY = 'porter-show-connections';
 const PINNED_ONLY_KEY = 'porter-pinned-only';
+const UDP_KEY = 'porter-show-udp';
 
 function read(key: string = KEY): boolean {
   try {
@@ -33,6 +34,13 @@ interface ScanState {
    */
   pinnedOnly: boolean;
   setPinnedOnly: (value: boolean) => void;
+  /**
+   * List UDP sockets in Pinned and Other ports too. Off by default: on a
+   * desktop most are programs' own outgoing sockets. The Exposed view always
+   * includes UDP, since exposure is what it is for.
+   */
+  showUdp: boolean;
+  setShowUdp: (value: boolean) => void;
 }
 
 export const useScanStore = create<ScanState>((set) => ({
@@ -45,5 +53,10 @@ export const useScanStore = create<ScanState>((set) => ({
   setPinnedOnly: (value) => {
     write(PINNED_ONLY_KEY, value);
     set({ pinnedOnly: value });
+  },
+  showUdp: read(UDP_KEY),
+  setShowUdp: (value) => {
+    write(UDP_KEY, value);
+    set({ showUdp: value });
   },
 }));

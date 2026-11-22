@@ -85,6 +85,34 @@ How status colour is applied, from `PortListItem.tsx:30-34` and `StatusFilter.ts
 
 Status colours carry secondary meanings: `occupied` is the warning colour (admin banner `AdminWarning.tsx:33`, pinned-ports capacity full `PortSettings.tsx:213`); `free` is the positive colour (Live dot `TitleBar.tsx:43-46`, update available `UpdateNotice.tsx:30`, "up to date" check `AboutDialog.tsx:133`). Do not introduce new hues for success or warning; reuse these. `destructive` is reserved for kill and remove actions and error toasts, never for a port status.
 
+## Risk levels
+
+The advisor in `porter-core` (`advisor.rs`) rates every port `ok`, `low`, `medium` or `high`. Risk reuses the status hues for their existing meanings, with no new colours:
+
+| Risk | Hue | Meaning |
+|---|---|---|
+| ok | `free` (green) | Expected, or reachable from this machine only |
+| low | none (foreground) | Worth knowing; nothing to do |
+| medium | `occupied` (amber) | Warning: probably reachable more widely than it should be |
+| high | `destructive` (red) | Commonly exploited when exposed; close or restrict it |
+
+`destructive` stands in for "high" because it is the only red and "high" is an alert, not a port status. Risk is never colour alone: every risk colour sits beside its text label (`high`, `[medium]`).
+
+In the desktop app, risk comes from the backend's `advice` on each port:
+
+- A row shows a **risk chip** only for medium and high. Other in-use rows show their reach as a quiet word instead (`this machine`, `local network`, `all interfaces`), so a calm machine stays calm.
+- The one place `destructive` tints something that isn't an action or an error is the **exposure banner** when a high-risk port is reachable. It is still never a port status.
+
+## Terminal (`porter` CLI)
+
+The CLI (`src-tauri/crates/porter-cli`) follows the same principles in a terminal:
+
+- Neutral by default: text in the terminal's foreground, borders, headers and secondary text in its dark grey (`DarkGray`, ANSI dim). The only hues are the risk colours above, using the terminal's named red, yellow and green, so the user's own palette sets the exact shades and both light and dark terminals work.
+- Selection is reverse video, not a colour.
+- `NO_COLOR` and piped output turn colour off entirely; the text labels carry the meaning.
+- The live view keeps the selected port selected across refreshes and has a pause key (`p`), so live data doesn't move under the user (principle 4).
+- Stopping a process always asks first (`y` to confirm), with the target in the question, like the desktop confirm dialog.
+
 ## Typography
 
 - **Families** (`@theme`, `index.css:63-64`): `font-sans` is Geist Variable, `font-mono` is Geist Mono Variable, both bundled via `@fontsource-variable` (`index.css:5-6`). No web font requests.
@@ -165,6 +193,10 @@ Reuse these class patterns. Copy from the referenced line rather than retyping.
 - **Sortable table header** (`OtherPortsList.tsx:252`, `OtherPortsList.tsx:342-379`): `h-9 rounded-t-xl border bg-card`, sticky on a `bg-background` wrapper; header text `text-[11px] font-medium`, active `text-foreground`, arrow hidden until hover.
 - **Stats panel** (`StatsCard.tsx:42-77`): one `rounded-xl border bg-card` surface, `grid-cols-3 divide-x`, each cell a dot, a label and a 26px mono number, with a 3px distribution bar at the bottom.
 - **Banner** (`AdminWarning.tsx:31-58`): `rounded-lg border border-occupied/20 bg-occupied/6`, icon `text-occupied`, lead phrase `font-medium text-foreground`, action `text-occupied hover:bg-occupied/10`.
+- **Exposure banner** (`ExposureBanner.tsx`): the Banner pattern, tinted `destructive` (`border-destructive/20 bg-destructive/6`, icon and action `text-destructive`) when anything high is reachable, `occupied` when only medium. Hidden when nothing medium or high is reachable. Its action, Review, opens the Exposed view.
+- **Risk chip** (`RiskChip.tsx`): `rounded-md border px-1.5 py-px text-[10.5px] font-medium`, `text-{tone} border-{tone}/30 bg-{tone}/8`; high is `destructive`, medium `occupied`, low neutral (`text-muted-foreground border-border`), ok `free`. Always the word, never a bare colour.
+- **Advice panel** (`AdvicePanel.tsx`): a row with advice expands in place, never in a dialog. The row's main area is a button with `aria-expanded`; its chevron rotates 90° (200 ms ease-out) and the panel opens with `collapse-grid`. One row is open at a time. Inside, a `dl` with a 92px term column: Why open, Reach, What to do (`border-l-2 border-border pl-2.5`), then notes in `text-muted-foreground` and process details loaded when it opens.
+- **View switcher** (`App.tsx`): a segmented control, Ports | Exposed, above the search row. The Exposed view hides search and the status filter, shows medium and high ports as cards and the rest as one line each.
 - **Status pill button** (`UpdateNotice.tsx:30`): `h-7 rounded-full border border-free/25 bg-free/10 text-[11.5px] font-medium text-free`.
 - **Release notes panel** (`UpdateNotice.tsx:73-81`, parsed by `src/lib/releaseNotes.ts`): an inset well `min-w-0 overflow-hidden rounded-lg border bg-background` around a SimpleBar capped at 256px, content `px-4 py-3` at 12.5px muted. Text breaks anywhere (`wrap-anywhere`) and code blocks use `whitespace-pre-wrap`, so the panel never scrolls sideways. Hard-wrapped Markdown lines join their paragraph or bullet, and the SHA-256 checksums section is left out.
 - **Chip** (`PortSettings.tsx:191-201`): `h-7 rounded-md border border-border bg-background font-mono text-[12px]` with an `h-5 w-5` remove button that turns `hover:bg-destructive/10 hover:text-destructive`.

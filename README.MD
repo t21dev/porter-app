@@ -29,6 +29,9 @@ A sleek, fast, and secure desktop port monitoring application built with Tauri, 
 - **Dark/Light Mode** - Minimal near-black and light themes with a smooth crossfade between them
 - **Custom Title Bar** - Frameless window with integrated controls (native traffic lights on macOS)
 - **Admin Privilege Detection** - Automatically detects and warns when running without admin rights
+- **Why is this port open?** - Click any port to see what it's likely for, how far it reaches (this machine, your network, all interfaces) and what to do about it. The Exposed view lists only what other machines can reach, riskiest first
+- **Docker and Podman** - Published ports show the container's name and image instead of `com.docker.backend`
+- **Terminal version** - `porter` runs over SSH on a server: a live view, Docker and Podman containers by name, and an audit that explains why each port is open and whether it should be (see [In the terminal](#in-the-terminal-porter))
 - **Cross-Platform** - Works on Windows, macOS, and Linux
 - **Fast & Lightweight** - Built with Tauri for minimal resource usage
 
@@ -148,9 +151,67 @@ Then open the app normally. Alternatively, right-click the app and select "Open"
 
 ---
 
+### In the terminal (`porter`)
+
+For a server you reach over SSH, `porter` is Porter without the window: one
+file with no dependencies, about 2.5 MB. It shows what is listening on which
+port, names the Docker or Podman container behind each published port, and
+explains each port: what it's likely for, how far it reaches, and whether it
+should be open.
+
+```bash
+# Linux x86_64 (use aarch64-unknown-linux-musl on ARM)
+curl -fsSL https://github.com/t21dev/porter-app/releases/latest/download/porter-cli_x86_64-unknown-linux-musl.tar.gz | tar -xz
+sudo install porter /usr/local/bin/
+```
+
+Every release has a `porter-cli_*` archive for Linux (x86_64 and ARM, static,
+so any distribution), macOS (Apple silicon and Intel) and Windows.
+
+```bash
+sudo porter                    # live view: ↑↓ select, / filter, e reachable only, K stop, q quit
+porter audit                   # every port reachable from the network: why it's open, what to do
+porter audit --all             # the same, explaining the low-risk ones in full too
+porter explain 6379            # everything Porter knows about one port
+porter list --json             # for scripts
+porter audit --fail-on high    # exit status 2 if anything risky is exposed: for cron or CI
+porter kill 3000               # stop whatever holds port 3000
+```
+
+Run it with `sudo` (or as administrator) to see the owner of every port;
+without it, ports owned by other users show `?`.
+
+What the advice is based on:
+
+- **Reach**, from the address a port listens on: this machine only
+  (`127.0.0.1`, `::1`), the local network (a private address), a public
+  address, or all interfaces (`0.0.0.0`, `::`).
+- **What it is**, from the container image, the process name and the port
+  number, in that order, matched against a list of well-known services
+  (databases, admin dashboards, remote access, dev servers, mail, VPNs and
+  more). A container's own port counts, so Postgres published on 15432 is
+  still recognised.
+- **Risk**: anything reachable from this machine only is fine. Databases,
+  caches, open Docker APIs, Jupyter, RDP and VNC on all interfaces are high.
+  Dashboards, dev servers and unknown programs are medium. A local-network
+  address lowers the risk one step.
+- **Docker and ufw**: on Linux, Docker publishes ports with its own iptables
+  rules, which ufw and firewalld don't filter. Porter points this out and
+  gives the `127.0.0.1:HOST:CONTAINER` form that keeps a port private.
+
+Porter doesn't read firewall rules, so "all interfaces" means the program
+accepts connections from any network, not that the internet can reach it. It
+works offline and sends nothing anywhere.
+
+It lists UDP too (DNS, WireGuard, SNMP, NTP and so on): a UDP socket that is
+bound but not connected takes packets from anyone. Programs also keep UDP
+sockets open on high ports for their own outgoing traffic; Porter marks those
+as low risk rather than as unknown servers. `--tcp-only` leaves UDP out.
+
 ### Run in Docker
 
-Porter also runs in a container, shown in your browser. It shares the host's
+Porter also runs in a container, shown in your browser. On a server, the
+terminal version above is lighter. It shares the host's
 process namespace and reads the host's socket table, so it lists the listening
 ports of the machine the container runs on. That makes it useful on a headless
 Linux server, or for seeing which of your containers holds which port.
@@ -268,12 +329,18 @@ porter-app/
 │   ├── store/               # Zustand stores
 │   ├── types/               # TypeScript types
 │   └── App.tsx              # Main app component
-├── src-tauri/               # Tauri backend
+├── src-tauri/               # Tauri backend (also the Cargo workspace root)
 │   ├── src/
-│   │   ├── commands/        # Tauri IPC commands
-│   │   ├── models/          # Data models
-│   │   ├── platform/        # Platform-specific code
-│   │   └── services/        # Business logic
+│   │   └── commands/        # Tauri IPC commands
+│   ├── crates/
+│   │   ├── porter-core/     # Port scanning, containers, advice; no UI
+│   │   │   └── src/
+│   │   │       ├── models/      # Data models
+│   │   │       ├── platform/    # Platform-specific code
+│   │   │       ├── services/    # Scanning and stopping processes
+│   │   │       ├── containers.rs # Docker and Podman published ports
+│   │   │       └── advisor.rs   # Why a port is open, and whether it should be
+│   │   └── porter-cli/      # `porter`, the terminal version
 │   ├── Cargo.toml          # Rust dependencies
 │   └── tauri.conf.json     # Tauri configuration
 └── docs/                    # Documentation

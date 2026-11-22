@@ -117,6 +117,9 @@
   }
   & > * {
     min-height: 0;
+    /* Also when a caller unclips it once open: the track, not the content,
+       sets the width. */
+    min-width: 0;
     overflow: hidden;
   }
 }
