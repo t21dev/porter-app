@@ -7,6 +7,16 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [0.8.1] - 2026-11-22
+
+### Added
+- The desktop app installs `porter`, the terminal version, too. The Windows
+  installers put it on the PATH (and take it off on uninstall), the
+  Microsoft Store version adds a `porter` alias, Homebrew links it and the
+  Linux packages install it in `/usr/bin`. A new setting, Command line tool,
+  shows whether `porter` works in a terminal and adds or removes it any time,
+  which is how the portable zip and the macOS disk image turn it on.
+
 ## [0.8.0] - 2026-11-22
 
 ### Added
