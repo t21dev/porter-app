@@ -106,6 +106,20 @@ pub async fn is_elevated() -> Result<bool, String> {
     Ok(admin::is_elevated())
 }
 
+/// Whether `porter`, the bundled terminal version, runs in a new terminal,
+/// and whether this app can change that (the "Command line tool" setting).
+#[tauri::command]
+pub async fn get_cli_status() -> Result<porter_core::services::cli_path::CliStatus, String> {
+    blocking(|| Ok(porter_core::services::cli_path::status())).await
+}
+
+/// Put the bundled `porter` on the PATH or take it off. On macOS this shows
+/// the password prompt.
+#[tauri::command]
+pub async fn set_cli_on_path(on: bool) -> Result<porter_core::services::cli_path::CliStatus, String> {
+    blocking(move || porter_core::services::cli_path::set_on_path(on)).await
+}
+
 /// True when installed from the Microsoft Store, which delivers the updates.
 #[tauri::command]
 pub fn is_store_package() -> bool {

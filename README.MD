@@ -165,7 +165,24 @@ curl -fsSL https://github.com/t21dev/porter-app/releases/latest/download/porter-
 sudo install porter /usr/local/bin/
 ```
 
-Every release has a `porter-cli_*` archive for Linux (x86_64 and ARM, static,
+**With the desktop app.** Every installer also installs `porter`, so you don't
+need a separate download on your own machine:
+
+| Install | `porter` |
+|---|---|
+| Windows installer (`.msi`, `-setup.exe`) | On your PATH right away. Open a new terminal. |
+| Windows portable zip | In the `cli` folder. Turn on **Settings → Command line tool** to add it to your PATH. |
+| Microsoft Store | On your PATH right away (an app alias). |
+| macOS with Homebrew | Linked by the cask. |
+| macOS from the `.dmg` | Turn on **Settings → Command line tool** (it asks for your password to link `/usr/local/bin/porter`). |
+| Linux `.deb` / `.rpm` | Installed in `/usr/bin`. |
+| Flatpak | `flatpak run --command=porter com.triptoafsin.porter` |
+| AppImage | Not included on the PATH: use the standalone download. |
+
+**Settings → Command line tool** shows whether `porter` works in a terminal, and
+turns it on or off whenever you like. Uninstalling Porter takes it off the PATH.
+
+**On its own**, for a server: every release has a `porter-cli_*` archive for Linux (x86_64 and ARM, static,
 so any distribution), macOS (Apple silicon and Intel) and Windows.
 
 ```bash
@@ -257,6 +274,10 @@ npm install
 ```bash
 npm run tauri:dev
 ```
+
+`tauri:dev` and `tauri:build` first build `porter`, the terminal version, which
+the app bundles (`npm run sidecar`, into `src-tauri/binaries/`). Run that once
+before a plain `cargo check` of the app: Tauri won't build without it.
 
 ### Building for Production
 

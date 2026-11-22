@@ -59,6 +59,12 @@ enum Cmd {
         #[arg(long)]
         json: bool,
     },
+    /// Put this porter on the PATH, take it off, or check (used by the Windows installer).
+    #[command(hide = true)]
+    Path {
+        #[arg(value_parser = ["add", "remove", "status"])]
+        action: String,
+    },
     /// Stop the process holding a port.
     Kill {
         port: u16,
@@ -144,6 +150,22 @@ fn run(cli: Cli) -> Result<ExitCode> {
                     });
                     print::explain(row, same);
                 }
+            }
+        }
+        Some(Cmd::Path { action }) => {
+            use porter_core::services::cli_path;
+            let st = match action.as_str() {
+                "add" => cli_path::set_on_path(true)?,
+                "remove" => cli_path::set_on_path(false)?,
+                _ => cli_path::status(),
+            };
+            match (&st.bundled, st.on_path) {
+                (Some(p), true) => println!("porter is on the PATH ({p}). Open a new terminal to use it."),
+                (Some(p), false) => println!("porter is not on the PATH ({p})."),
+                (None, on) => println!("porter is {}on the PATH.", if on { "" } else { "not " }),
+            }
+            if let Some(note) = st.note {
+                println!("{note}");
             }
         }
         Some(Cmd::Kill { port, yes }) => {

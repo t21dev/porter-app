@@ -56,6 +56,8 @@ pub fn run() {
             commands::is_elevated,
             commands::request_elevation,
             commands::is_store_package,
+            commands::get_cli_status,
+            commands::set_cli_on_path,
         ])
         .run(tauri::generate_context!())
         .expect("error while running tauri application");

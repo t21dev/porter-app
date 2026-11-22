@@ -30,6 +30,8 @@ modules:
       - ar -x porter.deb
       - tar -xf data.tar.*
       - install -Dm755 usr/bin/porter-app -t /app/bin
+      # porter, the terminal version: flatpak run --command=porter com.triptoafsin.porter
+      - install -Dm755 usr/bin/porter -t /app/bin
       - install -Dm644 com.triptoafsin.porter.desktop -t /app/share/applications
       - install -Dm644 com.triptoafsin.porter.metainfo.xml -t /app/share/metainfo
       # The icons, renamed after the app ID as Flatpak requires. Tauri puts

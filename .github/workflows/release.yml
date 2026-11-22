@@ -123,6 +123,10 @@ jobs:
           $dir = "Porter"
           New-Item -ItemType Directory $dir | Out-Null
           Copy-Item "src-tauri/target/release/porter-app.exe" "$dir/Porter.exe"
+          # porter, the terminal version, in cli\ (porter.exe can't sit beside
+          # Porter.exe). Settings > Command line tool puts that folder on the PATH.
+          New-Item -ItemType Directory "$dir/cli" | Out-Null
+          Copy-Item "src-tauri/binaries/porter-x86_64-pc-windows-msvc.exe" "$dir/cli/porter.exe"
           Set-Content "$dir/portable" "Porter keeps its data in the data folder next to it while this file is here. Delete this file to use the normal per-user data folder instead. Needs the Microsoft Edge WebView2 Runtime, which Windows 10 and 11 already have."
           $zip = "Porter_${version}_x64_portable.zip"
           Compress-Archive -Path $dir -DestinationPath $zip
@@ -302,6 +306,11 @@ jobs:
               s/^  # Releases ship an Apple silicon build only\..*\n//m;
               s/^  depends_on arch: :arm64\n//m;
             ' "$CASK"
+          fi
+          # Once: link porter, the terminal version inside the app (from 0.8.1),
+          # so `brew install` puts it on the PATH.
+          if ! grep -q 'Contents/MacOS/porter"' "$CASK"; then
+            sed -i 's|^  app "Porter.app"$|  app "Porter.app"\n  binary "#{appdir}/Porter.app/Contents/MacOS/porter"|' "$CASK"
           fi
           sed -E -i \
             -e "s/^(  version \")[^\"]+\"/\1${VERSION}\"/" \

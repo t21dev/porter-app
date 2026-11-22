@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import { Settings2, X, Plus } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -13,6 +13,7 @@ import { isMac } from '@/lib/platform';
 import { UI_SCALES, useUiScaleStore } from '@/store/uiScaleStore';
 import { useScanStore } from '@/store/scanStore';
 import { MAX_PINNED_PORTS, usePinStore } from '@/store/pinStore';
+import { getCliStatus, setCliOnPath, type CliStatus } from '@/lib/tauri';
 
 export function PortSettings() {
   const [newPort, setNewPort] = useState('');
@@ -152,6 +153,10 @@ export function PortSettings() {
 
         <div className="border-t border-border" />
 
+        <CliSetting open={isOpen} />
+
+        <div className="border-t border-border" />
+
         <div className="flex items-start justify-between gap-3 px-4 pb-3 pt-3.5">
           <div>
             <h3 className="text-[13px] font-semibold text-foreground">Pinned ports</h3>
@@ -240,7 +245,93 @@ export function PortSettings() {
 }
 
 /** An on/off switch for a setting whose heading has the id `labelledBy`. */
-function Switch({ on, labelledBy, onToggle }: { on: boolean; labelledBy: string; onToggle: () => void }) {
+/**
+ * "Command line tool": whether `porter`, the terminal version installed with
+ * the app, works in a new terminal. The installer turns it on; this lets people
+ * turn it off, or on again later.
+ */
+function CliSetting({ open }: { open: boolean }) {
+  const [status, setStatus] = useState<CliStatus | null>(null);
+  const [busy, setBusy] = useState(false);
+  const { toast } = useToast();
+
+  // Read fresh each time the menu opens: the installer or a terminal may
+  // have changed it since.
+  useEffect(() => {
+    if (!open) return;
+    let live = true;
+    getCliStatus()
+      .then((s) => live && setStatus(s))
+      .catch(() => undefined);
+    return () => {
+      live = false;
+    };
+  }, [open]);
+
+  if (!status) return null;
+
+  const toggle = async () => {
+    setBusy(true);
+    try {
+      const next = await setCliOnPath(!status.on_path);
+      setStatus(next);
+      toast({
+        title: next.on_path ? 'porter is on your PATH' : 'porter is off your PATH',
+        description: next.on_path
+          ? 'Open a new terminal and run porter.'
+          : 'New terminals won’t find it. You can turn it back on here.',
+      });
+    } catch (error) {
+      const message = error instanceof Error ? error.message : String(error);
+      if (message !== 'Cancelled.') {
+        toast({ variant: 'destructive', title: 'Couldn’t change the PATH', description: message });
+      }
+    } finally {
+      setBusy(false);
+    }
+  };
+
+  return (
+    <div className="flex items-start justify-between gap-4 px-4 py-3.5">
+      <div className="min-w-0">
+        <h3 id="cli-path-label" className="text-[13px] font-semibold text-foreground">
+          Command line tool
+        </h3>
+        <p className="mt-0.5 text-[12px] text-muted-foreground">
+          {status.on_path ? (
+            <>
+              Run <code className="font-mono text-foreground">porter</code> in any terminal for the live view or{' '}
+              <code className="font-mono text-foreground">porter audit</code>.
+            </>
+          ) : (
+            <>
+              Add <code className="font-mono text-foreground">porter</code> to your PATH so it runs in any terminal.
+            </>
+          )}
+        </p>
+        {status.note && <p className="mt-1 text-[11.5px] text-subtle">{status.note}</p>}
+      </div>
+      <Switch
+        on={status.on_path}
+        labelledBy="cli-path-label"
+        onToggle={toggle}
+        disabled={!status.can_toggle || busy}
+      />
+    </div>
+  );
+}
+
+function Switch({
+  on,
+  labelledBy,
+  onToggle,
+  disabled = false,
+}: {
+  on: boolean;
+  labelledBy: string;
+  onToggle: () => void;
+  disabled?: boolean;
+}) {
   return (
     <button
       type="button"
@@ -248,9 +339,11 @@ function Switch({ on, labelledBy, onToggle }: { on: boolean; labelledBy: string;
       aria-checked={on}
       aria-labelledby={labelledBy}
       onClick={onToggle}
+      disabled={disabled}
       className={cn(
         'relative mt-0.5 h-5 w-9 shrink-0 rounded-full border transition-colors duration-200 ease-out',
         'focus-visible:outline-hidden focus-visible:ring-2 focus-visible:ring-ring/50',
+        'disabled:cursor-not-allowed disabled:opacity-50',
         on ? 'border-foreground/60 bg-foreground/80' : 'border-border bg-elevated'
       )}
     >

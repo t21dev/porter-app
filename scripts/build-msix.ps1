@@ -8,6 +8,9 @@
 # The Store signs the package itself, so the upload stays unsigned.
 param(
     [string]$Exe = "src-tauri/target/release/porter-app.exe",
+    # porter, the terminal version: the sidecar that scripts/build-sidecar.mjs
+    # built for the release (Tauri bundles it from here, it isn't copied to target).
+    [string]$Cli = "src-tauri/binaries/porter-x86_64-pc-windows-msvc.exe",
     [string]$Cert,
     [string]$CertPassword = "password",
     [string]$OutDir = "src-tauri/target/msix"
@@ -24,6 +27,9 @@ if (Test-Path $layout) { Remove-Item -Recurse -Force $layout }
 New-Item -ItemType Directory -Force $layout | Out-Null
 
 Copy-Item $Exe (Join-Path $layout "Porter.exe")
+# In cli\: Windows can't keep porter.exe beside Porter.exe (same name, other case).
+New-Item -ItemType Directory -Force (Join-Path $layout "cli") | Out-Null
+Copy-Item $Cli (Join-Path $layout "cli\porter.exe")
 Copy-Item -Recurse msix/Assets (Join-Path $layout "Assets")
 (Get-Content msix/Package.appxmanifest -Raw) -replace 'Version="0\.0\.0\.0"', "Version=`"$msixVersion`"" |
     Set-Content (Join-Path $layout "AppxManifest.xml") -Encoding utf8

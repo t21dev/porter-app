@@ -1,0 +1,17 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--
+  Puts porter, the terminal version installed next to Porter.exe, on the system
+  PATH (the MSI installs for all users). Windows Installer adds the folder on
+  install and removes it on uninstall. Referenced from tauri.conf.json
+  (bundle.windows.wix).
+-->
+<Wix xmlns="http://schemas.microsoft.com/wix/2006/wi">
+  <Fragment>
+    <DirectoryRef Id="INSTALLDIR">
+      <Component Id="PorterCliOnPath" Guid="E8D8BB6A-56F7-46D2-8DAE-195920E56EE5">
+        <Environment Id="PorterCliPath" Name="PATH" Value="[INSTALLDIR]" Permanent="no" Part="last" Action="set" System="yes" />
+        <RegistryValue Root="HKLM" Key="Software\t21dev\Porter" Name="CliOnPath" Type="integer" Value="1" KeyPath="yes" />
+      </Component>
+    </DirectoryRef>
+  </Fragment>
+</Wix>

@@ -22,3 +22,6 @@ dist-ssr
 *.njsproj
 *.sln
 *.sw?
+
+# porter, built by scripts/build-sidecar.mjs for Tauri to bundle
+src-tauri/binaries/
