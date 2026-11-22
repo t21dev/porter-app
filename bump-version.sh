@@ -30,16 +30,19 @@ if [[ "$OSTYPE" == "darwin"* ]] || [[ "$OSTYPE" == "linux-gnu"* ]]; then
   sed -i.bak "s/\"version\": \".*\"/\"version\": \"$VERSION\"/" package.json && rm package.json.bak
   sed -i.bak "s/^version = \".*\"/version = \"$VERSION\"/" src-tauri/Cargo.toml && rm src-tauri/Cargo.toml.bak
   sed -i.bak "s/\"version\": \".*\"/\"version\": \"$VERSION\"/" src-tauri/tauri.conf.json && rm src-tauri/tauri.conf.json.bak
+  for f in src-tauri/crates/*/Cargo.toml; do sed -i.bak "s/^version = \".*\"/version = \"$VERSION\"/" "$f" && rm "$f.bak"; done
 else
   # Windows with Git Bash
   sed -i "s/\"version\": \".*\"/\"version\": \"$VERSION\"/" package.json
   sed -i "s/^version = \".*\"/version = \"$VERSION\"/" src-tauri/Cargo.toml
   sed -i "s/\"version\": \".*\"/\"version\": \"$VERSION\"/" src-tauri/tauri.conf.json
+  for f in src-tauri/crates/*/Cargo.toml; do sed -i "s/^version = \".*\"/version = \"$VERSION\"/" "$f"; done
 fi
 
 echo -e "${GREEN}✓ Updated package.json${NC}"
 echo -e "${GREEN}✓ Updated src-tauri/Cargo.toml${NC}"
 echo -e "${GREEN}✓ Updated src-tauri/tauri.conf.json${NC}"
+echo -e "${GREEN}✓ Updated src-tauri/crates/*/Cargo.toml (porter-core, porter-cli)${NC}"
 
 echo ""
 echo -e "${BLUE}Next steps:${NC}"

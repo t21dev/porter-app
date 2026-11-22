@@ -7,10 +7,38 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [0.8.0] - 2026-11-22
+
 ### Added
+- Porter explains every port: what it's likely for, how far it reaches
+  (this machine, the local network or all interfaces) and whether it should
+  be open, with what to do about it. Click a port to see it. Exposed
+  databases, open Docker APIs, Remote Desktop and VNC are flagged.
+- An Exposed view lists only what other machines can reach, riskiest first,
+  and a banner under the counts says when something needs a look.
+- Ports published by Docker or Podman show the container's name and image
+  instead of `com.docker.backend` or `docker-proxy`.
+- UDP ports, such as DNS and VPNs: always in the Exposed view, and in the
+  lists with the new "Show UDP ports" setting.
+- `porter`, Porter in the terminal, for servers reached over SSH: one file
+  with no dependencies, `porter-cli_<platform>`, on every release (static
+  Linux builds for x86_64 and ARM, plus macOS and Windows). Run it bare for
+  a live view, or `porter list`, `audit`, `explain` and `kill`. On Linux it
+  warns when Docker publishes a port past ufw, and
+  `porter audit --fail-on high` exits with status 2 for cron or CI.
 - A macOS build for Intel Macs, `Porter_x.x.x_x64.dmg`, on every release.
   The Homebrew cask (`brew install --cask t21dev/tap/porter-app`) now
   installs on Intel Macs too, and follows each release within minutes.
+
+### Changed
+- Search also matches containers, their images and service names.
+
+### Fixed
+- When a port is bound on several addresses (`0.0.0.0` and `127.0.0.1`,
+  say), the widest-reaching one is shown, so an exposed socket is never
+  listed as local.
+- The Other ports table no longer runs past the right edge of the window
+  when a row's contents are wide.
 
 ## [0.7.1] - 2026-11-07
 

@@ -27,6 +27,12 @@ Write-Host "✓ Updated src-tauri/Cargo.toml" -ForegroundColor Green
 (Get-Content src-tauri/tauri.conf.json) -replace '"version": ".*"', "`"version`": `"$Version`"" | Set-Content src-tauri/tauri.conf.json
 Write-Host "✓ Updated src-tauri/tauri.conf.json" -ForegroundColor Green
 
+# Update the shared crates, so `porter --version` matches the app
+Get-ChildItem src-tauri/crates/*/Cargo.toml | ForEach-Object {
+    (Get-Content $_.FullName) -replace '^version = ".*"', "version = `"$Version`"" | Set-Content $_.FullName
+}
+Write-Host "✓ Updated src-tauri/crates/*/Cargo.toml (porter-core, porter-cli)" -ForegroundColor Green
+
 Write-Host ""
 Write-Host "Next steps:" -ForegroundColor Blue
 Write-Host "1. Update CHANGELOG.md with your changes"
