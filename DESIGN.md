@@ -83,7 +83,7 @@ How status colour is applied, from `PortListItem.tsx:30-34` and `StatusFilter.ts
 - Filter dot (inactive): `border-{status} bg-transparent scale-90`.
 - Distribution bar: segments `bg-{status} opacity-80` on a `bg-border/60` 3px track (`StatsCard.tsx:60-75`).
 
-Status colours carry secondary meanings: `occupied` is the warning colour (admin banner `AdminWarning.tsx:33`, pinned-ports capacity full `PortSettings.tsx:213`); `free` is the positive colour (Live dot `TitleBar.tsx:43-46`, update available `UpdateNotice.tsx:30`, "up to date" check `AboutDialog.tsx:133`). Do not introduce new hues for success or warning; reuse these. `destructive` is reserved for kill and remove actions and error toasts, never for a port status.
+Status colours carry secondary meanings: `occupied` is the warning colour (admin banner `AdminWarning.tsx:33`, pinned-ports capacity full `PortSettings.tsx:417`); `free` is the positive colour (Live dot `TitleBar.tsx:43-46`, update available `UpdateNotice.tsx:30`, "up to date" check `AboutDialog.tsx:133`). Do not introduce new hues for success or warning; reuse these. `destructive` is reserved for kill and remove actions and error toasts, never for a port status.
 
 ## Risk levels
 
@@ -134,7 +134,7 @@ The CLI (`src-tauri/crates/porter-cli`) follows the same principles in a termina
 | 10px mono | regular | `kbd` hint (`SearchBar.tsx:64`) |
 
 - Weights: 400, 500 (`font-medium`, the default for labels and controls), 600 (`font-semibold`, headings only). No bold.
-- Numbers: always `font-mono tabular` (`tabular` utility, `index.css:96-98`). Inputs that take numbers use `font-mono tabular placeholder:font-sans` (`SearchBar.tsx:48`, `PortSettings.tsx:166`).
+- Numbers: always `font-mono tabular` (`tabular` utility, `index.css:96-98`). Inputs that take numbers use `font-mono tabular placeholder:font-sans` (`SearchBar.tsx:48`, `PortSettings.tsx:377`).
 - Headings and labels are sentence case ("Only show pinned ports", "Kill process?"). No uppercase labels in current UI.
 
 ## Spacing and layout
@@ -181,12 +181,14 @@ The CLI (`src-tauri/crates/porter-cli`) follows the same principles in a termina
 Reuse these class patterns. Copy from the referenced line rather than retyping.
 
 - **Button** (`src/components/ui/button.tsx:13-31`): variants `default` (ink), `destructive`, `outline` (`border-border bg-card`), `ghost` (`text-muted-foreground hover:bg-accent hover:text-foreground`). Sizes `default` h-9 13px, `sm` h-8 13px, `icon` h-8 w-8, `xs` h-7. Title bar actions are `variant="ghost" size="icon"` with a 15px icon plus `aria-label` and `title` (`Header.tsx:24-36`).
-- **Small text button** (no component): `rounded-md px-2 py-1 text-[11.5px] font-medium text-muted-foreground hover:bg-accent hover:text-foreground` (`PortSettings.tsx:150`).
+- **Small text button** (no component): `rounded-md px-2 py-1 text-[11.5px] font-medium text-muted-foreground hover:bg-accent hover:text-foreground` (`PortSettings.tsx:361`).
 - **Input** (`src/components/ui/input.tsx:12-17`): `h-9 rounded-lg border-border bg-card px-3 text-[13px]`, hover `border-input`, focus `border-ring/60 bg-background` (border change, no ring), number spinners hidden.
 - **Search field** (`SearchBar.tsx:34-67`): leading 15px icon at `left-3`, `pl-9 pr-10`, `/` shortcut shown as a `kbd` that fades on focus, a clear button replaces it when there is a value, Escape clears.
-- **Segmented control** (`StatusFilter.tsx:20-35`, `OtherPortsList.tsx:205-227`, `PortSettings.tsx:71-89`): container `rounded-lg border border-border bg-card p-[3px] gap-0.5`; active segment `bg-elevated text-foreground`, inactive `text-subtle hover:text-muted-foreground`. Use `aria-pressed` for multi-select; `role="radiogroup"` and `role="radio"` with `aria-checked` for single-select.
-- **Switch** (`PortSettings.tsx:228-250`): `h-5 w-9 rounded-full border`. On: `border-foreground/60 bg-foreground/80` with a `bg-background` thumb. Off: `border-border bg-elevated` with a `bg-muted-foreground` thumb. Thumb `h-3.5 w-3.5`, moves `translate-x-4`. `role="switch"`, `aria-checked`, labelled by the heading id.
-- **Settings row** (`PortSettings.tsx:106-117`): `flex items-start justify-between gap-4 px-4 py-3.5`; heading `text-[13px] font-semibold`; description `mt-0.5 text-[12px] text-muted-foreground`; sections separated by `border-t border-border`. The panel is a `DropdownMenuContent` with `w-80 p-0` (`PortSettings.tsx:59`).
+- **Segmented control** (`StatusFilter.tsx:20-35`, `OtherPortsList.tsx:205-227`, `PortSettings.tsx:249-276`): container `rounded-lg border border-border bg-card p-[3px] gap-0.5`; active segment `bg-elevated text-foreground`, inactive `text-subtle hover:text-muted-foreground`. Use `aria-pressed` for multi-select; `role="radiogroup"` and `role="radio"` with `aria-checked` for single-select.
+- **Switch** (`PortSettings.tsx:513-543`): `h-5 w-9 rounded-full border`. On: `border-foreground/60 bg-foreground/80` with a `bg-background` thumb. Off: `border-border bg-elevated` with a `bg-muted-foreground` thumb. Thumb `h-3.5 w-3.5`, moves `translate-x-4`. `role="switch"`, `aria-checked`, labelled by the heading id.
+- **Settings row** (`SettingBlock`, `PortSettings.tsx:181-204`): `px-5 py-3.5`, `border-t border-border` between rows (none on the first); heading `text-[13px] font-semibold`; description `mt-0.5 text-[12px] text-muted-foreground`. Switch rows add `flex items-start justify-between gap-4` (`SwitchRow`).
+- **Settings dialog** (`PortSettings.tsx:84-175`): a `Dialog`, not a popover, `max-w-[600px] p-0 gap-0` at a fixed `h-[min(420px,calc(100vh-3rem))]` so switching sections never changes its size. A `h-12` header with the title, then a 184px left rail (`border-r`, `p-2`) and a SimpleBar pane. Rail items are `h-8 rounded-md px-2.5 text-[13px]` with a 14px icon; active `bg-elevated font-medium text-foreground` with `aria-current="page"`, inactive `text-muted-foreground hover:bg-accent`. A section crossfades in at 200ms. New settings go into an existing section, or a new rail item when none fits, and get an entry in `SETTINGS` so search finds them.
+- **Settings search** (top of the rail): an `h-8` input with a 14px search icon. While it has text, the rail lists matching settings (title 12.5px medium, section 11px `text-subtle`) instead of sections; picking one, or Enter for the first, opens its section, clears the search, scrolls the setting into view and tints it `bg-accent` for 900ms. Escape clears the search first, then closes the dialog.
 - **List surface and port row** (`App.tsx:360-366`, `PortListItem.tsx:45-169`): surface `divide-y divide-border overflow-hidden rounded-xl border border-border bg-card`; row `h-12 px-3.5 gap-3 hover:bg-accent`; hover-revealed action `h-7 w-7 rounded-md text-subtle opacity-0 group-hover:opacity-100 focus-visible:opacity-100`.
 - **Section label** (`App.tsx:350-358`): title `text-[12px] font-medium text-muted-foreground`, count `font-mono text-[11px] text-subtle tabular`.
 - **Disclosure divider** (Other ports, `App.tsx:302-321`): label, count, a `h-px flex-1 bg-border` rule, and a rotating `ChevronDown`.
@@ -200,7 +202,7 @@ Reuse these class patterns. Copy from the referenced line rather than retyping.
 - **View switcher** (`App.tsx`): a segmented control, Ports | Exposed, above the search row. The Exposed view hides search and the status filter, shows medium and high ports as cards and the rest as one line each.
 - **Status pill button** (`UpdateNotice.tsx:30`): `h-7 rounded-full border border-free/25 bg-free/10 text-[11.5px] font-medium text-free`.
 - **Release notes panel** (`UpdateNotice.tsx:73-81`, parsed by `src/lib/releaseNotes.ts`): an inset well `min-w-0 overflow-hidden rounded-lg border bg-background` around a SimpleBar capped at 256px, content `px-4 py-3` at 12.5px muted. Text breaks anywhere (`wrap-anywhere`) and code blocks use `whitespace-pre-wrap`, so the panel never scrolls sideways. Hard-wrapped Markdown lines join their paragraph or bullet, and the SHA-256 checksums section is left out.
-- **Chip** (`PortSettings.tsx:191-201`): `h-7 rounded-md border border-border bg-background font-mono text-[12px]` with an `h-5 w-5` remove button that turns `hover:bg-destructive/10 hover:text-destructive`.
+- **Chip** (`PortSettings.tsx:393-407`): `h-7 rounded-md border border-border bg-background font-mono text-[12px]` with an `h-5 w-5` remove button that turns `hover:bg-destructive/10 hover:text-destructive`.
 - **Empty state** (`App.tsx:368-375`): `rounded-xl border border-dashed px-6 py-10 text-center`, title 13px medium, body 12px muted.
 - **Skeleton** (`PortScanLoader.tsx:4-25`): mirrors row geometry with `bg-elevated` bars at 100, 70 and 50% opacity and a `via-foreground/[0.035]` shimmer.
 - **Dialog and alert dialog** (`dialog.tsx:39`, `alert-dialog.tsx:35`): `max-w-md rounded-xl border bg-popover p-6 gap-5 shadow-float`. Destructive confirms show the target in an inset well (`rounded-lg border bg-background px-3 py-2.5`) and style the action `bg-destructive text-destructive-foreground` (`PortListItem.tsx:139-165`). Footer buttons are right-aligned, cancel first.
