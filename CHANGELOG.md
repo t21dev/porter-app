@@ -7,6 +7,17 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [0.8.2] - 2026-11-23
+
+### Changed
+- Settings open in a dialog instead of a tall dropdown, with sections for
+  Appearance, Port list, Pinned ports and Command line, so it fits the window
+  at every interface size.
+
+### Added
+- Search in Settings: type a word such as "udp" or "path" to find a setting,
+  then pick it (or press Enter) to jump straight to it.
+
 ## [0.8.1] - 2026-11-22
 
 ### Added
