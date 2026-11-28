@@ -17,7 +17,7 @@ jobs:
       release_id: ${{ steps.create.outputs.id }}
     steps:
       - name: Checkout repository
-        uses: actions/checkout@v4
+        uses: actions/checkout@v7
 
       - name: Create the draft release
         id: create
@@ -54,8 +54,12 @@ jobs:
           terminal version: one file with no dependencies. Run \`sudo porter\`
           for the live view or \`porter audit\` for a report.
 
+          On macOS, Porter isn't notarized yet, so after installing run
+          \`xattr -dr com.apple.quarantine /Applications/Porter.app\` once,
+          or macOS reports the app as damaged and won't open it.
+
           ## 🚀 Installation
-          Installation guide: https://github.com/t21dev/porter-app#installation
+          Installation guide: https://github.com/t21dev/porter-app#-installation
           EOF
           ID=$(gh api -X POST "repos/${{ github.repository }}/releases" \
             -f tag_name="$TAG" -f name="Porter v$VERSION" \
@@ -77,7 +81,7 @@ jobs:
 
     steps:
       - name: Checkout repository
-        uses: actions/checkout@v4
+        uses: actions/checkout@v7
 
       - name: Install dependencies (Ubuntu only)
         if: matrix.platform == 'ubuntu-22.04'
@@ -86,9 +90,9 @@ jobs:
           sudo apt-get install -y libgtk-3-dev libwebkit2gtk-4.1-dev libappindicator3-dev librsvg2-dev patchelf
 
       - name: Setup Node.js
-        uses: actions/setup-node@v4
+        uses: actions/setup-node@v7
         with:
-          node-version: 20
+          node-version: 22
 
       - name: Install Rust stable
         uses: dtolnay/rust-toolchain@stable
@@ -99,7 +103,7 @@ jobs:
           workspaces: './src-tauri -> target'
 
       - name: Install frontend dependencies
-        run: npm install
+        run: npm ci
 
       - name: Build the app
         uses: tauri-apps/tauri-action@v0.5
@@ -145,7 +149,7 @@ jobs:
 
       - name: Keep the MSIX as a workflow artifact (Windows)
         if: matrix.platform == 'windows-latest'
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v7
         with:
           name: porter-msix
           path: src-tauri/target/msix/*.msix
@@ -184,7 +188,7 @@ jobs:
 
     steps:
       - name: Checkout repository
-        uses: actions/checkout@v4
+        uses: actions/checkout@v7
 
       - name: Install musl (Linux)
         if: contains(matrix.target, 'musl')
@@ -271,10 +275,10 @@ jobs:
     permissions:
       contents: write
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v7
         with:
           ref: landing
-      - uses: actions/setup-node@v4
+      - uses: actions/setup-node@v7
         with:
           node-version: 22
       - name: Sync the release into the site
