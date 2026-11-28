@@ -163,6 +163,7 @@ The CLI (`src-tauri/crates/porter-cli`) follows the same principles in a termina
 - Sizes: 15px (`h-[15px] w-[15px]`) in title bar buttons and the search field; 14px (`h-3.5 w-3.5`) for row actions, service icons and icons inside buttons; 16px (`h-4 w-4`) for dialog close and the admin banner; 12px (`h-3 w-3`) for sort arrows, pause and the pinned glyph.
 - Stroke: lucide default 2; service icons and the banner icon use `strokeWidth={1.75}`. Icons at rest are `text-subtle` and go to `text-foreground` on hover.
 - Service icons come from `src/lib/portTypes.ts` (Globe, Database, Server, Code, Package, FileCode as fallback) and render in `text-subtle`, not in brand colours.
+- Brand marks: lucide-react 1.x has no brand icons. Draw them with `createLucideIcon` in `src/components/ui/` so they take the same props and outline style as the rest, like `GithubIcon` (`src/components/ui/github-icon.tsx`). Never use a filled or coloured brand logo.
 
 ## Motion
 

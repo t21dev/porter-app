@@ -1,5 +1,6 @@
 import { useState } from 'react';
-import { Info, Github, ArrowUpRight, RefreshCw, Check, ArrowDown } from 'lucide-react';
+import { Info, ArrowUpRight, RefreshCw, Check, ArrowDown } from 'lucide-react';
+import { GithubIcon } from '@/components/ui/github-icon';
 import { Button } from '@/components/ui/button';
 import {
   Dialog,
@@ -59,7 +60,7 @@ export function AboutDialog() {
             className="group flex items-center justify-between px-6 py-3 text-[13px] text-foreground transition-colors duration-150 hover:bg-accent"
           >
             <span className="inline-flex items-center gap-2">
-              <Github className="h-4 w-4 text-muted-foreground" />
+              <GithubIcon className="h-4 w-4 text-muted-foreground" />
               {aboutConfig.repository.label}
             </span>
             <ArrowUpRight className="h-3.5 w-3.5 text-subtle transition-transform duration-200 ease-out group-hover:-translate-y-px group-hover:translate-x-px group-hover:text-foreground" />
