@@ -1,6 +1,6 @@
 [package]
 name = "porter-cli"
-version = "0.8.4"
+version = "0.8.5"
 description = "Porter in the terminal: what's listening on which port, and whether it should be"
 edition = "2021"
 license = "MIT"
@@ -17,4 +17,4 @@ clap = { version = "4.5", features = ["derive"] }
 ratatui = "0.29"
 serde = { version = "1.0", features = ["derive"] }
 serde_json = "1.0"
-sysinfo = "0.31"
+sysinfo = "0.40"
