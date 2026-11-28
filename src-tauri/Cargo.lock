@@ -2747,7 +2747,7 @@ dependencies = [
 
 [[package]]
 name = "porter-app"
-version = "0.8.2"
+version = "0.8.3"
 dependencies = [
  "anyhow",
  "chrono",
@@ -2763,7 +2763,7 @@ dependencies = [
 
 [[package]]
 name = "porter-cli"
-version = "0.8.2"
+version = "0.8.3"
 dependencies = [
  "anyhow",
  "clap",
@@ -2776,7 +2776,7 @@ dependencies = [
 
 [[package]]
 name = "porter-core"
-version = "0.8.2"
+version = "0.8.3"
 dependencies = [
  "anyhow",
  "chrono",

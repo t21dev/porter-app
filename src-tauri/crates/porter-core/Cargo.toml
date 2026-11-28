@@ -1,6 +1,6 @@
 [package]
 name = "porter-core"
-version = "0.8.2"
+version = "0.8.3"
 description = "Port scanning, container mapping and port advice shared by the Porter app and CLI"
 edition = "2021"
 license = "MIT"

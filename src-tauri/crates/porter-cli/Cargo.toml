@@ -1,6 +1,6 @@
 [package]
 name = "porter-cli"
-version = "0.8.2"
+version = "0.8.3"
 description = "Porter in the terminal: what's listening on which port, and whether it should be"
 edition = "2021"
 license = "MIT"

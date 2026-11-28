@@ -7,6 +7,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [0.8.3] - 2026-11-28
+
 ### Changed
 - The Windows installer (`-setup.exe`) now installs Porter for all users in
   `C:\Program Files\Porter`, like the `.msi`, instead of in your AppData
