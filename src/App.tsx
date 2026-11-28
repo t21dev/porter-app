@@ -553,8 +553,9 @@ function Downloads() {
           <DlLink a={a.macArm} label="Apple silicon (.dmg)" />
           <DlLink a={a.macIntel} label="Intel (.dmg)" />
           <p className="dl-note">
-            Not notarised yet. If macOS says the app is damaged, run <code>xattr -cr /Applications/Porter.app</code>, or
-            right-click it and choose Open.
+            Not notarised yet. After moving it to Applications, run{" "}
+            <code>xattr -dr com.apple.quarantine /Applications/Porter.app</code> once, or macOS says it is damaged. Or open
+            it, then choose Open Anyway in System Settings, Privacy &amp; Security.
           </p>
         </div>
         <div className="dl-col rise" {...yours("linux")}>
