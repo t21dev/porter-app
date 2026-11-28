@@ -37,7 +37,10 @@
   <Applications>
     <Application Id="Porter"
       Executable="Porter.exe"
-      EntryPoint="Windows.FullTrustApplication">
+      EntryPoint="Windows.FullTrustApplication"
+      desktop4:SupportsMultipleInstances="true">
+      <!-- SupportsMultipleInstances is required by the console alias below.
+           It changes nothing for a full-trust Win32 app. -->
       <uap:VisualElements
         DisplayName="Porter App"
         Description="See which process holds each port and free it in one click."
@@ -46,25 +49,16 @@
         Square44x44Logo="Assets\Square44x44Logo.png">
         <uap:DefaultTile Wide310x150Logo="Assets\Wide310x150Logo.png" ShortName="Porter" />
       </uap:VisualElements>
-    </Application>
-
-    <!-- porter, the terminal version. Not in the Start menu; the alias makes
-         `porter` work in any terminal, as the Store's Python does. It lives in
-         cli\ because porter.exe and Porter.exe can't share a folder. -->
-    <Application Id="PorterCli"
-      Executable="cli\porter.exe"
-      EntryPoint="Windows.FullTrustApplication"
-      desktop4:Subsystem="console"
-      desktop4:SupportsMultipleInstances="true">
-      <uap:VisualElements
-        DisplayName="Porter (command line)"
-        Description="What's listening on which port, in the terminal."
-        BackgroundColor="transparent"
-        Square150x150Logo="Assets\Square150x150Logo.png"
-        Square44x44Logo="Assets\Square44x44Logo.png"
-        AppListEntry="none" />
       <Extensions>
-        <uap5:Extension Category="windows.appExecutionAlias">
+        <!-- porter, the terminal version: the alias makes `porter` work in any
+             terminal. It hangs off this Application with its own Executable (as
+             Windows Terminal does for wt.exe) because a second Application with
+             AppListEntry="none" is a "headless app", which the Store rejects
+             without a waiver. It lives in cli\ because porter.exe and Porter.exe
+             can't share a folder. -->
+        <uap5:Extension Category="windows.appExecutionAlias"
+          Executable="cli\porter.exe"
+          EntryPoint="Windows.FullTrustApplication">
           <uap5:AppExecutionAlias desktop4:Subsystem="console">
             <uap5:ExecutionAlias Alias="porter.exe" />
           </uap5:AppExecutionAlias>
