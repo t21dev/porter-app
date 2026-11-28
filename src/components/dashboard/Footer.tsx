@@ -1,4 +1,4 @@
-import { Github } from 'lucide-react';
+import { GithubIcon } from '@/components/ui/github-icon';
 
 export function Footer() {
   return (
@@ -23,7 +23,7 @@ export function Footer() {
             className="transition-colors text-muted-foreground hover:text-green-500"
             aria-label="View on GitHub"
           >
-            <Github className="w-5 h-5" />
+            <GithubIcon className="w-5 h-5" />
           </a>
         </div>
       </div>
