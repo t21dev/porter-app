@@ -2,6 +2,7 @@ import { useCallback, useEffect, useRef, useState } from "react";
 import { DEMO, DEFAULT_PORTS, FEATURES, RELEASE, SITE, installerMB, mb, type Asset, type DemoPort, PACKAGES } from "./content";
 import { Pulse, GitHub, ArrowRight, Download, Copy, Check, Search, X } from "./components/Icons";
 import { useDownload, useSystem } from "./download";
+import { AppSwitcher } from "./components/AppSwitcher";
 
 function Nav() {
   const [scrolled, setScrolled] = useState(false);
@@ -14,15 +15,18 @@ function Nav() {
   return (
     <header className="nav" data-scrolled={scrolled}>
       <div className="nav-inner">
-        <a className="brand" href="#top" aria-label="Porter, back to top">
-          <span className="brand-icon">
-            <Pulse />
-          </span>
-          <span>Porter</span>
-          <span className="live" aria-hidden="true">
-            <i /> Live
-          </span>
-        </a>
+        <div className="brand-group">
+          <a className="brand" href="#top" aria-label="Porter, back to top">
+            <span className="brand-icon">
+              <Pulse />
+            </span>
+            <span>Porter</span>
+            <span className="live" aria-hidden="true">
+              <i /> Live
+            </span>
+          </a>
+          <AppSwitcher current="porter" />
+        </div>
         <nav aria-label="Sections" className="nav-links">
           <a href="#features">Features</a>
           <a href="#docker">Docker</a>
