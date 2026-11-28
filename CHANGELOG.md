@@ -7,6 +7,24 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [0.8.4] - 2026-11-28
+
+### Fixed
+- Porter 0.8.3 no longer crashes on launch on macOS with "a webview with
+  label `main` already exists" (#8). On macOS the window also starts hidden
+  again until it has painted, like on Windows and Linux.
+- Pinned ports are no longer scanned every 2 seconds while the window is
+  minimised, so Porter uses no CPU in the background.
+- A failed attempt to stop a process no longer makes every later attempt fail.
+- The macOS install steps now say to run
+  `xattr -dr com.apple.quarantine /Applications/Porter.app` after installing,
+  with Homebrew too, and the release notes link to the right section of the
+  installation guide.
+
+### Changed
+- Updated Tauri to 2.13, React to 19.3 and other dependencies to their latest
+  compatible versions.
+
 ## [0.8.3] - 2026-11-28
 
 ### Changed
