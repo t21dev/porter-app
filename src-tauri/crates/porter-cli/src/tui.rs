@@ -136,7 +136,7 @@ pub fn run(opts: Options) -> Result<()> {
 
 fn event_loop(terminal: &mut DefaultTerminal, opts: Options) -> Result<()> {
     let (results, refresh) = spawn_scanner(opts);
-    let mut app = App::new(sysinfo::System::host_name().unwrap_or_else(|| "this machine".into()));
+    let mut app = App::new(sysinfo::System::host_name().unwrap_or_else(|_| "this machine".into()));
 
     loop {
         while let Ok(res) = results.try_recv() {

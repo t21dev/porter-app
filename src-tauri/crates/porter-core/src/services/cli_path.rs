@@ -353,7 +353,7 @@ pub mod windows_path {
         let access = if write { KEY_READ | KEY_SET_VALUE } else { KEY_READ };
         let mut h = HKEY::default();
         let k = wide(key);
-        unsafe { RegOpenKeyExW(hroot, PCWSTR(k.as_ptr()), 0, access, &mut h) }.ok()?;
+        unsafe { RegOpenKeyExW(hroot, PCWSTR(k.as_ptr()), None, access, &mut h) }.ok().ok()?;
         Some(h)
     }
 
@@ -367,12 +367,14 @@ pub mod windows_path {
             RegQueryValueExW(h, PCWSTR(n.as_ptr()), None, Some(&mut kind), None, Some(&mut size))
         }
         .ok()
+        .ok()
         .and_then(|_| {
             let mut buf = vec![0u16; (size as usize).div_ceil(2) + 1];
             let mut bytes = (buf.len() * 2) as u32;
             unsafe {
                 RegQueryValueExW(h, PCWSTR(n.as_ptr()), None, Some(&mut kind), Some(buf.as_mut_ptr() as *mut u8), Some(&mut bytes))
             }
+            .ok()
             .ok()?;
             buf.truncate((bytes as usize) / 2);
             while buf.last() == Some(&0) {
@@ -391,11 +393,11 @@ pub mod windows_path {
         let n = wide(name);
         let data = wide(value);
         let bytes = unsafe { std::slice::from_raw_parts(data.as_ptr() as *const u8, data.len() * 2) };
-        let result = unsafe { RegSetValueExW(h, PCWSTR(n.as_ptr()), 0, kind, Some(bytes)) };
+        let result = unsafe { RegSetValueExW(h, PCWSTR(n.as_ptr()), None, kind, Some(bytes)) };
         unsafe {
             let _ = RegCloseKey(h);
         }
-        result.map_err(|e| anyhow::anyhow!("Couldn't update the PATH: {e}"))
+        result.ok().map_err(|e| anyhow::anyhow!("Couldn't update the PATH: {e}"))
     }
 
     pub fn expand(value: &str) -> String {

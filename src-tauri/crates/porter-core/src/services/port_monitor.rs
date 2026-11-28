@@ -66,8 +66,8 @@ impl PortMonitor {
             v.into_iter().map(Pid::from_u32).collect()
         };
         // Names come from the snapshot itself, so nothing extra is read.
-        let mut system = System::new();
-        system.refresh_processes_specifics(ProcessesToUpdate::Some(&pids), ProcessRefreshKind::new());
+        let mut system = System::new()?;
+        system.refresh_processes_specifics(ProcessesToUpdate::Some(&pids), true, ProcessRefreshKind::nothing());
 
         let mut ports: HashMap<(u16, Protocol), Port> = HashMap::new();
         for conn in conns {
@@ -109,10 +109,11 @@ impl PortMonitor {
             return Ok(Some(Port::from_connection(conn, process)));
         }
         let pid = Pid::from_u32(conn.pid);
-        let mut system = System::new();
+        let mut system = System::new()?;
         system.refresh_processes_specifics(
             ProcessesToUpdate::Some(&[pid]),
-            ProcessRefreshKind::new()
+            true,
+            ProcessRefreshKind::nothing()
                 .with_memory()
                 .with_exe(UpdateKind::Always)
                 .with_cmd(UpdateKind::Always)

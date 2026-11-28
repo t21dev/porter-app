@@ -89,13 +89,13 @@ pub async fn get_system_info() -> Result<SystemInfo, String> {
     use sysinfo::System;
 
     // Only memory is needed; new_all() also loaded every process and disk.
-    let mut sys = System::new();
+    let mut sys = System::new().map_err(|e| e.to_string())?;
     sys.refresh_memory();
 
     Ok(SystemInfo {
         os: std::env::consts::OS.to_string(),
-        os_version: System::long_os_version().unwrap_or_else(|| "Unknown".to_string()),
-        hostname: System::host_name().unwrap_or_else(|| "Unknown".to_string()),
+        os_version: System::long_os_version().unwrap_or_else(|_| "Unknown".to_string()),
+        hostname: System::host_name().unwrap_or_else(|_| "Unknown".to_string()),
         cpu_count: std::thread::available_parallelism().map(|n| n.get()).unwrap_or(1),
         total_memory: sys.total_memory(),
     })
