@@ -260,6 +260,45 @@ jobs:
           gh api -X PATCH "repos/$REPO/releases/$ID" -f tag_name="$TAG" -F body=@body.md \
             -F draft=false -f make_latest=true --jq .html_url
 
+  # The website follows the release: src/release.json on the `landing` branch
+  # is refreshed from the release just published and pushed, and Cloudflare
+  # Workers Builds deploys every push to `landing`, so porter.t21.dev shows the
+  # new version and download links within minutes.
+  website:
+    needs: [checksums]
+    if: github.event_name == 'push' && !contains(github.ref_name, '-')
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: landing
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+      - name: Sync the release into the site
+        shell: bash
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          TAG: ${{ github.ref_name }}
+        run: |
+          set -euo pipefail
+          # release.mjs uses only Node built-ins, so no npm ci is needed.
+          node scripts/release.mjs
+          grep -q "\"version\": \"${TAG#v}\"" src/release.json || {
+            echo "::error::src/release.json doesn't name $TAG; GitHub's latest release isn't this one yet"
+            exit 1
+          }
+          if git diff --quiet; then
+            echo "The site already has $TAG"
+            exit 0
+          fi
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git commit -am "chore: sync release $TAG"
+          git push origin HEAD:landing
+
   # The Homebrew cask (t21dev/homebrew-tap) follows the release at once, so
   # `brew upgrade` sees it within minutes instead of waiting for the tap's
   # six-hourly autobump PR. HOMEBREW_TAP_TOKEN: a token that can push to the
