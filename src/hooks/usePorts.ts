@@ -26,12 +26,21 @@ function useMinimized() {
 }
 
 export function usePinnedPorts(refreshInterval: number = 2000) {
+  const minimized = useMinimized();
+  const queryClient = useQueryClient();
   const pinnedPorts = usePinStore((s) => s.pins);
+
+  // Catch up the moment the window comes back rather than up to one interval later.
+  useEffect(() => {
+    if (!minimized) queryClient.invalidateQueries({ queryKey: ['ports', 'pinned'] });
+  }, [minimized, queryClient]);
 
   return useQuery({
     queryKey: ['ports', 'pinned', pinnedPorts],
     queryFn: () => getCommonPorts(pinnedPorts),
-    refetchInterval: refreshInterval,
+    // Paused while minimised: the webview never reports itself hidden, so
+    // refetchIntervalInBackground alone kept scanning every 2s.
+    refetchInterval: minimized ? false : refreshInterval,
     // Nothing to watch while the window is minimised or hidden.
     refetchIntervalInBackground: false,
   });

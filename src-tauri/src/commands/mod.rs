@@ -72,13 +72,13 @@ pub async fn get_port_details(port: u16) -> Result<Option<Port>, String> {
 
 #[tauri::command]
 pub async fn kill_process(pid: u32, state: State<'_, AppState>) -> Result<bool, String> {
-    let mut manager = state.process_manager.lock().unwrap();
+    let mut manager = state.process_manager.lock().unwrap_or_else(|e| e.into_inner());
     manager.kill_process(pid).map_err(|e| e.to_string())
 }
 
 #[tauri::command]
 pub async fn kill_process_by_port(port: u16, state: State<'_, AppState>) -> Result<bool, String> {
-    let mut manager = state.process_manager.lock().unwrap();
+    let mut manager = state.process_manager.lock().unwrap_or_else(|e| e.into_inner());
     manager
         .kill_process_by_port(port)
         .map_err(|e| e.to_string())
