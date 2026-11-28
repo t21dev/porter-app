@@ -7,6 +7,18 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [0.8.5] - 2026-11-28
+
+### Changed
+- Updated the process library (sysinfo 0.40) that names and stops the
+  processes behind each port, and the Windows API bindings (windows 0.62).
+  The app now builds one copy of the Windows bindings instead of three.
+- Stopping a process reads only that process, and checking that it stopped
+  after an administrator prompt no longer rescans every process on the
+  machine.
+- Updated the build tool to Vite 8 (frontend builds about 5x faster),
+  zustand 5 and lucide-react 1.x.
+
 ## [0.8.4] - 2026-11-28
 
 ### Fixed

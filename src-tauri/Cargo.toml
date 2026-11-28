@@ -1,6 +1,6 @@
 [package]
 name = "porter-app"
-version = "0.8.4"
+version = "0.8.5"
 description = "Port monitor: see which process holds a port and stop it"
 authors = ["Porter App Contributors"]
 edition = "2021"
@@ -31,5 +31,5 @@ tokio = { version = "1.35", features = ["full"] }
 chrono = { version = "0.4", features = ["serde"] }
 anyhow = "1.0"
 
-sysinfo = "0.31"
+sysinfo = "0.40"
 porter-core = { path = "crates/porter-core" }
