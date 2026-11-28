@@ -38,6 +38,7 @@
     "externalBin": ["binaries/porter"],
     "windows": {
       "nsis": {
+        "installMode": "perMachine",
         "installerHooks": "windows/installer-hooks.nsh"
       },
       "wix": {

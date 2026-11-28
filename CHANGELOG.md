@@ -7,6 +7,14 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Changed
+- The Windows installer (`-setup.exe`) now installs Porter for all users in
+  `C:\Program Files\Porter`, like the `.msi`, instead of in your AppData
+  folder, and puts `porter` on the system PATH. It asks for administrator
+  rights. If an earlier version is installed in AppData, the installer removes
+  it first. Your settings and pinned ports are kept. Pin Porter to the taskbar
+  again if you had pinned it.
+
 ## [0.8.2] - 2026-11-23
 
 ### Changed

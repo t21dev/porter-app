@@ -64,6 +64,9 @@ enum Cmd {
     Path {
         #[arg(value_parser = ["add", "remove", "status"])]
         action: String,
+        /// The system PATH, for every user (needs admin; the installer runs elevated).
+        #[arg(long)]
+        all_users: bool,
     },
     /// Stop the process holding a port.
     Kill {
@@ -152,11 +155,13 @@ fn run(cli: Cli) -> Result<ExitCode> {
                 }
             }
         }
-        Some(Cmd::Path { action }) => {
+        Some(Cmd::Path { action, all_users }) => {
             use porter_core::services::cli_path;
-            let st = match action.as_str() {
-                "add" => cli_path::set_on_path(true)?,
-                "remove" => cli_path::set_on_path(false)?,
+            let st = match (action.as_str(), all_users) {
+                ("add", false) => cli_path::set_on_path(true)?,
+                ("remove", false) => cli_path::set_on_path(false)?,
+                ("add", true) => cli_path::set_on_path_for_all_users(true)?,
+                ("remove", true) => cli_path::set_on_path_for_all_users(false)?,
                 _ => cli_path::status(),
             };
             match (&st.bundled, st.on_path) {

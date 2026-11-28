@@ -2,8 +2,11 @@
 //! the PATH, so it runs from any terminal.
 //!
 //! Each install method differs:
-//! - Windows installer (NSIS): Porter's folder goes on the user's PATH in the
-//!   registry. The installer does it, and the app's setting can undo or redo it.
+//! - Windows installer (NSIS): it installs for all users in Program Files and
+//!   puts Porter's folder on the system PATH, taking it off on uninstall. If
+//!   that fails it falls back to the user's PATH, which the app's setting can
+//!   undo or redo. (Up to 0.8.2 it installed per user, in AppData; the new
+//!   installer removes that copy.)
 //! - Windows MSI: the installer puts it on the system PATH itself (WiX), and
 //!   removes it on uninstall. The app can only report that.
 //! - Microsoft Store: an app execution alias provides `porter`.
@@ -189,6 +192,28 @@ pub fn set_on_path(on: bool) -> anyhow::Result<CliStatus> {
     Ok(status())
 }
 
+/// Put the bundled `porter` on the system PATH, for every user (true), or take
+/// it off (false). Needs admin rights: the Windows installer, which runs
+/// elevated, calls this through `porter path add --all-users`.
+pub fn set_on_path_for_all_users(on: bool) -> anyhow::Result<CliStatus> {
+    let exe = bundled_cli().ok_or_else(|| anyhow::anyhow!("This copy of Porter doesn't include the terminal version."))?;
+    #[cfg(windows)]
+    {
+        let dir = exe.parent().map(Path::to_path_buf).unwrap_or_default();
+        let root = windows_path::Root::Machine;
+        let changed = if on { windows_path::add_to(root, "Path", &dir)? } else { windows_path::remove_from(root, "Path", &dir)? };
+        if changed {
+            windows_path::broadcast();
+        }
+        return Ok(status());
+    }
+    #[cfg(not(windows))]
+    {
+        let _ = (on, exe);
+        anyhow::bail!("--all-users is only for the Windows installer.");
+    }
+}
+
 #[cfg(target_os = "macos")]
 fn same_file(a: &Path, b: &Path) -> bool {
     match (a.canonicalize(), b.canonicalize()) {
@@ -313,6 +338,13 @@ pub mod windows_path {
         s.encode_utf16().chain(Some(0)).collect()
     }
 
+    fn key_for(root: Root) -> &'static str {
+        match root {
+            Root::User => USER_KEY,
+            Root::Machine => MACHINE_KEY,
+        }
+    }
+
     fn open(root: Root, key: &str, write: bool) -> Option<HKEY> {
         let hroot = match root {
             Root::User => HKEY_CURRENT_USER,
@@ -396,30 +428,33 @@ pub mod windows_path {
         read(root, key, name).is_some_and(|(v, _)| split(&v).iter().any(|e| same_dir(e, dir)))
     }
 
-    /// Append `dir` to a PATH-like value in HKCU. False if it was already there.
-    pub fn add_to(name: &str, dir: &Path) -> anyhow::Result<bool> {
-        let (value, kind) = read(Root::User, USER_KEY, name).unwrap_or((String::new(), REG_EXPAND_SZ));
+    /// Append `dir` to a PATH-like value, the user's or the system's. False if
+    /// it was already there.
+    pub fn add_to(root: Root, name: &str, dir: &Path) -> anyhow::Result<bool> {
+        let key = key_for(root);
+        let (value, kind) = read(root, key, name).unwrap_or((String::new(), REG_EXPAND_SZ));
         if split(&value).iter().any(|e| same_dir(e, dir)) {
             return Ok(false);
         }
         let mut entries = split(&value);
         entries.push(dir.display().to_string());
         let kind = if kind == REG_SZ || kind == REG_EXPAND_SZ { kind } else { REG_EXPAND_SZ };
-        write(Root::User, USER_KEY, name, &entries.join(";"), kind)?;
+        write(root, key, name, &entries.join(";"), kind)?;
         Ok(true)
     }
 
-    /// Remove every entry naming `dir` from a PATH-like value in HKCU. False if
-    /// it wasn't there.
-    pub fn remove_from(name: &str, dir: &Path) -> anyhow::Result<bool> {
-        let Some((value, kind)) = read(Root::User, USER_KEY, name) else { return Ok(false) };
+    /// Remove every entry naming `dir` from a PATH-like value, the user's or
+    /// the system's. False if it wasn't there.
+    pub fn remove_from(root: Root, name: &str, dir: &Path) -> anyhow::Result<bool> {
+        let key = key_for(root);
+        let Some((value, kind)) = read(root, key, name) else { return Ok(false) };
         let entries = split(&value);
         let kept: Vec<&String> = entries.iter().filter(|e| !same_dir(e, dir)).collect();
         if kept.len() == entries.len() {
             return Ok(false);
         }
         let joined = kept.iter().map(|s| s.as_str()).collect::<Vec<_>>().join(";");
-        write(Root::User, USER_KEY, name, &joined, kind)?;
+        write(root, key, name, &joined, kind)?;
         Ok(true)
     }
 
@@ -433,7 +468,7 @@ pub mod windows_path {
     }
 
     pub fn add(dir: &Path) -> anyhow::Result<bool> {
-        let changed = add_to("Path", dir)?;
+        let changed = add_to(Root::User, "Path", dir)?;
         if changed {
             broadcast();
         }
@@ -441,7 +476,7 @@ pub mod windows_path {
     }
 
     pub fn remove(dir: &Path) -> anyhow::Result<bool> {
-        let changed = remove_from("Path", dir)?;
+        let changed = remove_from(Root::User, "Path", dir)?;
         if changed {
             broadcast();
         }
@@ -470,15 +505,15 @@ pub mod windows_path {
             write(Root::User, USER_KEY, &name, original, REG_EXPAND_SZ).unwrap();
             let dir = Path::new(r"C:\Program Files\Porter");
 
-            assert!(add_to(&name, dir).unwrap());
-            assert!(!add_to(&name, Path::new(r"c:\program files\porter\")).unwrap(), "same folder, other spelling");
+            assert!(add_to(Root::User, &name, dir).unwrap());
+            assert!(!add_to(Root::User, &name, Path::new(r"c:\program files\porter\")).unwrap(), "same folder, other spelling");
             let (after, kind) = read(Root::User, USER_KEY, &name).unwrap();
             assert_eq!(kind, REG_EXPAND_SZ);
             assert!(after.starts_with(r"%USERPROFILE%\bin;"), "unexpanded entries survive: {after}");
             assert!(after.ends_with(r";C:\Program Files\Porter"));
 
-            assert!(remove_from(&name, dir).unwrap());
-            assert!(!remove_from(&name, dir).unwrap());
+            assert!(remove_from(Root::User, &name, dir).unwrap());
+            assert!(!remove_from(Root::User, &name, dir).unwrap());
             let (back, _) = read(Root::User, USER_KEY, &name).unwrap();
             assert_eq!(back, r"%USERPROFILE%\bin;C:\Tools;C:\Program Files\Thing\");
 
@@ -492,7 +527,7 @@ pub mod windows_path {
             let long: String = (0..120).map(|i| format!(r"C:\Some\Long\Folder\Number{i:03}")).collect::<Vec<_>>().join(";");
             assert!(long.len() > 3000);
             write(Root::User, USER_KEY, &name, &long, REG_EXPAND_SZ).unwrap();
-            add_to(&name, Path::new(r"C:\Porter")).unwrap();
+            add_to(Root::User, &name, Path::new(r"C:\Porter")).unwrap();
             let (after, _) = read(Root::User, USER_KEY, &name).unwrap();
             assert_eq!(after, format!(r"{long};C:\Porter"));
             delete_value(&name);
