@@ -3,6 +3,8 @@
     "windows": [
       {
         "title": "Porter",
+        "label": "main",
+        "create": false,
         "width": 700,
         "height": 900,
         "minWidth": 700,
@@ -10,6 +12,9 @@
         "minHeight": 640,
         "resizable": true,
         "center": true,
+        "visible": false,
+        "shadow": true,
+        "backgroundColor": "#0d0d0d",
         "decorations": true,
         "titleBarStyle": "Overlay",
         "hiddenTitle": true
