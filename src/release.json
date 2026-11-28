@@ -1,56 +1,56 @@
 {
-  "version": "0.8.4",
+  "version": "0.8.5",
   "date": "2026-11-28",
-  "page": "https://github.com/t21dev/porter-app/releases/tag/v0.8.4",
+  "page": "https://github.com/t21dev/porter-app/releases/tag/v0.8.5",
   "assets": {
     "windows": {
-      "name": "Porter_0.8.4_x64-setup.exe",
-      "url": "https://github.com/t21dev/porter-app/releases/download/v0.8.4/Porter_0.8.4_x64-setup.exe",
-      "size": 3430534
+      "name": "Porter_0.8.5_x64-setup.exe",
+      "url": "https://github.com/t21dev/porter-app/releases/download/v0.8.5/Porter_0.8.5_x64-setup.exe",
+      "size": 3400988
     },
     "windowsMsi": {
-      "name": "Porter_0.8.4_x64_en-US.msi",
-      "url": "https://github.com/t21dev/porter-app/releases/download/v0.8.4/Porter_0.8.4_x64_en-US.msi",
-      "size": 5165056
+      "name": "Porter_0.8.5_x64_en-US.msi",
+      "url": "https://github.com/t21dev/porter-app/releases/download/v0.8.5/Porter_0.8.5_x64_en-US.msi",
+      "size": 5115904
     },
     "windowsPortable": {
-      "name": "Porter_0.8.4_x64_portable.zip",
-      "url": "https://github.com/t21dev/porter-app/releases/download/v0.8.4/Porter_0.8.4_x64_portable.zip",
-      "size": 5081424
+      "name": "Porter_0.8.5_x64_portable.zip",
+      "url": "https://github.com/t21dev/porter-app/releases/download/v0.8.5/Porter_0.8.5_x64_portable.zip",
+      "size": 5027694
     },
     "macArm": {
-      "name": "Porter_0.8.4_aarch64.dmg",
-      "url": "https://github.com/t21dev/porter-app/releases/download/v0.8.4/Porter_0.8.4_aarch64.dmg",
-      "size": 5379217
+      "name": "Porter_0.8.5_aarch64.dmg",
+      "url": "https://github.com/t21dev/porter-app/releases/download/v0.8.5/Porter_0.8.5_aarch64.dmg",
+      "size": 5319630
     },
     "macIntel": {
-      "name": "Porter_0.8.4_x64.dmg",
-      "url": "https://github.com/t21dev/porter-app/releases/download/v0.8.4/Porter_0.8.4_x64.dmg",
-      "size": 5510306
+      "name": "Porter_0.8.5_x64.dmg",
+      "url": "https://github.com/t21dev/porter-app/releases/download/v0.8.5/Porter_0.8.5_x64.dmg",
+      "size": 5459568
     },
     "appimage": {
-      "name": "Porter_0.8.4_amd64.AppImage",
-      "url": "https://github.com/t21dev/porter-app/releases/download/v0.8.4/Porter_0.8.4_amd64.AppImage",
-      "size": 83843576
+      "name": "Porter_0.8.5_amd64.AppImage",
+      "url": "https://github.com/t21dev/porter-app/releases/download/v0.8.5/Porter_0.8.5_amd64.AppImage",
+      "size": 83786232
     },
     "deb": {
-      "name": "Porter_0.8.4_amd64.deb",
-      "url": "https://github.com/t21dev/porter-app/releases/download/v0.8.4/Porter_0.8.4_amd64.deb",
-      "size": 5747528
+      "name": "Porter_0.8.5_amd64.deb",
+      "url": "https://github.com/t21dev/porter-app/releases/download/v0.8.5/Porter_0.8.5_amd64.deb",
+      "size": 5675918
     },
     "rpm": {
-      "name": "Porter-0.8.4-1.x86_64.rpm",
-      "url": "https://github.com/t21dev/porter-app/releases/download/v0.8.4/Porter-0.8.4-1.x86_64.rpm",
-      "size": 5752366
+      "name": "Porter-0.8.5-1.x86_64.rpm",
+      "url": "https://github.com/t21dev/porter-app/releases/download/v0.8.5/Porter-0.8.5-1.x86_64.rpm",
+      "size": 5679168
     },
     "flatpak": {
-      "name": "Porter_0.8.4_x86_64.flatpak",
-      "url": "https://github.com/t21dev/porter-app/releases/download/v0.8.4/Porter_0.8.4_x86_64.flatpak",
-      "size": 3284168
+      "name": "Porter_0.8.5_x86_64.flatpak",
+      "url": "https://github.com/t21dev/porter-app/releases/download/v0.8.5/Porter_0.8.5_x86_64.flatpak",
+      "size": 3261896
     },
     "checksums": {
       "name": "SHA256SUMS.txt",
-      "url": "https://github.com/t21dev/porter-app/releases/download/v0.8.4/SHA256SUMS.txt",
+      "url": "https://github.com/t21dev/porter-app/releases/download/v0.8.5/SHA256SUMS.txt",
       "size": 1543
     }
   }
