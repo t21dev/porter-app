@@ -90,14 +90,16 @@ For every other system, or to install without the Store, download the latest rel
 ```bash
 # macOS (Apple silicon and Intel), Homebrew
 brew install --cask t21dev/tap/porter-app
+xattr -dr com.apple.quarantine /Applications/Porter.app
 
 # Windows, Scoop
 scoop bucket add t21dev https://github.com/t21dev/scoop-bucket
 scoop install t21dev/porter
 ```
 
-The cask clears the quarantine flag, so macOS opens Porter without the
-"damaged" error below. Scoop installs the portable build and keeps its `data`
+The cask tries to clear macOS's quarantine flag itself, but run the `xattr`
+line too: with it Porter opens on the first try, without the "damaged" error
+or a trip to System Settings ([why](#macos-installation-note)). Scoop installs the portable build and keeps its `data`
 folder (settings and pinned ports) across updates. `brew upgrade` picks up a
 new release within minutes of it, and `scoop update` within a few hours.
 
@@ -141,13 +143,25 @@ check what you installed.
 
 #### macOS Installation Note
 
-macOS may show an error saying **"Porter is damaged and can't be opened"**. This happens because the app is not notarized with Apple (requires a paid developer account).
+Porter isn't notarized by Apple yet (that needs a paid developer account), so
+macOS blocks the first launch: it says **"Porter is damaged and can't be
+opened"** or **"Apple could not verify Porter"**, and the app doesn't start.
 
-**To fix this**, open Terminal and run:
+**To fix it**, move Porter to Applications (from the `.dmg`, or let Homebrew
+do it), then run this in Terminal:
+
 ```bash
-xattr -cr /Applications/Porter.app
+xattr -dr com.apple.quarantine /Applications/Porter.app
+open /Applications/Porter.app
 ```
-Then open the app normally. Alternatively, right-click the app and select "Open" instead of double-clicking.
+
+The first line removes the quarantine flag macOS puts on downloaded apps; the
+second opens Porter. You only need to do it once per install or update.
+
+Without Terminal: open Porter once and dismiss the warning, then go to
+**System Settings → Privacy & Security**, scroll down to the message about
+Porter and click **Open Anyway**. (Right-click → Open no longer skips the
+check on macOS 15 and later.)
 
 ---
 
