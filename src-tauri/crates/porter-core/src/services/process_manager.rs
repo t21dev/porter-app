@@ -2,12 +2,18 @@ use crate::platform;
 use anyhow::{Result, anyhow};
 use sysinfo::{Pid, ProcessRefreshKind, ProcessesToUpdate, System};
 
-/// Whether a process is running now. A fresh snapshot, because a refresh of
-/// specific PIDs never drops the ones that have exited from the list.
+/// A fresh snapshot of just these processes, with nothing read beyond what
+/// identifies them.
+fn snapshot(pids: &[Pid]) -> Result<System> {
+    let mut sys = System::new()?;
+    sys.refresh_processes_specifics(ProcessesToUpdate::Some(pids), true, ProcessRefreshKind::nothing());
+    Ok(sys)
+}
+
+/// Whether a process is running now. If the process table can't be read,
+/// assume it is, so a kill is never reported as done when it isn't known.
 fn is_running(pid: Pid) -> bool {
-    let mut sys = System::new();
-    sys.refresh_processes_specifics(ProcessesToUpdate::Some(&[pid]), ProcessRefreshKind::new());
-    sys.process(pid).is_some()
+    snapshot(&[pid]).map_or(true, |sys| sys.process(pid).is_some())
 }
 
 #[cfg(not(target_os = "windows"))]
@@ -16,15 +22,14 @@ use sysinfo::Signal;
 #[cfg(not(target_os = "windows"))]
 use std::process::Command;
 
-pub struct ProcessManager {
-    system: System,
-}
+/// Stops processes. It keeps no process table of its own: every kill reads a
+/// fresh snapshot of the one process it acts on.
+#[derive(Default)]
+pub struct ProcessManager;
 
 impl ProcessManager {
     pub fn new() -> Self {
-        Self {
-            system: System::new(),
-        }
+        Self
     }
 
     /// Kill a process by PID
@@ -36,10 +41,9 @@ impl ProcessManager {
 
         let pid_obj = Pid::from_u32(pid);
         // Only the process being killed, not every process on the machine.
-        self.system
-            .refresh_processes_specifics(ProcessesToUpdate::Some(&[pid_obj]), ProcessRefreshKind::new());
+        let system = snapshot(&[pid_obj])?;
 
-        if let Some(process) = self.system.process(pid_obj) {
+        if let Some(process) = system.process(pid_obj) {
             // On Windows, try direct kill. On Unix, try SIGTERM first
             #[cfg(target_os = "windows")]
             {
@@ -73,7 +77,7 @@ impl ProcessManager {
                     }
 
                     // Force kill if still running
-                    if let Some(process) = self.system.process(pid_obj) {
+                    if let Some(process) = system.process(pid_obj) {
                         if process.kill() {
                             return Ok(true);
                         }
@@ -107,9 +111,7 @@ impl ProcessManager {
                 if result.status.success() {
                     // Verify the process is actually dead
                     std::thread::sleep(std::time::Duration::from_millis(300));
-                    self.system.refresh_processes(sysinfo::ProcessesToUpdate::All);
-
-                    if self.system.process(Pid::from_u32(pid)).is_none() {
+                    if !is_running(Pid::from_u32(pid)) {
                         return Ok(true);
                     }
                     Err(anyhow!("Process {} did not terminate after elevated kill attempt.", pid))
@@ -139,9 +141,7 @@ impl ProcessManager {
                 if result.status.success() {
                     // Verify the process is actually dead
                     std::thread::sleep(std::time::Duration::from_millis(300));
-                    self.system.refresh_processes(sysinfo::ProcessesToUpdate::All);
-
-                    if self.system.process(Pid::from_u32(pid)).is_none() {
+                    if !is_running(Pid::from_u32(pid)) {
                         return Ok(true);
                     }
                     Err(anyhow!("Process {} did not terminate after elevated kill attempt.", pid))
