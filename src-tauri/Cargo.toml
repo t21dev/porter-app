@@ -1,8 +1,8 @@
 [package]
 name = "porter-app"
-version = "0.8.3"
-description = "A Tauri App"
-authors = ["you"]
+version = "0.8.4"
+description = "Port monitor: see which process holds a port and stop it"
+authors = ["Porter App Contributors"]
 edition = "2021"
 
 # See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
